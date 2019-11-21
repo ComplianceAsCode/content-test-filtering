@@ -9,6 +9,10 @@ def parse_args():
     common_parser.add_argument("--base", dest="base_branch", default="master",
                                help=("Base branch against which we want to "
                                      "compare, default is \"master\" branch"))
+    common_parser.add_argument("--repository", dest="repository_path",
+                               help=("Path to ComplianceAsCode repository. "
+                                      "If not provided, the repository will be"
+                                      "cloned into /tmp folder."))
 
     subparsers = parser.add_subparsers(dest="subcommand",
                                        help="Subcommands: pr, branch")
@@ -29,3 +33,5 @@ def parse_args():
                                  "against base"))
 
     options = parser.parse_args()
+
+    return options
