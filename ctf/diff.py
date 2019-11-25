@@ -15,7 +15,7 @@ def get_git_diff_files(options):
     base_branch = options.base_branch
     repo_path = options.repository_path
 
-    if not os.path.isdir(repo_path):
+    if repo_path is not None and not os.path.isdir(repo_path):
         logger.warning("%s is not a directory! Creating a new directory" %
                 repo_path)
 
@@ -38,26 +38,28 @@ def get_git_diff_files(options):
     remote.fetch("pull/" + pr_number + "/head:" + fetch_branch, force=True)
     repo.git.checkout(fetch_branch)
     # git log --name-status --oneline master..HEAD
-    git_log = repo.git.log("--name-status", "--format=\"%H\"", "master..HEAD")
+    git_log = repo.git.log("--name-status", "--format=\"%H\"", base_branch + "..HEAD")
     file_list = []
 
-    rev_list_before = repo.git.rev_list('master')
-    rev_list_after = repo.git.rev_list('--first-parent HEAD')
-    logger.info(rev_list_before)
+    # rev_list_before = repo.git.rev_list('master')
+    # rev_list_after = repo.git.rev_list('--first-parent HEAD')
+    # logger.info(rev_list_before)
     # M,A,D,Rxxx
-    # for git_line in git_log.splitlines():
-    #     line = git_line.split("\t")
-    #     flags_regexp = re.compile(r'^[M|A|D|R\d{3}|C\d{3}]')
-    #     if flags_regexp.search(line[0]):
-    #         if line[0] != 'A':
-    #             file_before = repo.git.show("master:./" + line[1])
-    #         if line[0] != 'D':
-    #             file_after = repo.git.show("HEAD:./" + line[1])
-    #         line.append(file_before)
-    #         line.append(file_after)
-    #         file_list.append(line)
+    logger.info(git_log)
+    for git_line in git_log.splitlines():
+        line = git_line.split("\t")
+        flags_regexp = re.compile(r'^[M|A|D|R\d{3}|C\d{3}]')
+        if flags_regexp.search(line[0]):
+            if line[0] != 'A':
+                file_before = repo.git.show(base_branch + ":./" + line[1])
+            if line[0] != 'D':
+                file_after = repo.git.show("HEAD:./" + line[1])
+            line.append(file_before)
+            line.append(file_after)
+            line[1] = repo_path + "/" + line[1]
+            file_list.append(line)
 
-    # return file_list
+    return file_list
     #print(repo.git.log("master..HEAD", name-status=True))
     #commits = list(repo.iter_commits("master..HEAD"))
     #for c in commits:

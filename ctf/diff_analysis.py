@@ -1,19 +1,9 @@
 import logging
 import re
-from abc import ABC, abstractmethod
+from .AbstractAnalysis import AbstractAnalysis
+from .ProfileAnalysis import ProfileAnalysis
 
 logger = logging.getLogger("content-test-filtering.diff_analysis")
-
-class AbstractAnalysis(ABC):
-    @abstractmethod
-    def analyse(self):
-        pass
-
-
-class ProfileAnalysis(AbstractAnalysis):
-    def analyse(self):
-        logger.info("Analyzing profile file")
-
 
 
 def analyse_file(file_record):
@@ -21,6 +11,6 @@ def analyse_file(file_record):
     print("+" + file_record[1] + "+")
 
     if file_record[1].endswith(".profile"):
-        file_analyzer = ProfileAnalysis()
+        file_analyzer = ProfileAnalysis(file_record)
 
-    file_analyzer.analyse()
+    return file_analyzer.analyse()
