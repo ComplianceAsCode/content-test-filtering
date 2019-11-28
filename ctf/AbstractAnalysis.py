@@ -4,10 +4,10 @@ from ctf.DiffStructure import DiffStructure
 
 class AbstractAnalysis(ABC):
     def __init__(self, file_record):
-        self.file_name = file_record[1]
-        self.content_before = file_record[2]
-        self.content_after = file_record[3]
-        self.diff_structure = DiffStructure(self.file_name)
+        self.diff_structure = DiffStructure()
+        self.filepath = file_record["filepath"]
+        self.content_before = file_record["file_before"]
+        self.content_after = file_record["file_after"]
 
     @abstractmethod
     def process_analysis(self):

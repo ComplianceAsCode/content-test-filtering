@@ -16,7 +16,8 @@ if __name__ == '__main__':
     options = cli.parse_args()
     logger.info("Getting files from 'git diff'")
     list_of_files = diff.get_git_diff_files(options)
+    list_of_tests = []
     for file_record in list_of_files:
         diff_structure = diff_analysis.analyse_file(file_record)
-        print(diff_structure.diff_type)
+        list_of_tests.append(connect_to_labels(diff_structure))
     logger.info("Finished")

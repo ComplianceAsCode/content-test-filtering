@@ -8,9 +8,11 @@ logger = logging.getLogger("content-test-filtering.diff_analysis")
 
 def analyse_file(file_record):
     file_analyzer = None
-    print("+" + file_record[1] + "+")
+    print("+" + file_record["filepath"] + "+")
 
-    if file_record[1].endswith(".profile"):
+    if file_record["filepath"].endswith(".profile"):
         file_analyzer = ProfileAnalysis(file_record)
+    else:
+        return
 
     return file_analyzer.analyse()

@@ -92,6 +92,7 @@ def get_git_diff_files(options):
             file_after = repo.git.show("HEAD:./" + filepath)
 
         file_record["flag"] = flag
+        file_record["filepath"] = filepath
         file_record["file_before"] = file_before
         file_record["file_after"] = file_after
         changed_files.append(file_record)
