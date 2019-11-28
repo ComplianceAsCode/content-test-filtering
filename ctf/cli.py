@@ -21,14 +21,14 @@ def parse_args():
     parser_pr = subparsers.add_parser("pr", parents=[common_parser],
                                       help=("Compare base against selected "
                                             "pull request"))
-    parser_pr.add_argument("target", metavar="PR_NUMBER",
+    parser_pr.add_argument("pr_number", metavar="PR_NUMBER",
                            help=("Pull request number, which we want compare "
                                  "against base"))
     #parser_pr.set_defaults(func...)
-    parser_branch = subparsers.add_parser("branch", parents=[common_parser],
+    parser_branch = subparsers.add_parser("base_branch", parents=[common_parser],
                                           help=("Compare base against "
                                                 "selected branch"))
-    parser_branch.add_argument("target", metavar="BRANCH_NAME",
+    parser_branch.add_argument("branch", metavar="BRANCH_NAME", default=None,
                            help=("Branch, which we want compare "
                                  "against base"))
 
