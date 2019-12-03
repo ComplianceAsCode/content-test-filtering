@@ -1,8 +1,7 @@
 #!/usr/bin/python3
-
 import logging
 import sys
-from ctf import cli, diff, diff_analysis
+from ctf import cli, diff, diff_analysis, connect_to_labels
 
 logger = logging.getLogger("content-test-filtering")
 logger.setLevel(logging.INFO)
@@ -18,6 +17,8 @@ if __name__ == '__main__':
     list_of_files = diff.get_git_diff_files(options)
     list_of_tests = []
     for file_record in list_of_files:
+        print("x")
         diff_structure = diff_analysis.analyse_file(file_record)
-        list_of_tests.append(connect_to_labels(diff_structure))
+        list_of_tests.append(connect_to_labels.get_labels(diff_structure))
+    logger.info(list_of_tests)
     logger.info("Finished")

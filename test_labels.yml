@@ -1,0 +1,17 @@
+yaml:
+        - YAMLlint
+python:
+        - Pylint
+bash:
+        - ShellCheck
+products:
+        rhel6:
+                - ospp
+        rhel7:
+                - ospp
+                - e8
+        rhel8:
+                - ospp
+                - e8
+                - pci-dss
+                - disa-stig
