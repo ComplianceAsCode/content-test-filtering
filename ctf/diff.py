@@ -38,7 +38,7 @@ def get_git_diff_files(options):
     repo.remotes.origin.pull()
 
     # Set upstream as remote
-    # TODO: Add custom remote
+    # TODO: Add custom remote option
     for r in repo.remotes:
         if re.search(URL, r.url):
             remote = r
