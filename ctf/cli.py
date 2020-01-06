@@ -25,7 +25,8 @@ def parse_args():
                            help=("Pull request number, which we want compare "
                                  "against base"))
     #parser_pr.set_defaults(func...)
-    parser_branch = subparsers.add_parser("base_branch", parents=[common_parser],
+    parser_branch = subparsers.add_parser("base_branch",
+                                          parents=[common_parser],
                                           help=("Compare base against "
                                                 "selected branch"))
     parser_branch.add_argument("branch", metavar="BRANCH_NAME", default=None,

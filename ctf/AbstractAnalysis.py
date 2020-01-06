@@ -1,9 +1,13 @@
+import re
+import os
+import fnmatch
 from abc import ABC, abstractmethod
 
 
 class AbstractAnalysis(ABC):
-    def __init__(self, file_record):
+    def __init__(self, options, file_record):
         self.diff_structure = None
+        self.repository_path = options.repository_path
         self.filepath = file_record["filepath"]
         self.content_before = file_record["file_before"]
         self.content_after = file_record["file_after"]
@@ -15,3 +19,30 @@ class AbstractAnalysis(ABC):
     def analyse(self):
         self.process_analysis()
         return self.diff_structure
+
+    def find_profiles(self, rule):
+        profile_folders = []
+        matched_profiles = []
+
+        for content_file in os.listdir(self.repository_path):
+            subfolder = self.repository_path + "/" + content_file
+            if not os.path.isdir(subfolder):
+                continue
+
+            for subfile in os.listdir(subfolder):
+                if subfile == "profiles":
+                    profile_folders.append(subfolder)
+
+        find_rule = re.compile("^\s*-\s*" + rule + "\s*$")
+        for folder in profile_folders:
+            for profile in os.listdir(folder + "/profiles"):
+                profile_file = folder + "/profiles/" + profile
+                with open(profile_file) as f:
+                    for line in f:
+                        if find_rule.search(line):
+                            matched_profiles.append(profile_file)
+
+        for filepath in matched_profiles:
+            parse_file = re.match(r".+/(\w+)/profiles/((?:\w|\-)+)\.profile", filepath)
+            matched_profiles.append(parse_file.group(2))
+            # print(parse_file.group(1) + " " + parse_file.group(2))

@@ -1,9 +1,11 @@
-yaml:
-        - YAMLlint
-python:
-        - Pylint
-bash:
-        - ShellCheck
+file_type:
+    yaml:
+            - YAMLlint
+    python:
+            - Pylint
+    bash:
+            - ShellCheck
+
 product:
         rhel6:
                 - ospp
@@ -20,3 +22,10 @@ profile:
                 - test_suite.py profile ... ospp
         e8:
                 - test_suite.py profile ... e8
+
+rule_ansible:
+        - test_suite.py --remediate ansible %rule_name%
+
+rule_bash:
+        - test_suite.py --remediate bash %rule_name%
+

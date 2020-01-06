@@ -93,3 +93,4 @@ class ProfileAnalysis(AbstractAnalysis):
         print(self.diff_structure.rules_added)
         logger.info("Removed rules - ")
         print(self.diff_structure.rules_removed)
+        self.find_profiles("package_talk_removed")

@@ -1,4 +1,4 @@
-from git import Repo
+from git import Repo, remote
 from tempfile import mkdtemp
 import re
 import logging
@@ -25,10 +25,14 @@ def get_git_diff_files(options):
     base_branch = options.base_branch
     repo_path = options.repository_path
     changed_files = []
+    print(repo_path)
 
     # Create a new temporary dictory if it does not exist
     if repo_path is not None and not os.path.isdir(repo_path):
-        logger.warning("%s is not a directory! Creating a new one" % repo_path)
+        logger.warning("%s is not a directory! Creating a new folder " % repo_path)
+        repo_path = None
+
+    if repo_path is None:
         repo_path = mkdtemp()
         logger.info("Clonning repository to %s directory" % repo_path)
         Repo.clone_from(URL, repo_path)
@@ -42,6 +46,7 @@ def get_git_diff_files(options):
     for r in repo.remotes:
         if re.search(URL, r.url):
             remote = r
+            break
 
     logger.info("Fetching branch...")
     if options.subcommand == "pr":
@@ -50,7 +55,7 @@ def get_git_diff_files(options):
         target_branch = fetch_branch(remote, options.branch)
     else:
         raise "Unknown target"
-    logger.info("Fetched to " + target_branch)
+    logger.info("Fetched to " + target_branch + " branch")
 
     repo.git.checkout(target_branch)
 
