@@ -17,7 +17,7 @@ if __name__ == '__main__':
     list_of_files = diff.get_git_diff_files(options)
     list_of_tests = []
     for file_record in list_of_files:
-        diff_structure = diff_analysis.analyse_file(options, file_record)
+        diff_structure = diff_analysis.analyse_file(file_record)
         diff_structure.compute_dependencies()
         list_of_tests.extend(connect_to_labels.get_labels(diff_structure))
     logger.info(list_of_tests)

@@ -2,12 +2,14 @@ import re
 import os
 import fnmatch
 from abc import ABC, abstractmethod
+import jinja2
+from ruamel.yaml import YAML
 
 
 class AbstractAnalysis(ABC):
-    def __init__(self, options, file_record):
+    def __init__(self, file_record):
         self.diff_structure = None
-        self.repository_path = options.repository_path
+        self.repository_path = file_record["repository_path"]
         self.filepath = file_record["filepath"]
         self.content_before = file_record["file_before"]
         self.content_after = file_record["file_after"]
@@ -33,7 +35,7 @@ class AbstractAnalysis(ABC):
                 if subfile == "profiles":
                     profile_folders.append(subfolder)
 
-        find_rule = re.compile("^\s*-\s*" + rule + "\s*$")
+        find_rule = re.compile(r"^\s*-\s*" + rule + r"\s*$")
         for folder in profile_folders:
             for profile in os.listdir(folder + "/profiles"):
                 profile_file = folder + "/profiles/" + profile
@@ -41,8 +43,32 @@ class AbstractAnalysis(ABC):
                     for line in f:
                         if find_rule.search(line):
                             matched_profiles.append(profile_file)
+        
+        return matched_profiles
+
+    def get_rule_profiles(self, rule):
+        matched_profiles = self.find_profiles(rule)
 
         for filepath in matched_profiles:
             parse_file = re.match(r".+/(\w+)/profiles/((?:\w|\-)+)\.profile", filepath)
             matched_profiles.append(parse_file.group(2))
-            # print(parse_file.group(1) + " " + parse_file.group(2))
+        
+        return matched_profiles
+
+    def get_rule_products(self, rule):
+        matched_profiles = self.find_profiles(rule)
+
+        for filepath in matched_profiles:
+            parse_file = re.match(r".+/(\w+)/profiles/((?:\w|\-)+)\.profile", filepath)
+            matched_profiles.append(parse_file.group(1))
+
+        return set(matched_profiles)
+
+    def connect_labels(self):
+        product = "rhel8"
+        yaml = YAML(typ="safe")
+        template_loader = jinja2.FileSystemLoader(searchpath="./")
+        template_env = jinja2.Environment(loader=template_loader)
+        yaml_content = yaml.load(template_env.get_template("test_labels.yml").render(product=product))
+        print(yaml_content["rule_ansible"])
+        exit()

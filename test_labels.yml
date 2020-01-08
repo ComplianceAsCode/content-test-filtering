@@ -1,3 +1,9 @@
+{% set project_prefix = "" %}
+
+{% set datastream_build = "build_product " + product %}
+{% set datastream_file = "build/ssg-" + product + "-ds.xml" %}
+
+
 file_type:
     yaml:
             - YAMLlint
@@ -24,8 +30,7 @@ profile:
                 - test_suite.py profile ... e8
 
 rule_ansible:
-        - test_suite.py --remediate ansible %rule_name%
+        - test_suite.py rule --remediate ansible {{ datastream_file }}
 
 rule_bash:
-        - test_suite.py --remediate bash %rule_name%
-
+        - test_suite.py rule --remediate bash {{ build_datastream }}

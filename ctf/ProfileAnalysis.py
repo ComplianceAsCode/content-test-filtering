@@ -2,50 +2,35 @@ import logging
 import yaml
 from deepdiff import DeepDiff
 from ctf.AbstractAnalysis import AbstractAnalysis
-from ctf.DiffStructure import ProfileDiffStruct, ProductType, ProfileType, \
-                              ChangeType
+from ctf.DiffStructure import ProfileDiffStruct, ProductType, PRODUCT_TYPE, \
+                            ProfileType, PROFILE_TYPE, ChangeType
 
 logger = logging.getLogger("content-test-filtering.diff_analysis")
 
 
 class ProfileAnalysis(AbstractAnalysis):
-    def __init__(self, *args):
-        super(ProfileAnalysis, self).__init__(*args)
+    def __init__(self, file_record):
+        super().__init__(file_record)
         self.diff_structure = ProfileDiffStruct()
         self.calculate_properties()
 
-    # @property
-    # def filepath(self):
-    #     return self._filepath
-
-    # @filepath.setter
     def calculate_properties(self):
         #self._filepath = path
         path = self.filepath.split("/")
-        if path[0] == "rhel6":
-            self.diff_structure.product = ProductType.RHEL6
-        elif path[0] == "rhel7":
-            self.diff_structure.product = ProductType.RHEL7
-        elif path[0] == "rhel8":
-            self.diff_structure.product = ProductType.RHEL8
-        else:
-            self.diff_structure.product = ProductType.OTHER
+        try:
+            self.diff_structure.product = PRODUCT_TYPE[path[0]]
+        except KeyError:
+            self.diff_structure.product = PRODUCT_TYPE["unknown"]
 
-        profile = path[-1].split(".")[0]
-        if profile == "ospp":
-            self.diff_structure.profile = ProfileType.OSPP
-        elif profile == "pci-dss":
-            self.diff_structure.profile = ProfileType.PCI_DSS
-        elif profile == "ncp":
-            self.diff_structure.profile = ProfileType.NCP
-        elif profile == "disa-stig":
-            self.diff_structure.profile = ProfileType.DISA_STIG
-        else:
-            self.diff_structure.profile = ProfileType.OTHER
+        profile_file = path[-1]
+        profile = profile_file.split(".")[-1]
+        try:
+            self.diff_structure.profile = PROFILE_TYPE[profile]
+        except KeyError:
+            self.diff_structure.profile = PROFILE_TYPE["unknown"]
 
     def iterate_changed_rules(self, items):
         items_list = []
-
         self.diff_structure.change_type = ChangeType.IMPORTANT
 
         for key, value in items:
@@ -60,13 +45,14 @@ class ProfileAnalysis(AbstractAnalysis):
     def item_removed(self, items):
         self.diff_structure.rules_removed = self.iterate_changed_rules(items)
 
-    def check_changed_values(self, values):
+    def check_changed_values(self, items):
         for key, value in items:
             if "root['documentation_complete']" in key or \
                     "root['description']" in key or \
                     "root['title']" in key:
                 self.diff_structure.change_type = ChangeType.NOT_IMPORTANT
-
+            elif "root['selections']" in key:
+                rules_changed = self.iterate_changed_rules(items)
 
     def process_analysis(self):
         logger.info("Analyzing profile file " + self.filepath)
@@ -89,8 +75,5 @@ class ProfileAnalysis(AbstractAnalysis):
         if "iterable_item_removed" in deep_diff:
             self.item_removed(deep_diff["iterable_item_removed"].items())
 
-        logger.info("Added rules - ")
-        print(self.diff_structure.rules_added)
-        logger.info("Removed rules - ")
-        print(self.diff_structure.rules_removed)
-        self.find_profiles("package_talk_removed")
+        logger.info("Added rules - %s", self.diff_structure.rules_added)
+        logger.info("Removed rules - %s", self.diff_structure.rules_removed)

@@ -1,5 +1,6 @@
 import logging
-import yaml
+import jinja2
+from ruamel.yaml import YAML
 
 
 logger = logging.getLogger("content-test-filtering.connect_to_labels")
@@ -7,16 +8,16 @@ TEST_LABELS = "test_labels.yml"
 
 
 def get_labels(diff_structure):
-    with open(TEST_LABELS, "r") as labels_file:
-        try:
-            labels = yaml.safe_load(labels_file)
-        except yaml.YAMLError as e:
-            print(e)
+    yaml = YAML(typ="safe")
+    template_loader = jinja2.FileSystemLoader(searchpath="./")
+    template_env = jinja2.Environment(loader=template_loader)
+    yaml_content = yaml.load(template_env.get_template(TEST_LABELS).render(
+        product=diff_structure.affected_entities["product"]))
 
     entities = diff_structure.affected_entities
 
     list_of_tests = []
-    for x in traverse_dict(labels, entities):
+    for x in traverse_dict(yaml_content, entities):
         list_of_tests.extend(x)
     #traverse_dict(labels, entities, list_of_tests)
 

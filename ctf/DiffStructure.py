@@ -13,6 +13,13 @@ class ProductType:
     RHEL8 = 3
     OTHER = 4
 
+PRODUCT_TYPE = {
+    "rhel6": ProductType.RHEL6,
+    "rhel7": ProductType.RHEL7,
+    "rhel8": ProductType.RHEL8,
+    "unknown": ProductType.OTHER
+}
+
 
 class ProfileType:
     OSPP = 1
@@ -20,6 +27,14 @@ class ProfileType:
     NCP = 3
     DISA_STIG = 4
     OTHER = 5
+
+PROFILE_TYPE = {
+    "ospp": ProfileType.OSPP,
+    "pci-dss": ProfileType.PCI_DSS,
+    "ncp": ProfileType.NCP,
+    "disa-stig": ProfileType.DISA_STIG,
+    "unknown": ProfileType.OTHER
+}
 
 
 class ChangeType:
@@ -40,7 +55,7 @@ class AbstractDiffStruct(ABC):
         self.affected_entities = {}
 
     def __repr__(self):
-        return self.diff_type
+        return self.file_type
 
     @abstractmethod
     def compute_dependencies(self):
@@ -68,12 +83,8 @@ class ProfileDiffStruct(AbstractDiffStruct):
             self.add_affected_product()
 
     def add_affected_product(self):
-        if self.product is ProductType.RHEL6:
-            self.affected_entities["product"] = "rhel6"
-        elif self.product is ProductType.RHEL7:
-            self.affected_entities["product"] = "rhel7"
-        elif self.product is ProductType.RHEL8:
-            self.affected_entities["product"] = "rhel8"
+        self.affected_entities["product"] = list(PRODUCT_TYPE.keys())[
+            list(PRODUCT_TYPE.values()).index(self.product)]
 
     def add_affected_profile(self):
         if self.profile is ProfileType.OSPP:

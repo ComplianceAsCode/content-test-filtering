@@ -98,8 +98,10 @@ def get_git_diff_files(options):
 
         file_record["flag"] = flag
         file_record["filepath"] = filepath
+        file_record["repository_path"] = repo_path
         file_record["file_before"] = file_before
         file_record["file_after"] = file_after
+
         changed_files.append(file_record)
 
     return changed_files

@@ -1,21 +1,20 @@
 import logging
 import re
-from .AbstractAnalysis import AbstractAnalysis
-from .ProfileAnalysis import ProfileAnalysis
-from .AnsibleAnalysis import AnsibleAnalysis
+from ctf.AbstractAnalysis import AbstractAnalysis
+from ctf.ProfileAnalysis import ProfileAnalysis
+from ctf.AnsibleAnalysis import AnsibleAnalysis
 
 logger = logging.getLogger("content-test-filtering.diff_analysis")
 
 
-def analyse_file(options, file_record):
+def analyse_file(file_record):
     file_analyzer = None
-    print("+" + file_record["filepath"] + "+")
-
+    print(file_record)
     if file_record["filepath"].endswith(".profile"):
-        file_analyzer = ProfileAnalysis(options, file_record)
-    elif re.match(r".+/ansible/.+\.yml",file_record["filepath"]):
-        file_analyzer = AnsibleAnalysis(options, file_record)
+        file_analyzer = ProfileAnalysis(file_record)
+    elif re.match(r".+/ansible/\w+\.yml", file_record["filepath"]):
+        file_analyzer = AnsibleAnalysis(file_record)
     else:
-        return
+        return None
 
     return file_analyzer.analyse()

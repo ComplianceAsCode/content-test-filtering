@@ -8,8 +8,8 @@ logger = logging.getLogger("content-test-filtering.diff_analysis")
 
 
 class AnsibleAnalysis(AbstractAnalysis):
-    def __init__(self, *args):
-        super().__init__(*args)
+    def __init__(self, file_record):
+        super().__init__(file_record)
         self.diff_structure = AnsibleDiffStruct()
         self.calculate_properties()
 
