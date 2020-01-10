@@ -3,6 +3,8 @@
 {% set datastream_build = "build_product " + product %}
 {% set datastream_file = "build/ssg-" + product + "-ds.xml" %}
 
+prepare_product:
+        - {{ datastream_build }}
 
 file_type:
     yaml:
@@ -30,7 +32,7 @@ profile:
                 - test_suite.py profile ... e8
 
 rule_ansible:
-        - test_suite.py rule --remediate ansible {{ datastream_file }}
+        - test_suite.py rule --remediate ansible {{ datastream_file }} %rule_ansible%
 
 rule_bash:
-        - test_suite.py rule --remediate bash {{ build_datastream }}
+        - test_suite.py rule --remediate bash {{ build_datastream }} %rule_bash%

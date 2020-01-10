@@ -9,7 +9,7 @@ logger = logging.getLogger("content-test-filtering.diff_analysis")
 
 def analyse_file(file_record):
     file_analyzer = None
-    print(file_record)
+
     if file_record["filepath"].endswith(".profile"):
         file_analyzer = ProfileAnalysis(file_record)
     elif re.match(r".+/ansible/\w+\.yml", file_record["filepath"]):

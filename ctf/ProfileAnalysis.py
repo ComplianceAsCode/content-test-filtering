@@ -23,7 +23,7 @@ class ProfileAnalysis(AbstractAnalysis):
             self.diff_structure.product = PRODUCT_TYPE["unknown"]
 
         profile_file = path[-1]
-        profile = profile_file.split(".")[-1]
+        profile = profile_file.split(".")[0]
         try:
             self.diff_structure.profile = PROFILE_TYPE[profile]
         except KeyError:

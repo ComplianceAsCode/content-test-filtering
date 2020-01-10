@@ -16,9 +16,14 @@ if __name__ == '__main__':
     logger.info("Getting files from 'git diff'")
     list_of_files = diff.get_git_diff_files(options)
     list_of_tests = []
+    diff_struct_list = []
+
     for file_record in list_of_files:
         diff_structure = diff_analysis.analyse_file(file_record)
         diff_structure.compute_dependencies()
-        list_of_tests.extend(connect_to_labels.get_labels(diff_structure))
+        diff_struct_list.append(diff_structure)
+
+    list_of_tests = connect_to_labels.get_labels(diff_struct_list)
+    
     logger.info(list_of_tests)
     logger.info("Finished")

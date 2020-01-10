@@ -82,6 +82,8 @@ class ProfileDiffStruct(AbstractDiffStruct):
         if self.change_type is ChangeType.IMPORTANT:
             self.add_affected_product()
 
+        self.test_added_rules()
+
     def add_affected_product(self):
         self.affected_entities["product"] = list(PRODUCT_TYPE.keys())[
             list(PRODUCT_TYPE.values()).index(self.product)]
@@ -89,6 +91,9 @@ class ProfileDiffStruct(AbstractDiffStruct):
     def add_affected_profile(self):
         if self.profile is ProfileType.OSPP:
             self.affected_entities["profile"] = "ospp"
+
+    def test_added_rules(self):
+        self.affected_entities["rule_bash"] = self.rules_removed 
 
 
 class AnsibleDiffStruct(AbstractDiffStruct):
