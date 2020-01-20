@@ -11,12 +11,14 @@ logger = logging.getLogger("content-test-filtering.diff_analysis")
 class ProfileAnalysis(AbstractAnalysis):
     def __init__(self, file_record):
         super().__init__(file_record)
-        self.diff_structure = ProfileDiffStruct()
-        self.calculate_properties()
+        self.diff_struct = ProfileDiffStruct()
+        path = self.file_path.split("/")
+        self.product = path[0]
+        self.profile = path[-1].split(".")[0]
 
     def calculate_properties(self):
         #self._filepath = path
-        path = self.filepath.split("/")
+        path = self.file_path.split("/")
         try:
             self.diff_structure.product = PRODUCT_TYPE[path[0]]
         except KeyError:
@@ -47,24 +49,30 @@ class ProfileAnalysis(AbstractAnalysis):
 
     def check_changed_values(self, items):
         for key, value in items:
-            if "root['documentation_complete']" in key or \
-                    "root['description']" in key or \
-                    "root['title']" in key:
-                self.diff_structure.change_type = ChangeType.NOT_IMPORTANT
-            elif "root['selections']" in key:
+            if "root['selections']" in key:
                 rules_changed = self.iterate_changed_rules(items)
+            else:
+                return
+            # "root['documentation_complete']" in key or \
+            #        "root['description']" in key or \
+            #        "root['title']" in key:
 
     def process_analysis(self):
-        logger.info("Analyzing profile file " + self.filepath)
+        logger.info("Analyzing profile file " + self.file_path)
 
         data_map_before = yaml.safe_load(self.content_before)
         data_map_after = yaml.safe_load(self.content_after)
 
-        # Find differencies in two dictionaries
+        # Find differencies in two dictionaries and ignore order
         deep_diff = DeepDiff(data_map_before, data_map_after, ignore_order=True)
 
-        # Check what values got changed - in this case it can be
-        # changed description/documentation_complete/title
+        # Some key was added/removed - need to validate the profile with build
+        if "dictionary_item_added" in deep_diff or \
+                "dictionary_item_removed" in deep_diff or \
+                "type_changes" in deep_diff:
+            self.diff_struct.products[self.product] = self.profile
+
+        # Check what values got changed
         if "values_changed" in deep_diff:
             values_changed = deep_diff["values_changed"].keys()
             self.check_changed_values(values_changed)

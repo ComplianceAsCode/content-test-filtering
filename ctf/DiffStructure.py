@@ -52,6 +52,7 @@ class AbstractDiffStruct(ABC):
         self.file_type = None
         self.change_type = ChangeType.OTHER
         self.filepath = None
+        self.filename = None
         self.affected_entities = {}
 
     def __repr__(self):

@@ -90,14 +90,14 @@ def get_git_diff_files(options):
         file_before = None
         file_after = None
 
-        flag, filepath = git_line.split("\t")  # Parse flag and filepath
+        flag, file_path = git_line.split("\t")  # Parse flag and filepath
         if flag != 'A':  # If file wasn't added, we have previous version
-            file_before = repo.git.show(compare_commit + ":./" + filepath)
+            file_before = repo.git.show(compare_commit + ":./" + file_path)
         if flag != 'D':  # If file wasn't deleted, we have new version
-            file_after = repo.git.show("HEAD:./" + filepath)
+            file_after = repo.git.show("HEAD:./" + file_path)
 
         file_record["flag"] = flag
-        file_record["filepath"] = filepath
+        file_record["file_path"] = file_path
         file_record["repository_path"] = repo_path
         file_record["file_before"] = file_before
         file_record["file_after"] = file_after

@@ -14,11 +14,11 @@ logger.addHandler(console_handler)
 if __name__ == '__main__':
     options = cli.parse_args()
     logger.info("Getting files from 'git diff'")
-    list_of_files = diff.get_git_diff_files(options)
     list_of_tests = []
     diff_struct_list = []
+    changed_files = diff.get_git_diff_files(options)
 
-    for file_record in list_of_files:
+    for file_record in changed_files:
         diff_structure = diff_analysis.analyse_file(file_record)
         diff_structure.compute_dependencies()
         diff_struct_list.append(diff_structure)
