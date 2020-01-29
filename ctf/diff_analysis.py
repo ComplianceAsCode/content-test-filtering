@@ -10,13 +10,17 @@ logger = logging.getLogger("content-test-filtering.diff_analysis")
 def analyse_file(file_record):
     file_analyzer = None
 
+    # profile
     if file_record["file_path"].endswith(".profile"):
         file_analyzer = ProfileAnalysis(file_record)
-    elif re.match(r".+/ansible/\w+\.yml", file_record["file_path"]):
+    # ansible remediation
+    elif re.match(r".+/ansible/\w+\.yml$", file_record["file_path"]):
         file_analyzer = AnsibleAnalysis(file_record)
-    elif re.match(r".+/bash/\w+.sh", file_record["file_path"]):
+    # bash remediation
+    elif re.match(r".+/bash/\w+.sh$", file_record["file_path"]):
         raise NotImplementedError
-    elif re.match(r".+/oval/\w+.xml", file_record["file_path"]):
+    # oval
+    elif re.match(r".+/oval/\w+.xml$", file_record["file_path"]):
         raise NotImplementedError
     else:
         return None

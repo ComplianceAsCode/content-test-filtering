@@ -2,7 +2,7 @@ import re
 import logging
 import yaml
 from ctf.AbstractAnalysis import AbstractAnalysis
-from ctf.DiffStructure import AnsibleDiffStruct
+from ctf.DiffStructure_old import AnsibleDiffStruct
 
 logger = logging.getLogger("content-test-filtering.diff_analysis")
 

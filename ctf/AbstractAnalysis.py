@@ -10,7 +10,7 @@ class AbstractAnalysis(ABC):
     def __init__(self, file_record):
         self.diff_structure = None
         self.repository_path = file_record["repository_path"]
-        self.file_path = file_record["filepath"]
+        self.file_path = file_record["file_path"]
         self.file_name = self.file_path.split("/")[-1]
         self.content_before = file_record["file_before"]
         self.content_after = file_record["file_after"]

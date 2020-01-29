@@ -2,11 +2,9 @@ from abc import ABC, abstractmethod
 
 
 class AbstractDiffStruct(ABC):
-    def __init__(self):
-        self.file_path = None
-        self.file_name = None
-        self.rules = {}
-        self.products = {}
+    def __init__(self, file_path, file_name):
+        self.file_path = file_path
+        self.file_name = file_name 
         self.file_type = None
     
     @abstractmethod
