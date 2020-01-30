@@ -11,8 +11,12 @@ def parse_args():
                                      "compare, default is \"master\" branch"))
     common_parser.add_argument("--repository", dest="repository_path",
                                help=("Path to ComplianceAsCode repository. "
-                                      "If not provided, the repository will be"
+                                      "If not provided, the repository will be "
                                       "cloned into /tmp folder."))
+
+    common_parser.add_argument("--local-branch", dest="local_branch", default=False,
+                              action="store_true", help="Do not pull from remote, "
+                              "use local branches. Mainly for testing purposes.")
 
     subparsers = parser.add_subparsers(dest="subcommand",
                                        help="Subcommands: pr, branch")

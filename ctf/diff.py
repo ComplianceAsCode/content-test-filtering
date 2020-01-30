@@ -16,8 +16,9 @@ def fetch_pr(remote, pr_number):
     return target_branch
 
 
-def fetch_branch(remote, branch_name):
-    remote.fetch(branch_name + ":" + branch_name, force=True)
+def fetch_branch(remote, branch_name, local_branch=False):
+    if not local_branch:
+        remote.fetch(branch_name + ":" + branch_name, force=True)
     return branch_name
 
 
@@ -25,7 +26,6 @@ def get_git_diff_files(options):
     base_branch = options.base_branch
     repo_path = options.repository_path
     changed_files = []
-    print(repo_path)
 
     # Create a new temporary dictory if it does not exist
     if repo_path is not None and not os.path.isdir(repo_path):
@@ -39,7 +39,9 @@ def get_git_diff_files(options):
 
     repo = Repo(repo_path)
     repo.git.checkout(base_branch)
-    repo.remotes.origin.pull()
+
+    if not options.local_branch:
+        repo.remotes.origin.pull()
 
     # Set upstream as remote
     # TODO: Add custom remote option
@@ -52,7 +54,7 @@ def get_git_diff_files(options):
     if options.subcommand == "pr":
         target_branch = fetch_pr(remote, options.pr_number)
     elif options.subcommand == "base_branch":
-        target_branch = fetch_branch(remote, options.branch)
+        target_branch = fetch_branch(remote, options.branch, options.local_branch)
     else:
         raise "Unknown target"
     logger.info("Fetched to " + target_branch + " branch")
@@ -84,7 +86,7 @@ def get_git_diff_files(options):
 
     git_diff = repo.git.diff("--name-status", compare_commit + "..HEAD")
 
-    # M,A,D,Rxxx
+    # Flags: M (modified), A (added), D (deleted), Rxxx (renamed)
     for git_line in git_diff.splitlines():
         file_record = dict()
         file_before = None

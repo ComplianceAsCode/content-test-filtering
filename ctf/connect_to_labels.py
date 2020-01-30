@@ -7,10 +7,18 @@ logger = logging.getLogger("content-test-filtering.connect_to_labels")
 TEST_LABELS = "test_labels.yml"
 
 
-def get_labels(diff_structure):
+def get_labels(diff_struct):
     yaml = YAML(typ="safe")
     template_loader = jinja2.FileSystemLoader(searchpath="./")
     template_env = jinja2.Environment(loader=template_loader)
+
+    tests = {}
+
+    diff_struct.fill_tests(tests)
+
+
+
+
 
     list_of_tests = []
     for struct in diff_structure:

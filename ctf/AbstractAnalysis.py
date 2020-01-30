@@ -72,4 +72,3 @@ class AbstractAnalysis(ABC):
         template_env = jinja2.Environment(loader=template_loader)
         yaml_content = yaml.load(template_env.get_template("test_labels.yml").render(product=product))
         print(yaml_content["rule_ansible"])
-        exit()

@@ -9,7 +9,12 @@ class ProfileDiffStruct(AbstractDiffStruct):
         self.product = None
         self.profile = None
         self.base_profile = None
-        self.new_rules = {}
+        self.added_rules = []
+        self.removed_rules = []
 
     def compute_dependencies(self):
+        pass
+
+    def fill_tests(self, tests):
+        tests[self.product] = self.profile
         pass

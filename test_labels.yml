@@ -8,22 +8,11 @@ prepare_product:
 
 file_type:
     yaml:
-            - YAMLlint
+            - /usr/bin/YAMLlint {{ file_path }}
     python:
             - Pylint
     bash:
             - ShellCheck
-
-product:
-        rhel6:
-                - ospp
-        rhel7:
-                - build_product rhel7
-        rhel8:
-                - ospp
-                - e8
-                - pci-dss
-                - disa-stig
 
 profile:
         ospp:
