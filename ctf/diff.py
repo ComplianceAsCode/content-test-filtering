@@ -97,6 +97,7 @@ def get_git_diff_files(options):
             file_before = repo.git.show(compare_commit + ":./" + file_path)
         if flag != 'D':  # If file wasn't deleted, we have new version
             file_after = repo.git.show("HEAD:./" + file_path)
+        # diff = repo.git.diff(compare_commit + ":./" + file_path, "HEAD:./" + file_path)
 
         file_record["flag"] = flag
         file_record["file_path"] = file_path

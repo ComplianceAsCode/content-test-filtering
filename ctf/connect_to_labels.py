@@ -7,40 +7,66 @@ logger = logging.getLogger("content-test-filtering.connect_to_labels")
 TEST_LABELS = "test_labels.yml"
 
 
-def get_labels(diff_struct):
+def get_labels(content_tests):
     yaml = YAML(typ="safe")
     template_loader = jinja2.FileSystemLoader(searchpath="./")
     template_env = jinja2.Environment(loader=template_loader)
+    tests = []
 
-    tests = {}
-
-    diff_struct.fill_tests(tests)
-
-
-
-
-
-    list_of_tests = []
-    for struct in diff_structure:
-        entity = struct.affected_entities
+    for product in content_tests.product_build:
         yaml_content = yaml.load(template_env.get_template(TEST_LABELS).render(
-            product=entity["product"]))
-        file_tests = yaml_content["prepare_product"]
-        delete_list = []
-        for key, value in entity.items():
-            if isinstance(value, list):
-                with_key = [s for s in file_tests if "%"+key+"%" in s]
-                for x in value:
-                    for y in with_key:
-                        f = y.replace("%"+key+"%", x)
-                        file_tests.append(f)
-                delete_list.append(key)
-        for item in delete_list:
-            entity.pop(item)
-        for x in traverse_dict(yaml_content, entity):
-            file_tests.extend(x)
+            product=product.product)
+        )
+        build = yaml_content["prepare_product"]
+        tests.append(build)
 
-        list_of_tests.append(file_tests)
+    for profile in content_tests.profiles:
+        yaml_content = yaml.load(template_env.get_template(TEST_LABELS).render(
+            product=profile.product)
+        )
+        build = yaml_content["prepare_product"]
+        tests.append(build)
+        profile_test = yaml_content["profile"]
+        profile_test = profile_test.replace("%profile_name%", profile.profile)
+        tests.append(profile_test)
+        yaml_test = yaml_content["yaml"]
+        yaml_test = yaml_test.replace("%file_path%", profile.absolute_path)
+        tests.append(yaml_test)
+        
+    for rule in content_tests.rules:
+        yaml_content = yaml.load(template_env.get_template(TEST_LABELS).render(
+            product=rule.product)
+        )
+        build = yaml_content["prepare_product"]
+        tests.append(build)
+        remediation_type = "rule_ansible" if rule.remediation is "ansible" else "rule_bash"
+        rule_test_base = yaml_content[remediation_type]
+        for rule_name in rule.rules_list:
+            rule_test = rule_test_base.replace("%rule_name%", rule_name)
+            tests.append(rule_test)
+        yaml_test = yaml_content
+
+    #list_of_tests = []
+    #for struct in diff_structure:
+    #    entity = struct.affected_entities
+    #    yaml_content = yaml.load(template_env.get_template(TEST_LABELS).render(
+    #        product=entity["product"]))
+    #    file_tests = yaml_content["prepare_product"]
+    #    delete_list = []
+    #    for key, value in entity.items():
+    #        if isinstance(value, list):
+    #            with_key = [s for s in file_tests if "%"+key+"%" in s]
+    #            for x in value:
+    #                for y in with_key:
+    #                    f = y.replace("%"+key+"%", x)
+    #                    file_tests.append(f)
+    #            delete_list.append(key)
+    #    for item in delete_list:
+    #        entity.pop(item)
+    #    for x in traverse_dict(yaml_content, entity):
+    #        file_tests.extend(x)
+
+    #    list_of_tests.append(file_tests)
     
 #     entities = diff_structure.affected_entities
 # 
@@ -49,7 +75,7 @@ def get_labels(diff_struct):
 #         list_of_tests.extend(x)
 #     #traverse_dict(labels, entities, list_of_tests)
 
-    return list_of_tests
+    return tests
 
 
 def traverse_dict(labels, entities):

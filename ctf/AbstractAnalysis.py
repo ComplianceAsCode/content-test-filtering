@@ -8,10 +8,11 @@ from ruamel.yaml import YAML
 
 class AbstractAnalysis(ABC):
     def __init__(self, file_record):
-        self.diff_structure = None
+        self.diff_struct = None
         self.repository_path = file_record["repository_path"]
-        self.file_path = file_record["file_path"]
-        self.file_name = self.file_path.split("/")[-1]
+        self.filepath = file_record["file_path"]
+        self.file_name = self.filepath.split("/")[-1]
+        self.absolute_path = self.repository_path + "/" + self.filepath
         self.content_before = file_record["file_before"]
         self.content_after = file_record["file_after"]
 
@@ -21,7 +22,7 @@ class AbstractAnalysis(ABC):
 
     def analyse(self):
         self.process_analysis()
-        return self.diff_structure
+        return self.diff_struct
 
     def find_profiles(self, rule):
         profile_folders = []
@@ -49,21 +50,22 @@ class AbstractAnalysis(ABC):
 
     def get_rule_profiles(self, rule):
         matched_profiles = self.find_profiles(rule)
+        profiles = []
 
         for filepath in matched_profiles:
-            parse_file = re.match(r".+/(\w+)/profiles/((?:\w|\-)+)\.profile", filepath)
-            matched_profiles.append(parse_file.group(2))
+            parse_file = re.match(r".+/(?:\w+)/profiles/(\w|-)+\.profile", filepath)
+            profiles.append(parse_file.group(1))
         
-        return matched_profiles
+        return profiles
 
     def get_rule_products(self, rule):
         matched_profiles = self.find_profiles(rule)
-
+        products = []
         for filepath in matched_profiles:
-            parse_file = re.match(r".+/(\w+)/profiles/((?:\w|\-)+)\.profile", filepath)
-            matched_profiles.append(parse_file.group(1))
+            parse_file = re.match(r".+/(\w+)/profiles/(?:\w|-)+\.profile", filepath)
+            products.append(parse_file.group(1))
 
-        return set(matched_profiles)
+        return products
 
     def connect_labels(self):
         product = "rhel8"

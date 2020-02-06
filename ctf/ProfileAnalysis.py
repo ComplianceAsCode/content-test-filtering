@@ -3,8 +3,6 @@ import yaml
 from deepdiff import DeepDiff
 from ctf.AbstractAnalysis import AbstractAnalysis
 from ctf.ProfileDiff import ProfileDiffStruct
-#from ctf.DiffStructure import ProfileDiffStruct, ProductType, PRODUCT_TYPE, \
-#                            ProfileType, PROFILE_TYPE, ChangeType
 
 logger = logging.getLogger("content-test-filtering.diff_analysis")
 
@@ -15,11 +13,11 @@ FILTER_LIST = ["root['documentation_complete']", "root['title']",
 class ProfileAnalysis(AbstractAnalysis):
     def __init__(self, file_record):
         super().__init__(file_record)
-        self.diff_struct = ProfileDiffStruct(self.file_path, self.file_name)
-        path = self.file_path.split("/")
+        self.diff_struct = ProfileDiffStruct(self.absolute_path)
+        path = self.filepath.split("/")
         # format: PRODUCT/profiles/PROFILE.profile
-        self.diff_struct.product = path[0]
-        self.diff_struct.profile = path[-1].split(".")[0]
+        self.product = path[0]
+        self.profile = path[-1].split(".")[0]
 
     def iterate_changed_rules(self, items):
         items_list = []
@@ -31,44 +29,40 @@ class ProfileAnalysis(AbstractAnalysis):
         return items_list
 
     def item_added(self, items):
-        self.add_profile_test()
-        self.diff_struct.added_rules = self.iterate_changed_rules(items)
+        self.add_profile_information()
+        self.diff_struct.added_rules.update(self.iterate_changed_rules(items))
 
     def item_removed(self, items):
-        self.add_profile_test()
-        self.diff_struct.removed_rules = self.iterate_changed_rules(items)
+        self.add_profile_information()
+        self.diff_struct.removed_rules.update(self.iterate_changed_rules(items))
 
     def check_changed_values(self, items):
-        for key, value in items:
+        for key in items:
             if "root['selections']" in key:
-                self.diff_struct.added_rules = self.iterate_changed_rules(items)
+                self.diff_struct.added_rules.update(self.iterate_changed_rules(items))
 
-    def add_profile_test(self):
+    def add_profile_information(self):
         # Already defined for the file
         if self.diff_struct.product is not None and \
             self.diff_struct.profile is not None:
             pass
 
-        folders = self.diff_struct.file_path.split("/")
-        profile_file = folders[-1]
-
-        self.diff_struct.product = folders[0]
-        self.diff_struct.profile = profile_file.split(".")[0]
+        self.diff_struct.product = self.product
+        self.diff_struct.profile = self.profile
 
     def dict_added(self, items):
         if len(items) != len(set(items) & set(FILTER_LIST)):
-            self.add_profile_test()
+            self.add_profile_information()
 
     def dict_removed(self, items):
         if len(items) != len(set(items) & set(FILTER_LIST)):
-            self.add_profile_test()
+            self.add_profile_information()
 
     def type_changed(self, items):
-        self.add_profile_test()
-
+        self.add_profile_information()
 
     def process_analysis(self):
-        logger.info("Analyzing profile file " + self.diff_struct.file_path)
+        logger.info("Analyzing profile file " + self.filepath)
 
         # Load previous and new profile
         yaml_before = yaml.safe_load(self.content_before)
@@ -98,5 +92,5 @@ class ProfileAnalysis(AbstractAnalysis):
         if "iterable_item_removed" in deep_diff:
             self.item_removed(deep_diff["iterable_item_removed"].items())
 
-        logger.info("Added rules: %s", " ".join(self.diff_struct.added_rules))
-        logger.info("Removed rules: %s", " ".join(self.diff_struct.removed_rules))
+        logger.info("Added rules to profile: %s", " ".join(self.diff_struct.added_rules))
+        logger.info("Removed rules to profile: %s", " ".join(self.diff_struct.removed_rules))

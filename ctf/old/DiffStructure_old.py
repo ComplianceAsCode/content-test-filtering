@@ -103,8 +103,7 @@ class AnsibleDiffStruct(AbstractDiffStruct):
         self.file_type = DiffFileType.ANSIBLE
         self.rule = None
 
-    def compute_dependencies(self):
-        super().compute_dependencies()
+    def fill_dependencies(self):
         self.add_affected_entities()
 
     def add_affected_entities(self):
