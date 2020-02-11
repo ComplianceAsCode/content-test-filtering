@@ -1,3 +1,6 @@
+import os
+import re
+import yaml
 from ctf.AbstractDiffStruct import AbstractDiffStruct
 from ctf.constants import FileType
 
@@ -11,9 +14,57 @@ class ProfileDiffStruct(AbstractDiffStruct):
         self.base_profile = None
         self.added_rules = set()
         self.removed_rules = set()
+        self.extended_profiles = []
+
+
+    def find_dependent_profiles(self, absolute_path, profile):
+        # No profile - no dependencies
+        if not self.profile:
+            return
+
+        extended_profiles = []
+        folder = os.path.dirname(absolute_path)
+        # Look to profiles for same product
+        for f in os.listdir(folder):
+            # Not a profile file
+            if not f.endswith(".profile"):
+                continue
+
+            filepath = folder + "/" + f
+            with open(filepath, "r") as stream:
+                # Load to dict
+                try:
+                    profile_file = yaml.safe_load(stream)
+                except yaml.YAMLError as e:
+                    print(e)
+
+                # Try get which profile it extends
+                try:
+                    extends = profile_file["extends"]
+                    if extends == profile:
+                        extended_profiles.append(filepath)
+                # Profile does not extend any other profile
+                except KeyError:
+                    pass
+
+        # For each profile which is extended by changed profile
+        # add it for testing and find which profiles they are extended by
+        for f in extended_profiles:
+            path = f.split("/")[-1]
+            profile_name = path.split(".")[0]
+            self.extended_profiles.append(profile_name)
+            self.find_dependent_profiles(f, profile_name)
+        
 
     def fill_tests(self, tests):
+        # Find if changed profile is extended by other profile
+        self.find_dependent_profiles(self.absolute_path, self.profile)
+
         if self.profile and self.product:
             tests.add_profile_test(self.absolute_path, self.profile, self.product)
+
+            for extended in self.extended_profiles:
+                tests.add_profile_test(None, extended, self.product)
+
         if self.added_rules:
             tests.add_rules_test(self.absolute_path, self.profile, self.product, self.added_rules)

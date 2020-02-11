@@ -22,16 +22,20 @@ def get_labels(content_tests):
 
     for profile in content_tests.profiles:
         yaml_content = yaml.load(template_env.get_template(TEST_LABELS).render(
-            product=profile.product)
-        )
+            product=profile.product))
+
         build = yaml_content["prepare_product"]
         tests.append(build)
+
         profile_test = yaml_content["profile"]
         profile_test = profile_test.replace("%profile_name%", profile.profile)
         tests.append(profile_test)
-        yaml_test = yaml_content["yaml"]
-        yaml_test = yaml_test.replace("%file_path%", profile.absolute_path)
-        tests.append(yaml_test)
+        # if the absolute_path is defined, check the syntax
+        # otherwise we don't need to check the syntax (e.g. profile extends the changed one)
+        if profile.absolute_path:
+            yaml_test = yaml_content["yaml"]
+            yaml_test = yaml_test.replace("%file_path%", profile.absolute_path)
+            tests.append(yaml_test)
         
     for rule in content_tests.rules:
         yaml_content = yaml.load(template_env.get_template(TEST_LABELS).render(
