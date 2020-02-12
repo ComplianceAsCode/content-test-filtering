@@ -11,6 +11,7 @@ class AbstractAnalysis(ABC):
         self.diff_struct = None
         self.repository_path = file_record["repository_path"]
         self.filepath = file_record["file_path"]
+        self.file_flag = file_record["flag"]
         self.file_name = self.filepath.split("/")[-1]
         self.absolute_path = self.repository_path + "/" + self.filepath
         self.content_before = file_record["file_before"]

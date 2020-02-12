@@ -64,6 +64,23 @@ class ProfileAnalysis(AbstractAnalysis):
     def process_analysis(self):
         logger.info("Analyzing profile file " + self.filepath)
 
+        # New profile was added to product - test profile and all rules in it
+        if self.file_flag == 'A':
+            logger.info("New profile " + self.profile + " was added.")
+            new_profile = yaml.safe_load(self.content_after)
+            try:
+                rules = new_profile["selections"]
+                self.diff_struct.added_rules = rules 
+            except KeyError:
+                logger.info("New profile doesn't contain any rule.")
+
+            self.add_profile_information()
+            return
+        # Profile was removed - nothing to test
+        elif self.file_flag == 'D':
+            logger.info("Profile " + self.profile + " was removed.")
+            return
+
         # Load previous and new profile
         yaml_before = yaml.safe_load(self.content_before)
         yaml_after = yaml.safe_load(self.content_after)

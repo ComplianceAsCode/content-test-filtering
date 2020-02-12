@@ -89,6 +89,16 @@ class AnsibleAnalysis(AbstractAnalysis):
     def process_analysis(self):
         logger.info("Analyzing ansible file " + self.filepath)
 
+        # New remediation - test it
+        if self.file_flag == 'A':
+            logger.info("New ansible remediation - " + self.filepath)
+            self.add_product_test()
+            self.add_rule_test()
+            return
+        # Remediation removed - nothing to test
+        elif self.file_flag == 'D':
+            logger.info("Removed ansible remediation file - " + self.filepath)
+            return
         was_templated = self.is_templated(self.content_before)
         is_templated = self.is_templated(self.content_after)
 
