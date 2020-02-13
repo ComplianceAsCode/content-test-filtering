@@ -11,4 +11,8 @@ class BashDiffStruct(AbstractDiffStruct):
         self.profile = None
 
     def fill_tests(self, tests):
-        pass
+        if self.product:
+            tests.add_product_build(self.absolute_path, self.product)
+        if self.rule:
+            tests.add_rules_test(self.absolute_path, self.profile,
+                                 self.product, [self.rule], "bash")

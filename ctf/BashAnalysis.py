@@ -1,6 +1,7 @@
 import re
 import logging
 import shlex
+from deepdiff import DeepDiff
 from ctf.AbstractAnalysis import AbstractAnalysis
 from ctf.BashDiff import BashDiffStruct
 
@@ -30,8 +31,24 @@ class BashAnalysis(AbstractAnalysis):
     def add_rule_test(self):
         products = self.get_rule_products(self.rule_name)
         if products:
-            self.diff_struct.produts = products[0]
+            self.diff_struct.product = products[0]
         self.diff_struct.rule = self.rule_name
+
+    def load_diff(self):
+        diff = DeepDiff(self.content_before, self.content_after)
+        diff = diff["values_changed"]["root"]["diff"]
+
+        return diff
+
+    def get_unidiff_changes(self, diff):
+        # Remove unified diff header
+        no_header = re.sub(r"^(\+\+\+\s*|---\s*|@@.+@@)\n", "", diff, flags=re.MULTILINE)
+        # Remove lines that we not changed
+        changes = re.sub(r"^[^+-].*\n?", "", no_header, flags=re.MULTILINE)
+        changes = re.sub(r"^\s*\n", "", changes, flags=re.MULTILINE)
+        changes = [line for line in changes.split("\n") if line.strip() != ""]
+
+        return changes 
 
     def analyse_template(self):
         diff = self.load_diff()
@@ -52,24 +69,20 @@ class BashAnalysis(AbstractAnalysis):
             self.add_rule_test()
 
     def analyse_bash(self):
-        x = shlex.shlex(self.content_before)
-        print(x.get_token())
-        print(x.get_token())
-        print(x.get_token())
-        print(x.get_token())
+        tokens_before = shlex.shlex(self.content_before)
+        tokens_after = shlex.shlex(self.content_after)
 
-        return
-        lines = self.content_before.split("\n")
-        no_comments = [x for x in lines if not re.match(r"^\s*#.*", x)]
-        no_empty = [x for x in no_comments if not re.match(r"^\s*$", x)]
-        print(no_empty)
-        for line in no_empty:
-            print(line)
-            ast_before = bashlex.parse(line)
-            print(ast_before)
-        ast_after = bashlex.parse(self.content_after)
-        print(ast_after)
-        pass
+        token_before = tokens_before.get_token()
+        token_after = tokens_after.get_token()
+        while token_before and token_after:
+            if token_before != token_after:
+                break
+            token_before = tokens_before.get_token()
+            token_after = tokens_after.get_token()
+        
+        if token_before or token_after:
+            self.add_product_test()
+            self.add_rule_test()
 
     def process_analysis(self):
         logger.info("Analyzing bash file " + self.filepath)
