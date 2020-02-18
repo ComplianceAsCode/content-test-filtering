@@ -3,6 +3,11 @@ import logging
 logger = logging.getLogger("content-test-filtering.ContentTests")
 
 
+class PythonTest:
+    def __init__(self, path):
+        self.absolute_path = path
+
+
 class ProductTest:
     def __init__(self, path, product):
         self.absolute_path = path
@@ -42,6 +47,9 @@ class ContentTests:
     def add_rules_test(self, path, profile, product, rules_list, remediation="bash"):
         rules_test = RulesTest(path, profile, product, rules_list, remediation)
         self.rules.append(rules_test)
+
+    def add_python_test(self, path):
+        print("python tests...")
 
     def get_product(self):
         for profile in self.profiles:

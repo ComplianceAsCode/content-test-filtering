@@ -4,6 +4,7 @@ from ctf.AbstractAnalysis import AbstractAnalysis
 from ctf.ProfileAnalysis import ProfileAnalysis
 from ctf.AnsibleAnalysis import AnsibleAnalysis
 from ctf.BashAnalysis import BashAnalysis
+from ctf.PythonAnalysis import PythonAnalysis
 
 logger = logging.getLogger("content-test-filtering.diff_analysis")
 
@@ -18,11 +19,13 @@ def analyse_file(file_record):
     elif re.match(r".+/ansible/\w+\.yml$", file_record["file_path"]):
         file_analyzer = AnsibleAnalysis(file_record)
     # bash remediation
-    elif re.match(r".+/bash/\w+.sh$", file_record["file_path"]):
+    elif re.match(r".+/bash/\w+\.sh$", file_record["file_path"]):
         file_analyzer = BashAnalysis(file_record)
     # oval
-    elif re.match(r".+/oval/\w+.xml$", file_record["file_path"]):
+    elif re.match(r".+/oval/\w+\.xml$", file_record["file_path"]):
         raise NotImplementedError
+    elif re.match(r".+\.py$", file_record["file_path"]):
+        file_analyzer = PythonAnalysis(file_record)
     else:
         return None
 

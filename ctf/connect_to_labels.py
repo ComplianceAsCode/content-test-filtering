@@ -1,15 +1,18 @@
 import logging
 import jinja2
+from pathlib import Path
 from ruamel.yaml import YAML
 
 
 logger = logging.getLogger("content-test-filtering.connect_to_labels")
+
 TEST_LABELS = "test_labels.yml"
 
 
 def get_labels(content_tests):
     yaml = YAML(typ="safe")
-    template_loader = jinja2.FileSystemLoader(searchpath="./")
+    template_loader = jinja2.FileSystemLoader(
+                        searchpath=str(Path(__file__).parent / ".."))
     template_env = jinja2.Environment(loader=template_loader)
     tests = []
 
@@ -36,7 +39,7 @@ def get_labels(content_tests):
             yaml_test = yaml_content["yaml"]
             yaml_test = yaml_test.replace("%file_path%", profile.absolute_path)
             tests.append(yaml_test)
-        
+
     for rule in content_tests.rules:
         yaml_content = yaml.load(template_env.get_template(TEST_LABELS).render(
             product=rule.product)
