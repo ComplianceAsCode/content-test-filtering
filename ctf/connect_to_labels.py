@@ -16,42 +16,56 @@ def get_labels(content_tests):
     template_env = jinja2.Environment(loader=template_loader)
     tests = []
 
-    for product in content_tests.product_build:
+    for product in content_tests.products_affected:
         yaml_content = yaml.load(template_env.get_template(TEST_LABELS).render(
-            product=product.product)
-        )
-        build = yaml_content["prepare_product"]
-        tests.append(build)
+            product=product
+        ))
 
-    for profile in content_tests.profiles:
-        yaml_content = yaml.load(template_env.get_template(TEST_LABELS).render(
-            product=profile.product))
+        if product != "no_product":
+            product_build = yaml_content["prepare_product"]
+            tests.append(product_build)
 
-        build = yaml_content["prepare_product"]
-        tests.append(build)
+        for test in content_tests.test_classes:
+            if test.product == product:
+                test_scenarios = test.get_tests(yaml_content)
+                tests.extend(test_scenarios)
 
-        profile_test = yaml_content["profile"]
-        profile_test = profile_test.replace("%profile_name%", profile.profile)
-        tests.append(profile_test)
-        # if the absolute_path is defined, check the syntax
-        # otherwise we don't need to check the syntax (e.g. profile extends the changed one)
-        if profile.absolute_path:
-            yaml_test = yaml_content["yaml"]
-            yaml_test = yaml_test.replace("%file_path%", profile.absolute_path)
-            tests.append(yaml_test)
+    # for product in content_tests.product_build:
+    #     yaml_content = yaml.load(template_env.get_template(TEST_LABELS).render(
+    #         product=product.product)
+    #     )
+    #     build = yaml_content["prepare_product"]
+    #     tests.append(build)
 
-    for rule in content_tests.rules:
-        yaml_content = yaml.load(template_env.get_template(TEST_LABELS).render(
-            product=rule.product)
-        )
-        build = yaml_content["prepare_product"]
-        tests.append(build)
-        remediation_type = "rule_ansible" if rule.remediation is "ansible" else "rule_bash"
-        rule_test_base = yaml_content[remediation_type]
-        for rule_name in rule.rules_list:
-            rule_test = rule_test_base.replace("%rule_name%", rule_name)
-            tests.append(rule_test)
-        yaml_test = yaml_content
+    # for profile in content_tests.profiles:
+    #     yaml_content = yaml.load(template_env.get_template(TEST_LABELS).render(
+    #         product=profile.product))
+
+    #     build = yaml_content["prepare_product"]
+    #     tests.append(build)
+
+    #     profile_test = yaml_content["profile"]
+    #     profile_test = profile_test.replace("%profile_name%", profile.profile)
+    #     tests.append(profile_test)
+    #     # if the absolute_path is defined, check the syntax
+    #     # otherwise we don't need to check the syntax (e.g. profile extends the changed one)
+    #     if profile.absolute_path:
+    #         yaml_test = yaml_content["yaml"]
+    #         yaml_test = yaml_test.replace("%file_path%", profile.absolute_path)
+    #         tests.append(yaml_test)
+
+    # for rule in content_tests.rules:
+    #     yaml_content = yaml.load(template_env.get_template(TEST_LABELS).render(
+    #         product=rule.product)
+    #     )
+    #     build = yaml_content["prepare_product"]
+    #     tests.append(build)
+    #     remediation_type = "rule_ansible" if rule.remediation is "ansible" else "rule_bash"
+    #     rule_test_base = yaml_content[remediation_type]
+    #     for rule_name in rule.rules_list:
+    #         rule_test = rule_test_base.replace("%rule_name%", rule_name)
+    #         tests.append(rule_test)
+    #     yaml_test = yaml_content
 
     #list_of_tests = []
     #for struct in diff_structure:
