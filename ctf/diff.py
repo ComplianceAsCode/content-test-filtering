@@ -5,6 +5,7 @@ import logging
 import os
 import inspect
 import re
+import subprocess
 
 logger = logging.getLogger("content-test-filtering.diff")
 URL = "https://github.com/ComplianceAsCode/content"
@@ -24,7 +25,7 @@ def fetch_branch(remote, branch_name, local_branch=False):
 
 def get_git_diff_files(options):
     base_branch = options.base_branch
-    repo_path = options.repository_path
+    repo_path = os.path.abspath(options.repository_path)
     changed_files = []
 
     # Create a new temporary dictory if it does not exist
@@ -59,7 +60,20 @@ def get_git_diff_files(options):
         raise "Unknown target"
     logger.info("Fetched to " + target_branch + " branch")
 
+
+    try:
+        os.mkdir(repo_path + "/build_old")
+    except FileExistsError:
+        pass
+
+    try:
+        os.mkdir(repo_path + "/build_new")
+    except FileExistsError:
+        pass
+
+    subprocess.run("cmake ../ && make generate-internal-templated-content-rhel8 generate-internal-templated-content-rhel7", shell=True, cwd=repo_path+"/build_old")
     repo.git.checkout(target_branch)
+    subprocess.run("cmake ../ && make generate-internal-templated-content-rhel8 generate-internal-templated-content-rhel7", shell=True, cwd=repo_path+"/build_new")
 
     # Get SHA-1 for both branches (base and target)
     git_log_base = repo.git.log("--format=%H", base_branch)

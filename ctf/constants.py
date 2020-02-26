@@ -4,6 +4,7 @@ class FileType:
     YAML = 3
     BASH = 4
     OVAL = 5
+    JINJA = 6
 
 
 class ProductType:
