@@ -12,7 +12,8 @@ class AnsibleAnalysis(AbstractAnalysis):
     def __init__(self, file_record):
         super().__init__(file_record)
         self.diff_struct = AnsibleDiffStruct(self.absolute_path)
-        self.rule_name = re.match(r".+/(\w+)/ansible/\w+\.yml$", self.filepath).group(1)
+        self.rule_name = re.match(r".+/(\w+)/ansible/\w+\.yml$",
+                                  self.filepath).group(1)
 
     def is_templated(self, content):
         # Delete template {{{ ... }}}
@@ -44,7 +45,7 @@ class AnsibleAnalysis(AbstractAnalysis):
     def get_unidiff_changes(self, diff):
         # Remove unified diff header
         no_header = re.sub(r"^(\+\+\+\s*|---\s*|@@.+@@)\n", "", diff, flags=re.MULTILINE)
-        # Remove lines that we not changed
+        # Remove lines that were not changed
         changes = re.sub(r"^[^+-].*\n?", "", no_header, flags=re.MULTILINE)
         changes = re.sub(r"^\s*\n", "", changes, flags=re.MULTILINE)
         changes = [line for line in changes.split("\n") if line.strip() != ""]

@@ -42,7 +42,8 @@ class BashAnalysis(AbstractAnalysis):
 
     def get_unidiff_changes(self, diff):
         # Remove unified diff header
-        no_header = re.sub(r"^(\+\+\+\s*|---\s*|@@.+@@)\n", "", diff, flags=re.MULTILINE)
+        no_header = re.sub(r"^(\+\+\+\s*|---\s*|@@.+@@)\n", "", diff,
+                           flags=re.MULTILINE)
         # Remove lines that we not changed
         changes = re.sub(r"^[^+-].*\n?", "", no_header, flags=re.MULTILINE)
         changes = re.sub(r"^\s*\n", "", changes, flags=re.MULTILINE)
@@ -87,10 +88,12 @@ class BashAnalysis(AbstractAnalysis):
     def process_analysis(self):
         logger.info("Analyzing bash file " + self.filepath)
         
+        # It is a new file - perform all tests for it
         if self.file_flag == 'A':
             logger.info("New bash remediation " + self.filepath)
             self.add_product_test()
             self.add_rule_test()
+        # File was removed - inform user and do nothing
         elif self.file_flag == 'D':
             logger.info("Removed bash remediation file " + self.filepath)
             return
@@ -100,6 +103,7 @@ class BashAnalysis(AbstractAnalysis):
 
         if was_templated and is_templated:
             self.analyse_template()
+        # If it was/is templated and it wasn't/isn't, perform all tests
         elif any([was_templated, is_templated]):
             self.add_product_test()
             self.add_rule_test()
