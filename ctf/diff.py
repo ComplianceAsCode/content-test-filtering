@@ -71,9 +71,9 @@ def get_git_diff_files(options):
     except FileExistsError:
         pass
 
-    subprocess.run("cmake ../ && make generate-internal-templated-content-rhel8 generate-internal-templated-content-rhel7", shell=True, cwd=repo_path+"/build_old")
+    #subprocess.run("cmake ../ && make generate-internal-templated-content-rhel8 generate-internal-templated-content-rhel7", shell=True, cwd=repo_path+"/build_old")
     repo.git.checkout(target_branch)
-    subprocess.run("cmake ../ && make generate-internal-templated-content-rhel8 generate-internal-templated-content-rhel7", shell=True, cwd=repo_path+"/build_new")
+    #subprocess.run("cmake ../ && make generate-internal-templated-content-rhel8 generate-internal-templated-content-rhel7", shell=True, cwd=repo_path+"/build_new")
 
     # Get SHA-1 for both branches (base and target)
     git_log_base = repo.git.log("--format=%H", base_branch)
