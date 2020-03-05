@@ -5,8 +5,8 @@ import logging
 from itertools import chain
 from deepdiff import DeepDiff
 from xmldiff import main, formatting, actions
-from ctf.AbstractAnalysis import AbstractAnalysis
-from ctf.OVALDiff import OVALDiffStruct
+from ctf.analysis.AbstractAnalysis import AbstractAnalysis
+from ctf.diffstruct.OVALDiff import OVALDiffStruct
 import xml.etree.ElementTree as ET
 from io import StringIO
 

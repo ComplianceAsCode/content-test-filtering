@@ -1,8 +1,8 @@
 import ast
 import itertools
 import logging
-from ctf.AbstractAnalysis import AbstractAnalysis
-from ctf.PythonDiff import PythonDiffStruct
+from ctf.analysis.AbstractAnalysis import AbstractAnalysis
+from ctf.diffstruct.PythonDiff import PythonDiffStruct
 
 logger = logging.getLogger("content-test-filtering.diff_analysis")
 

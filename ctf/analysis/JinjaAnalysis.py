@@ -6,8 +6,8 @@ import importlib
 import sys
 from io import StringIO
 from deepdiff import DeepDiff
-from ctf.AbstractAnalysis import AbstractAnalysis
-from ctf.JinjaDiff import JinjaDiffStruct
+from ctf.analysis.AbstractAnalysis import AbstractAnalysis
+from ctf.diffstruct.JinjaDiff import JinjaDiffStruct
 from ctf.diff_analysis import analyse_file
 import subprocess
 
@@ -51,13 +51,6 @@ class JinjaMacroChange:
         self.in_templates = set() # TODO - vyplnit + pokud pujde o template, pak poresit
         self.repository_path = repository_path
         self.find_usages()
-        #print("name")
-        #print(self.name)
-        #print("in rules:")
-        #print(self.in_rules)
-        #print("higher rules:")
-        #for m in self.higher_macros:
-        #    print(m.name)
 
     def find_usages(self):
         for root, _, files in os.walk(self.repository_path):

@@ -1,11 +1,12 @@
 import logging
 import re
-from ctf.AbstractAnalysis import AbstractAnalysis
-from ctf.ProfileAnalysis import ProfileAnalysis
-from ctf.AnsibleAnalysis import AnsibleAnalysis
-from ctf.BashAnalysis import BashAnalysis
-from ctf.PythonAnalysis import PythonAnalysis
-from ctf.OVALAnalysis import OVALAnalysis
+import ctf.analysis
+from ctf.analysis.AbstractAnalysis import AbstractAnalysis
+from ctf.analysis.ProfileAnalysis import ProfileAnalysis
+from ctf.analysis.AnsibleAnalysis import AnsibleAnalysis
+from ctf.analysis.BashAnalysis import BashAnalysis
+from ctf.analysis.PythonAnalysis import PythonAnalysis
+from ctf.analysis.OVALAnalysis import OVALAnalysis
 #from ctf.JinjaAnalysis import JinjaAnalysis
 
 logger = logging.getLogger("content-test-filtering.diff_analysis")

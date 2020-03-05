@@ -1,20 +1,22 @@
 import re
 import logging
-import shlex
+import yaml
 from deepdiff import DeepDiff
-from ctf.AbstractAnalysis import AbstractAnalysis
-from ctf.BashDiff import BashDiffStruct
+from ctf.analysis.AbstractAnalysis import AbstractAnalysis
+from ctf.diffstruct.AnsibleDiff import AnsibleDiffStruct
 
 logger = logging.getLogger("content-test-filtering.diff_analysis")
 
 
-class BashAnalysis(AbstractAnalysis):
+class AnsibleAnalysis(AbstractAnalysis):
     def __init__(self, file_record):
         super().__init__(file_record)
-        self.diff_struct = BashDiffStruct(self.absolute_path)
-        self.rule_name = re.match(r".+/(\w+)/bash/\w+\.sh$", self.filepath).group(1)
+        self.diff_struct = AnsibleDiffStruct(self.absolute_path)
+        self.rule_name = re.match(r".+/(\w+)/ansible/\w+\.yml$",
+                                  self.filepath).group(1)
 
     def is_templated(self, content):
+        # Delete template {{{ ... }}}
         no_templates = re.sub(r"^\s*{{{(.|\n)+?}}}\s*$", "", content, flags=re.MULTILINE)
         lines = no_templates.split("\n")
         # Delete empty and commented lines
@@ -42,9 +44,8 @@ class BashAnalysis(AbstractAnalysis):
 
     def get_unidiff_changes(self, diff):
         # Remove unified diff header
-        no_header = re.sub(r"^(\+\+\+\s*|---\s*|@@.+@@)\n", "", diff,
-                           flags=re.MULTILINE)
-        # Remove lines that we not changed
+        no_header = re.sub(r"^(\+\+\+\s*|---\s*|@@.+@@)\n", "", diff, flags=re.MULTILINE)
+        # Remove lines that were not changed
         changes = re.sub(r"^[^+-].*\n?", "", no_header, flags=re.MULTILINE)
         changes = re.sub(r"^\s*\n", "", changes, flags=re.MULTILINE)
         changes = [line for line in changes.split("\n") if line.strip() != ""]
@@ -69,43 +70,46 @@ class BashAnalysis(AbstractAnalysis):
                 continue
             self.add_rule_test()
 
-    def analyse_bash(self):
-        tokens_before = shlex.shlex(self.content_before)
-        tokens_after = shlex.shlex(self.content_after)
+    def analyse_ansible(self):
+        diff = self.load_diff()
+        changes = self.get_unidiff_changes(diff)
 
-        token_before = tokens_before.get_token()
-        token_after = tokens_after.get_token()
-        while token_before and token_after:
-            if token_before != token_after:
-                break
-            token_before = tokens_before.get_token()
-            token_after = tokens_after.get_token()
-        
-        if token_before or token_after:
-            self.add_product_test()
+        for line in changes:
+            if re.match(r"^(\+|-)\s*$", line):
+                continue
+            if re.match(r"^(\+|-)\s*#\s*(platform|reboot|strategy|complexity|disruption)\s*=\s*.*$", line):
+                self.add_product_test()
+                continue
+            if re.match(r"^(\+|-)\s*#.*$", line):
+                continue
+            if re.match(r"^(\+|-)\s*-?\s*name\s*:\s*\S+.*$", line):
+                continue
             self.add_rule_test()
+
 
     def process_analysis(self):
-        logger.info("Analyzing bash file " + self.filepath)
-        
-        # It is a new file - perform all tests for it
+        logger.info("Analyzing ansible file " + self.filepath)
+
+        # New remediation - test it
         if self.file_flag == 'A':
-            logger.info("New bash remediation " + self.filepath)
+            logger.info("New ansible remediation - " + self.filepath)
             self.add_product_test()
             self.add_rule_test()
-        # File was removed - inform user and do nothing
-        elif self.file_flag == 'D':
-            logger.info("Removed bash remediation file " + self.filepath)
             return
-
+        # Remediation removed - nothing to test
+        elif self.file_flag == 'D':
+            logger.info("Removed ansible remediation file - " + self.filepath)
+            return
         was_templated = self.is_templated(self.content_before)
         is_templated = self.is_templated(self.content_after)
 
+        # Was and is templated
         if was_templated and is_templated:
             self.analyse_template()
-        # If it was/is templated and it wasn't/isn't, perform all tests
+        # Changed to template or vice versa
         elif any([was_templated, is_templated]):
             self.add_product_test()
             self.add_rule_test()
+        # Not templated
         else:
-            self.analyse_bash()
+            self.analyse_ansible()

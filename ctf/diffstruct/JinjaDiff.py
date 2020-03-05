@@ -1,4 +1,4 @@
-from ctf.AbstractDiffStruct import AbstractDiffStruct
+from ctf.diffstruct.AbstractDiffStruct import AbstractDiffStruct
 from ctf.constants import FileType
 
 

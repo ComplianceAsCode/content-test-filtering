@@ -1,8 +1,8 @@
 import logging
 import yaml
 from deepdiff import DeepDiff
-from ctf.AbstractAnalysis import AbstractAnalysis
-from ctf.ProfileDiff import ProfileDiffStruct
+from ctf.analysis.AbstractAnalysis import AbstractAnalysis
+from ctf.diffstruct.ProfileDiff import ProfileDiffStruct
 
 logger = logging.getLogger("content-test-filtering.diff_analysis")
 
