@@ -8,8 +8,9 @@ from io import StringIO
 from deepdiff import DeepDiff
 from ctf.analysis.AbstractAnalysis import AbstractAnalysis
 from ctf.diffstruct.JinjaDiff import JinjaDiffStruct
-from ctf.diff_analysis import analyse_file
+#from ctf.diff_analysis import analyse_file
 import subprocess
+
 
 logger = logging.getLogger("content-test-filtering.diff_analysis")
 
@@ -51,6 +52,12 @@ class JinjaMacroChange:
         self.in_templates = set() # TODO - vyplnit + pokud pujde o template, pak poresit
         self.repository_path = repository_path
         self.find_usages()
+
+    @staticmethod
+    def is_valid(filepath):
+        if filepath.endswith(".jinja"):
+            return True
+        return False
 
     def find_usages(self):
         for root, _, files in os.walk(self.repository_path):
@@ -178,14 +185,14 @@ class JinjaAnalysis(AbstractAnalysis):
                     self.diff_struct.affected_files_diffs.append(diff_struct)
 
 
-    def process_analysis(self):
-        logger.info("Analyzing Jinja macro file " + self.filepath)
-
+    def load_diff(self):
         diff = DeepDiff(self.content_before, self.content_after)
         diff = diff["values_changed"]["root"]["diff"]
-        #result = re.findall(r"^@@\s.+\s.+\s@@(?:.|\n)+(?:^@)", diff, flags=re.MULTILINE)
+        return diff
+
+
+    def analyse_jinja_diff(self, diff):
         changes = []
-        changed_lines = []
         for line in diff.split("\n"):
             m = re.match(r"@@\s-(.+)\s\+(.+)\s@@", line)
             if m:
@@ -200,30 +207,51 @@ class JinjaAnalysis(AbstractAnalysis):
             m = re.match(r"^\+([^\+]*)$", line)
             if m:
                 change["changed_lines"].append(m.group(1))
+        return change 
 
-        for i, line in enumerate(self.content_after.split("\n"), start=1):
+
+    def mark_changes_in_content(self, changes, content):
+        changed_lines = []
+        # Find lines in changed part of content (starting and number of
+        # lines is known from unified diff)
+        for i, line in enumerate(content.split("\n"), start=1): # unidiff starts at 1
             for change in changes:
-                if i in range(change["starting_line"], change["starting_line"]+change["number_of_lines"]):
-                    for l in change["changed_lines"]:
-                        if l == line:
-                            changed_lines.append(i)                            
-
-        self.content_after = self.content_after.split("\n")
+                if i not in range(change["starting_line"],
+                                  change["starting_line"]+change["number_of_lines"]):
+                    continue
+                for changed_line in change["changed_lines"]:
+                    if changed_line == line:
+                        changed_lines.append(i-1) # Indexing starts at 0
+        content = content.split("\n")
         for i in changed_lines:
-            self.content_after[i-1] = ">>>>>" + self.content_after[i-1] + "<<<<<"
+            content[i] = ">>>>>" + content[i] + "<<<<<"
+        content = "\n".join(content)
+        return content
 
-        self.content_after = "\n".join(self.content_after)
+        
+    def get_changed_macros(self, all_macros):
+        for macro in all_macros:
+            # Find only macros with our markers
+            if not re.search("(>|<){5}", macro):
+                continue
+            macro = macro.replace(">>>>>", "")
+            macro = macro.replace("<<<<<", "")
+            # Find macro name
+            changed_macro = re.search(r"(?:\s|-)macro(?:\s|\n)+([^(]+)", macro)
+            macro_name = changed_macro.group(1)
+            macro_class = JinjaMacroChange(macro_name, self.repository_path)
+            self.changed_macros.append(macro_class)
 
-        macros = re.findall(r"{{%(?:\s|-|\n|>|<)+?macro(?:\s|\n|<|>)(?:.|\n)+?endmacro(?:\s|-|\n|>|<)+?%}}", self.content_after)
+    def process_analysis(self):
+        logger.info("Analyzing Jinja macro file " + self.filepath)
+        diff = self.load_diff()
+        changes = self.analyse_jinja_diff(diff)
+        marked_changes = self.mark_changes_in_content(changes, self.content_after)
+        all_macros = re.findall(r"{{%(?:\s|-|\n|>|<)+?macro(?:\s|\n|<|>)(?:.|\n)+?endmacro(?:\s|-|\n|>|<)+?%}}",
+                                marked_changes)
+        changed_macros = self.get_changed_macros(all_macros)
 
-        for m in macros:
-            if re.search("(>|<){5}", m):
-                m = m.replace(">>>>>", "")
-                m = m.replace("<<<<<", "")
-                changed_macro = re.search(r"(?:\s|-)macro(?:\s|\n)+([^(]+)", m)
-                macro_name = changed_macro.group(1)
-                macro_class = JinjaMacroChange(macro_name, self.repository_path)
-                self.changed_macros.append(macro_class)
+
         
         self.content_after = self.content_after.replace(">>>>>", "")
         self.content_after = self.content_after.replace("<<<<<", "")
@@ -231,22 +259,3 @@ class JinjaAnalysis(AbstractAnalysis):
             macro.update_all_usages()
 
         self.analyse_macros()
-        #for root, dirs, files in os.walk(self.repository_path):
-        #    for file in files:
-        #        filepath = root + "/" + file
-        #        if filepath.endswith(".pyc") or filepath.endswith(".cache"):
-        #            continue
-        #        with codecs.open(filepath, 'r', encoding='utf-8', errors='ignore') as f:
-        #            for macro in self.changed_macros:
-        #                f.seek(0)
-        #                if macro in f.read():
-        #                    pass
-
-        # udelat objekt, kde bude nazev makra, ve kterych je souborech
-        # s ukazatelem na objekt
-        # objekt bude automaticky hledat sve nadrazene makro a pokud
-        # nebude mit otce, tak to bude None a dulezite budou soubory
-        # ve kterych je
-
-        # pak se vybere nejnadrazenejsi soubor, ten se prelozi pres process_file_with_macros
-        # a ty soubory se pak porovnaji

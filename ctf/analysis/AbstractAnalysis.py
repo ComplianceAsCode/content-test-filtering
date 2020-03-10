@@ -1,19 +1,20 @@
 import re
+import logging
 import os
-import fnmatch
-from abc import ABC, abstractmethod
+from abc import ABCMeta, abstractmethod
+from ctf.diff import git_wrapper
 import jinja2
 from ruamel.yaml import YAML
 
+logger = logging.getLogger("content_test_filtering.diff_analysis")
 
-class AbstractAnalysis(ABC):
+
+class AbstractAnalysis(metaclass=ABCMeta):
     def __init__(self, file_record):
         self.diff_struct = None
-        self.repository_path = file_record["repository_path"]
-        self.filepath = file_record["file_path"]
+        self.filepath = file_record["filepath"]
         self.file_flag = file_record["flag"]
         self.file_name = self.filepath.split("/")[-1]
-        self.absolute_path = self.repository_path + "/" + self.filepath
         self.content_before = file_record["file_before"]
         self.content_after = file_record["file_after"]
 
@@ -21,18 +22,53 @@ class AbstractAnalysis(ABC):
     def process_analysis(self):
         pass
 
+
+    @staticmethod
+    @abstractmethod
+    def is_valid(filepath):
+        return False
+
+
     def analyse(self):
         self.process_analysis()
         return self.diff_struct
 
-    def find_profiles(self, rule):
+
+    def is_added(self):
+        if self.file_flag == "A":
+            logger.info("File %s has been added." % self.filepath)
+            return True
+        return False
+
+
+    def is_removed(self):
+        if self.file_flag == "D":
+            logger.info("File %s has been removed." % self.filepath)
+            return True
+        return False
+
+        
+    def get_repository_files(self):
+        for root, dirs, files in os.walk(git_wrapper.repo_path):
+            dirs[:] = list(filter(lambda x: not x in
+                                  ["build", "build_new", "build_old",
+                                   "docs", "utils", ".git"],
+                                  dirs))
+            #dirs[:] = [d for d in dirs if d not in ["build", "build_new", "build_old", "docs", "utils", ".git"]]
+            for f in files:
+                if f.endswith(".pyc") or f.endswith(".cache"):
+                    continue
+                filepath = root + "/" + f
+                yield filepath
+    
+
+    def find_rule_profiles(self, rule):
         product_folders = []
-        matched_profiles = []
 
         # Walk through project folder and
         # find all folders with subfolder "profiles" (=product folder)
-        for content_file in os.listdir(self.repository_path):
-            subfolder = self.repository_path + "/" + content_file
+        for content_file in os.listdir(git_wrapper.repo_path):
+            subfolder = git_wrapper.repo_path + "/" + content_file
             if not os.path.isdir(subfolder):
                 continue
 
@@ -48,35 +84,23 @@ class AbstractAnalysis(ABC):
                 with open(profile_file) as f:
                     for line in f:
                         if find_rule.search(line):
-                            matched_profiles.append(profile_file)
-        
-        return matched_profiles
+                            yield profile_file
+
 
     def get_rule_profiles(self, rule):
-        matched_profiles = self.find_profiles(rule)
         profiles = []
-
         # Parse from matched profiles profile names
-        for filepath in matched_profiles:
-            parse_file = re.match(r".+/(?:\w+)/profiles/(\w|-)+\.profile", filepath)
+        for profile_path in self.get_rule_profiles(rule):
+            parse_file = re.match(r".+/(?:\w|-)+/profiles/((?:\w|-)+)\.profile", profile_path)
             profiles.append(parse_file.group(1))
         
         return profiles
 
     def get_rule_products(self, rule):
-        matched_profiles = self.find_profiles(rule)
         products = []
-
-        # Parse from matched profiles product name
-        for filepath in matched_profiles:
-            parse_file = re.match(r".+/(\w+)/profiles/(?:\w|-)+\.profile", filepath)
+        # Parse from matched profiles product names
+        for profile_path in self.get_rule_profiles(rule):
+            parse_file = re.match(r".+/((?:\w|-)+)/profiles/(?:\w|-)+\.profile", profile_path)
             products.append(parse_file.group(1))
 
         return products
-
-    def connect_labels(self):
-        product = "rhel8"
-        yaml = YAML(typ="safe")
-        template_loader = jinja2.FileSystemLoader(searchpath="./")
-        template_env = jinja2.Environment(loader=template_loader)
-        yaml_content = yaml.load(template_env.get_template("test_labels.yml").render(product=product))

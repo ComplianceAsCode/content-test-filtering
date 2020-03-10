@@ -9,132 +9,143 @@ logger = logging.getLogger("content-test-filtering.diff")
 URL = "https://github.com/ComplianceAsCode/content"
 
 
-
-def fetch_pr(remote_repository, pr_number):
-    target_branch = "pr-" + pr_number
-    # Fetch every time, even we have the branch localy
-    remote_repository.fetch("pull/" + pr_number + "/head:" + target_branch,
-                            force=True)
-    return target_branch
-
-
-def fetch_branch(remote, branch_name, local_branch=False):
-    # If we don't specify explicitly that we want local branch, then fetch
-    if not local_branch:
-        remote.fetch(branch_name + ":" + branch_name, force=True)
-    return branch_name
+class Singleton(type):
+    _instances = {}
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
+        return cls._instances[cls]
 
 
-def get_git_diff_files(options):
-    base_branch = options.base_branch
-    repo_path = os.path.abspath(options.repository_path)
-    changed_files = []
+class GitDiffWrapper(metaclass=Singleton):
+    def __init__(self, github_repo_url):
+        self.repo_url = github_repo_url
 
-    # Create a new temporary dictory if it input directory is not a directory
-    if repo_path is not None and not os.path.isdir(repo_path):
-        logger.warning("%s is not a directory!"
-                       " Creating a new folder " % repo_path)
-        repo_path = None
 
-    # Create a new directory if no valid directory was provided
-    if repo_path is None:
-        repo_path = mkdtemp()
-        logger.info("Clonning repository to %s directory" % repo_path)
-        Repo.clone_from(URL, repo_path)
+    def git_init(self, local_repo_path=None, local=False):
+        self.repo_path = local_repo_path
+        self.prepare_repo_dir()
+        self.repo_path = os.path.abspath(self.repo_path)
+        self.repository = Repo(self.repo_path)
+        self.only_local = local
 
-    repo = Repo(repo_path)
-    repo.git.checkout(base_branch)
 
-    # For testing local branch (testing purposes) do not pull
-    if not options.local_branch:
-        repo.remotes.origin.pull()
+    def is_dir(self, directory):
+        is_directory = True
 
-    # Set upstream as remote
-    # TODO: Add custom remote option
-    for remote in repo.remotes:
-        if re.search(URL, remote.url):
-            remote_repository = remote
-            break
+        if not os.path.isdir(directory):
+            logger.warning("% is not a directory." % directory)
+            is_directory = False
 
-    logger.info("Fetching branch...")
-    if options.subcommand == "pr":
-        target_branch = fetch_pr(remote_repository, options.pr_number)
-    elif options.subcommand == "base_branch":
-        target_branch = fetch_branch(remote_repository, options.branch,
-                                     options.local_branch)
-    else:
-        raise "Unknown target"
-    logger.info("Fetched to " + target_branch + " branch")
+        return is_directory
+        
 
-    # Create folders for building templated content
-    try:
-        os.mkdir(repo_path + "/build_old")
-    except FileExistsError:
-        pass
+    def prepare_repo_dir(self):
+        if self.repo_path is not None and self.is_dir(self.repo_path):
+            return
+        self.repo_path = mkdtemp()
+        self.init_repository(self.repo_url, self.repo_path)
 
-    try:
-        os.mkdir(repo_path + "/build_new")
-    except FileExistsError:
-        pass
 
-    # Build templated content with old code
-    subprocess.run("cmake ../ && make generate-internal-templated-content-rhel8"
-                   " generate-internal-templated-content-rhel7", shell=True,
-                   cwd=repo_path+"/build_old")
-    repo.git.checkout(target_branch)
-    # Build templated content with new code
-    subprocess.run("cmake ../ && make generate-internal-templated-content-rhel8"
-                   " generate-internal-templated-content-rhel7", shell=True,
-                   cwd=repo_path+"/build_new")
+    def init_repository(self, url, path):
+        logger.info("Cloning repository to %s directory" % path)
+        Repo.clone_from(url, path)
 
-    # Get SHA-1 for both branches (base and target)
-    git_log_base = repo.git.log("--format=%H", base_branch)
-    git_log_target = repo.git.log("--format=%H")
 
-    git_log_base = git_log_base.split()
-    git_log_target = git_log_target.split()
+    def update_branch(self, branch):
+        self.repository.git.checkout(branch)
+        if not self.only_local:
+            self.repository.remotes.origin.pull()
 
-    # Find first common commit from branches
-    for commit_sha in git_log_target:
-        if commit_sha in git_log_base:
-            common_commit = commit_sha
-            break
 
-    # If common branch is HEAD of target branch, then the branch
-    # has been already merged and we need to find commit to compare
-    if git_log_target[0] == common_commit:
-        # Show comints on the ancestry chain
-        git_log = repo.git.log(base_branch, "^" + target_branch,
-                               "--ancestry-path", "--format=%P", "--reverse")
-        merge_commits = git_log.partition("\n")[0]
-        merge_commits = merge_commits.split(" ")
-        # Get commit against we need to compare
-        compare_commit = repo.git.merge_base("--all", merge_commits)
-    else:  # If the branch was not merged, then common commit can be used to diff
-        compare_commit = common_commit
+    def find_remote(self, remote):
+        for r in self.repository.remotes:
+            if re.search(remote, r.url):
+                self.remote_name = r
+                break
 
-    git_diff = repo.git.diff("--name-status", compare_commit + "..HEAD")
 
-    # Parse line by line from changed files
-    for git_line in git_diff.splitlines():
-        file_record = dict()
-        file_before = None
-        file_after = None
+    def get_compare_commit(self, old_branch, new_branch):
+        self.repository.git.checkout(new_branch)
 
-        # Flags: M (modified), A (added), D (deleted), Rxxx (renamed)
-        flag, file_path = git_line.split("\t")  # Parse flag and filepath
-        if flag != 'A':  # If file wasn't added, we have previous version
-            file_before = repo.git.show(compare_commit + ":./" + file_path)
-        if flag != 'D':  # If file wasn't deleted, we have new version
-            file_after = repo.git.show("HEAD:./" + file_path)
-        # diff = repo.git.diff(compare_commit + ":./" + file_path, "HEAD:./" + file_path)
+        git_log_old = self.repository.git.log("--format=%H", old_branch)
+        git_log_old = git_log_old.split()
+        git_log_new = self.repository.git.log("--format=%H")
+        git_log_new = git_log_new.split()
 
+        common_commit = None
+        for commit_sha in git_log_new:
+            if commit_sha in git_log_old:
+                common_commit = commit_sha
+                break
+
+        # If common branch is HEAD of target branch, then the branch
+        # has been already merged and we need to find commit to compare
+        if git_log_new[0] == common_commit:
+            git_log = self.repository.git.log(old_branch, "^" + new_branch,
+                                   "--ancestry-path", "--format=%P", "--reverse")
+            merge_commits = git_log.partition("\n")[0]
+            merge_commits = merge_commits.split(" ")
+            compare_commit = self.repository.git.merge_base("--all", merge_commits)
+        else: # The branch was not merged - common commit
+            compare_commit = common_commit
+
+        logger.info("Comparing commit " + compare_commit + " with "
+                    "HEAD of " + new_branch)
+        return compare_commit
+
+
+    def create_file_record(self, flag, filepath, file_before, file_after):
+        file_record = {}
         file_record["flag"] = flag
-        file_record["file_path"] = file_path
-        file_record["repository_path"] = repo_path
+        file_record["filepath"] = filepath
         file_record["file_before"] = file_before
         file_record["file_after"] = file_after
+        return file_record
 
-        changed_files.append(file_record)
 
-    return changed_files
+    def create_file_records_from_diff(self, compare_commit):
+        file_records = []
+
+        git_diff = self.repository.git.diff("--name-status",
+                                            compare_commit + "..HEAD")
+
+        for line in git_diff.splitlines():
+            flag, filepath = line.split("\t")
+            if flag != "A":
+                file_before = self.repository.git.show(compare_commit + ":./" +
+                                                       filepath)
+            if flag != "D":
+                file_after = self.repository.git.show("HEAD:./" + filepath)
+            
+            file_record = self.create_file_record(flag, filepath, file_before,
+                                                  file_after)
+            file_records.append(file_record)
+
+        return file_records
+
+
+    def git_diff_files(self, old_branch, new_branch=None, pr_number=None):
+        assert new_branch or pr_number
+
+        self.update_branch(old_branch)
+        self.find_remote(self.repo_url)
+
+        if new_branch:
+            target_branch = new_branch
+            fetch_refs = new_branch + ":" + new_branch 
+        else:
+            target_branch = "pr-" + pr_number
+            fetch_refs = "pull/" + pr_number + "/head:" + target_branch
+
+        if not self.only_local:
+            self.remote_name.fetch(fetch_refs, force=True)
+        logger.info("Fetched to " + target_branch + " branch")
+
+        compare_commit = self.get_compare_commit(old_branch, new_branch)
+        file_records = self.create_file_records_from_diff(compare_commit)
+        return file_records
+
+
+
+git_wrapper = GitDiffWrapper(URL)

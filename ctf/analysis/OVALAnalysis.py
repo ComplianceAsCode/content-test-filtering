@@ -2,6 +2,7 @@ import os
 import re
 import sys
 import logging
+import importlib
 from itertools import chain
 from deepdiff import DeepDiff
 from xmldiff import main, formatting, actions
@@ -10,16 +11,26 @@ from ctf.diffstruct.OVALDiff import OVALDiffStruct
 import xml.etree.ElementTree as ET
 from io import StringIO
 
+
 logger = logging.getLogger("content-test-filtering.diff_analysis")
 
 
 class OVALAnalysis(AbstractAnalysis):
     def __init__(self, file_record):
         super().__init__(file_record)
-        self.diff_struct = OVALDiffStruct(self.absolute_path)
-        self.rule_name = re.match(r".+/(\w+)/oval/\w+\.xml$", self.absolute_path).group(1)
+        self.diff_struct = OVALDiffStruct(self.filepath)
+        self.rule_name = re.match(r".+/(\w+)/oval/\w+\.xml$",
+                                  self.diff_struct.absolute_path).group(1)
         self.tree_before = None
         self.tree_after = None
+
+
+    @staticmethod
+    def is_valid(filepath):
+        if re.match(r".*/oval/\w+\.xml$", filepath):
+            return True
+        return False
+
 
     def is_templated(self, content):
         no_templates = re.sub(r"^\s*{{{(.|\n)+?}}}\s*$", "", content, flags=re.MULTILINE)
@@ -29,44 +40,45 @@ class OVALAnalysis(AbstractAnalysis):
         templated = False if lines else True
         return templated
 
+
     def add_product_test(self):
         # TODO solve if the rule is not present in any profile
         products = self.get_rule_products(self.diff_struct.rule)
         if products:
             self.diff_struct.product = products[0]
 
+
     def find_affected_rules(self):
+        all_ids = {self.diff_struct.rule}
+
+        for node_id in chain(self.tree_before.findall(".//*[@id]"),
+                             self.tree_after.findall(".//*[@id]")):
+            all_ids.add(node_id.attrib["id"])
+
+        for content_file in self.get_repository_files():
+            with open(content_file) as f:
+                f.seek(0)
+                file_content = f.read()
+                for one_id in all_ids:
+                    if 'definition_ref="' + one_id not in file_content:
+                        continue
+                    rule_name = re.search(r"/((?:\w|-)+)/oval", content_file)
+                    self.diff_struct.affected_rules.add(rule_name.group(1))
+
+        
+    def add_rule_test(self):
         self.diff_struct.rule = self.rule_name
         self.diff_struct.affected_rules.add(self.rule_name)
         self.add_product_test()
-        all_ids = {self.diff_struct.rule}
-
-        for node_id in chain(self.tree_before.findall(".//*[@id]"), self.tree_after.findall(".//*[@id]")):
-            all_ids.add(node_id.attrib["id"])
-
-        for root, dirs, files in os.walk(self.repository_path):
-            dirs[:] = [d for d in dirs if d not in ["build", "build_new", "build_old"]]
-            for file in files:
-                if not file.endswith("xml"):
-                    continue
-                filepath = root + "/" + file
-                with open(filepath) as f:
-                    f.seek(0)
-                    file_content = f.read()
-                    for one_id in all_ids:
-                        if 'definition_ref="' + one_id in file_content:
-                            rule_name = re.search(r"/((?:\w|-)+)/oval", filepath)
-                            self.diff_struct.affected_rules.add(rule_name.group(1))
-        
-    def add_rule_test(self):
         if not self.diff_struct.affected_rules:
             self.find_affected_rules()
+
 
     def load_diff(self):
         diff = DeepDiff(self.content_before, self.content_after)
         diff = diff["values_changed"]["root"]["diff"]
-
         return diff
+
 
     def get_unidiff_changes(self, diff):
         no_header = re.sub(r"^(\+\+\+\s*|---\s*|@@.+@@)\n", "", diff, flags=re.MULTILINE)
@@ -75,17 +87,20 @@ class OVALAnalysis(AbstractAnalysis):
         changes = [line for line in changes.split("\n") if line.strip() != ""]
         return changes
 
+
     def insert_node_change(self, change):
         if "/metadata/" in change.target:
             return
         else:
             self.add_rule_test()
 
+
     def delete_node_change(self, change):
         if "/metadata/" in change.node:
             return
         else:
             self.add_rule_test()
+
 
     def move_node_change(self, change):
         # Node moved within same node should not change behavior of the rule
@@ -97,12 +112,14 @@ class OVALAnalysis(AbstractAnalysis):
             return
         else:
             self.add_rule_test()
+
         
     def delete_attr_change(self, change):
         if change.name == "comment" or change.name == "version":
             return
         else:
             self.add_rule_test()
+
 
     def rename_attr_change(self, change):
         if change.oldname == "comment" or change.oldname == "version":
@@ -111,11 +128,13 @@ class OVALAnalysis(AbstractAnalysis):
         else:
             self.add_rule_test()
 
+
     def update_attr_change(self, change):
         if change.name == "comment" or change.name == "version":
             return
         else:
             self.add_rule_test()
+
 
     def update_text_change(self, change):
         if "/title" in change.node or "/description" in change.node or "platform" in change.node:
@@ -125,20 +144,17 @@ class OVALAnalysis(AbstractAnalysis):
 
 
     def analyse_oval_change(self, change):
+        # TODO: Should it be analysed separately each change or could it be merged?
         if isinstance(change, actions.InsertNode):
             self.insert_node_change(change)
         elif isinstance(change, actions.DeleteNode):
             self.delete_node_change(change)
         elif isinstance(change, actions.MoveNode):
             self.move_node_change(change)
-        # New atribute doesn't need to be tested. If it is a new attribute
-        # in a new node -> InsertNode test will be performed
-        elif isinstance(change, actions.InsertAttrib):
-            pass
         elif isinstance(change, actions.DeleteAttrib):
             self.delete_attr_change(change)
         elif isinstance(change, actions.RenameAttrib):
-            self.rename_attr_change
+            self.rename_attr_change(change)
         elif isinstance(change, actions.UpdateAttrib):
             self.update_attr_change(change)
         elif isinstance(change, actions.UpdateTextIn):
@@ -146,36 +162,57 @@ class OVALAnalysis(AbstractAnalysis):
         # Looks like a new text after node (NOT in node) -> must be tested everytime
         elif isinstance(change, actions.UpdateTextAfter):
             self.add_rule_test()
-        # No analyse needed if it's a comment
-        elif isinstance(change, actions.InsertComment):
-            pass
+        # InsertAttrib and InsertComment changes are ignored
 
-    def analyse_template(self):
+    
+    def get_changes(self):
         diff = self.load_diff()
         changes = self.get_unidiff_changes(diff)
+        return changes
+
+
+    def analyse_template(self):
+        changes = self.get_changes()
 
         for line in changes:
             if re.match(r"^(\+|-)\s*$", line):
                 continue
-            if re.match(r"(\+|-)\s*#.*$", line):
+            if re.match(r"^(\+|-)\s*#.*$", line):
                 continue
             self.add_rule_test()
 
+            
+    def get_ssg_constants_module(self):
+        git_diff = importlib.import_module("ctf.diff")
+        spec  = importlib.util.spec_from_file_location("ssg.constants",
+                                                       git_diff.git_wrapper.repo_path
+                                                       + "/ssg/constants.py")
+        ssg_const = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(ssg_const)
+        return ssg_const
+        
+
+
+    def create_valid_oval(self, oval_content, ssg_constants):
+        # Remove empty namespace from XML (caused errors in ElemetTree processing)
+        header_without_ns = re.sub(r'\sxmlns="[^"]+"', '',
+                                   ssg_constants.oval_header, count=1)
+        wrapped_oval = (header_without_ns +
+                        self.content_before +
+                        ssg_constants.oval_footer)
+        return wrapped_oval
+        
     def analyse_oval(self):
-        sys.path.insert(1, self.repository_path)
-        import ssg.constants, ssg.build_ovals, ssg.xml
-        header_without_ns = re.sub(r'\sxmlns="[^"]+"', '', ssg.constants.oval_header, count=1)
-        wrapped_oval_before = (header_without_ns +
-                              self.content_before +
-                              ssg.constants.oval_footer)
-        wrapped_oval_after = (header_without_ns +
-                              self.content_after +
-                              ssg.constants.oval_footer)
+        # Load constants for OVAL header and footer
+        ssg_const = self.get_ssg_constants_module()
+        # Wrap OVAL for valid XML file
+        wrapped_oval_before = self.create_valid_oval(self.content_before, ssg_const)
+        wrapped_oval_after = self.create_valid_oval(self.content_after, ssg_const)
+        # Create ElementTrees
         self.tree_before = ET.fromstring(wrapped_oval_before)
         self.tree_after = ET.fromstring(wrapped_oval_after)
-
+        # Compare ElementTrees and analyse changes
         changes = main.diff_texts(wrapped_oval_before, wrapped_oval_after)
-
         for change in changes:
             self.analyse_oval_change(change)
 
@@ -193,4 +230,3 @@ class OVALAnalysis(AbstractAnalysis):
             self.add_product_test()
         else:
             self.analyse_oval()
-

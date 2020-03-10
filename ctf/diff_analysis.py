@@ -1,41 +1,51 @@
+import sys
+import inspect
+import pkgutil
 import logging
-import re
-import ctf.analysis
-from ctf.analysis.AbstractAnalysis import AbstractAnalysis
-from ctf.analysis.ProfileAnalysis import ProfileAnalysis
-from ctf.analysis.AnsibleAnalysis import AnsibleAnalysis
-from ctf.analysis.BashAnalysis import BashAnalysis
-from ctf.analysis.PythonAnalysis import PythonAnalysis
-from ctf.analysis.OVALAnalysis import OVALAnalysis
-#from ctf.JinjaAnalysis import JinjaAnalysis
 
 logger = logging.getLogger("content-test-filtering.diff_analysis")
 
+class UnknownAnalysisFileType(Exception):
+    def __init__(self, filepath=None):
+        self.message = filepath if filepath else None
+            
+    def __str__(self):
+        if self.message:
+            return ("Unknown type of file %s" % self.message)
+        else:
+            return "Unknown file type for analysis"
+
+        
+def get_analyse_classes(modules):
+    for module in modules:
+        classes = inspect.getmembers(module, predicate=inspect.isclass)
+        for _, class_obj in classes:
+            methods = inspect.getmembers(class_obj, predicate=inspect.isfunction)
+            for method_name, _ in methods:
+                if method_name == "is_valid":
+                    yield class_obj
+        
 
 def analyse_file(file_record):
     file_analyzer = None
+    analysis_modules = []
 
-    # Profile file
-    if file_record["file_path"].endswith(".profile"):
-        file_analyzer = ProfileAnalysis(file_record)
-    # Ansible remediation
-    elif re.match(r".+/ansible/\w+\.yml$", file_record["file_path"]):
-        file_analyzer = AnsibleAnalysis(file_record)
-    # Bash remediation
-    elif re.match(r".+/bash/\w+\.sh$", file_record["file_path"]):
-        file_analyzer = BashAnalysis(file_record)
-    # XML (OVAL language)
-    elif re.match(r".+/oval/\w+\.xml$", file_record["file_path"]):
-        file_analyzer = OVALAnalysis(file_record)
-    # Python
-    elif re.match(r".+\.py$", file_record["file_path"]):
-        file_analyzer = PythonAnalysis(file_record)
-    # Jinja macro
-    elif file_record["file_path"].endswith(".jinja"):
-        # Import Jinja analysis only when needed (prevent cyclic dependencies)
-        from ctf.JinjaAnalysis import JinjaAnalysis
-        file_analyzer = JinjaAnalysis(file_record)
-    else:
-        return None
+    # Load all modules from ctf/analysis folder
+    for importer, package_name, _ in pkgutil.iter_modules(["ctf/analysis"]):
+        full_package_name = "%s.%s" % ("ctf.analysis", package_name)
+        if full_package_name not in sys.modules:
+            module = importer.find_module(full_package_name).load_module(
+                full_package_name)
+            analysis_modules.append(module)
+
+    # Get all classes with "is_valid" method
+    for analyse_class in get_analyse_classes(analysis_modules):
+        if analyse_class.is_valid(file_record["filepath"]):
+            file_analyzer = analyse_class(file_record)
+            break
+
+    # Not found any valid class for file
+    if not file_analyzer:
+        raise UnknownAnalysisFileType(file_record["filepath"])
 
     return file_analyzer.analyse()
