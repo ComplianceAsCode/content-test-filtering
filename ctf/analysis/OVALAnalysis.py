@@ -10,6 +10,7 @@ from ctf.analysis.AbstractAnalysis import AbstractAnalysis
 from ctf.diffstruct.OVALDiff import OVALDiffStruct
 import xml.etree.ElementTree as ET
 from io import StringIO
+from ctf.utils import get_repository_files
 
 
 logger = logging.getLogger("content-test-filtering.diff_analysis")
@@ -55,7 +56,7 @@ class OVALAnalysis(AbstractAnalysis):
                              self.tree_after.findall(".//*[@id]")):
             all_ids.add(node_id.attrib["id"])
 
-        for content_file in self.get_repository_files():
+        for content_file in get_repository_files():
             with open(content_file) as f:
                 f.seek(0)
                 file_content = f.read()
