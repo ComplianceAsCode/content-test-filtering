@@ -14,3 +14,19 @@ def get_repository_files(subfolder=""):
                 continue
             filepath = root + "/" + f
             yield filepath
+
+
+def get_suffix(filetype):
+    if filetype == "ANACONDA":
+        suffix = ".anaconda"
+    elif filetype == "ANSIBLE":
+        suffix = ".yml"
+    elif filetype == "BASH":
+        suffix = ".sh"
+    elif filetype == "OVAL":
+        suffix = ".xml"
+    elif filetype == "PUPPET":
+        suffix = ".pp"
+    else:
+        raise TypeError
+    return suffix

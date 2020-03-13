@@ -9,6 +9,7 @@ logger = logging.getLogger("content-test-filtering.diff")
 URL = "https://github.com/ComplianceAsCode/content"
 
 
+
 class Singleton(type):
     _instances = {}
     def __call__(cls, *args, **kwargs):
@@ -17,9 +18,12 @@ class Singleton(type):
         return cls._instances[cls]
 
 
+
 class GitDiffWrapper(metaclass=Singleton):
     def __init__(self, github_repo_url):
         self.repo_url = github_repo_url
+        self.old_branch = None
+        self.new_branch = None
 
 
     def git_init(self, local_repo_path=None, local=False):
@@ -30,6 +34,31 @@ class GitDiffWrapper(metaclass=Singleton):
         self.only_local = local
 
 
+    def build_project(self, old_build_path, new_build_path,
+                      products=["rhel7", "rhel8"]):
+
+        old_build = self.repo_path + old_build_path
+        new_build = self.repo_path + new_build_path
+
+        try:
+            os.mkdir(old_build)
+        except FileExistsError:
+            pass
+        try:
+            os.mkdir(new_build)
+        except FileExistsError:
+            pass
+
+        subprocess.run("cmake ../", shell=True, cwd=self.repo_path+new_build_path)
+        subprocess.run("cmake ../", shell=True, cwd=self.repo_path+old_build_path)
+
+        for product in products:
+            subprocess.run("make generate-internal-templated-content-"+product,
+                           shell=True, cwd=self.repo_path+new_build_path)
+            subprocess.run("make generate-internal-templated-content-"+product,
+                           shell=True, cwd=self.repo_path+old_build_path)
+
+
     def is_dir(self, directory):
         is_directory = True
 
@@ -38,7 +67,7 @@ class GitDiffWrapper(metaclass=Singleton):
             is_directory = False
 
         return is_directory
-        
+
 
     def prepare_repo_dir(self):
         if self.repo_path is not None and self.is_dir(self.repo_path):
@@ -117,7 +146,7 @@ class GitDiffWrapper(metaclass=Singleton):
                                                        filepath)
             if flag != "D":
                 file_after = self.repository.git.show("HEAD:./" + filepath)
-            
+
             file_record = self.create_file_record(flag, filepath, file_before,
                                                   file_after)
             file_records.append(file_record)
@@ -133,7 +162,7 @@ class GitDiffWrapper(metaclass=Singleton):
 
         if new_branch:
             target_branch = new_branch
-            fetch_refs = new_branch + ":" + new_branch 
+            fetch_refs = new_branch + ":" + new_branch
         else:
             target_branch = "pr-" + pr_number
             fetch_refs = "pull/" + pr_number + "/head:" + target_branch

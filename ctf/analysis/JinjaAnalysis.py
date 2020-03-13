@@ -1,5 +1,4 @@
 import re
-import os
 import logging
 import codecs
 import importlib
@@ -8,44 +7,11 @@ from io import StringIO
 from deepdiff import DeepDiff
 from ctf.analysis.AbstractAnalysis import AbstractAnalysis
 from ctf.diffstruct.JinjaDiff import JinjaDiffStruct
-from ctf.utils import get_repository_files
-import importlib
-#from ctf.diff_analysis import analyse_file
-import subprocess
+from ctf.utils import get_repository_files, get_suffix
+from ctf.diff import git_wrapper
 
 
 logger = logging.getLogger("content-test-filtering.diff_analysis")
-
-
-def get_suffix(filetype):
-    if filetype == "ANACONDA":
-        suffix = ".anaconda"
-    elif filetype == "ANSIBLE":
-        suffix = ".yml"
-    elif filetype == "BASH":
-        suffix = ".sh"
-    elif filetype == "OVAL":
-        suffix = ".xml"
-    elif filetype == "PUPPET":
-        suffix = ".pp"
-    else:
-        raise TypeError
-    return suffix
-
-
-
-def find_where_macro_used(macro_name, filepath):
-    usages = []
-    with open(filepath) as f:
-        f.seek(0)
-        content = f.read()
-        matches = re.findall(r"{{%(?:\s|-|\n)+?macro(?:\s|\n)(?:.|\n)+?endmacro(?:\s|-|\n)+?%}}", content)
-
-        for match in matches:
-            higher_macro = re.search(r"(?:\s|-)macro(?:\s|\n)+([^(]+)\((?:.|\n)+" + macro_name, match)
-            if higher_macro:
-                usages.append(higher_macro.group(1))
-        return usages
 
 
 
@@ -58,6 +24,20 @@ class JinjaMacroChange:
         self.find_usages()
 
 
+    def find_where_macro_used(self, macro_name, filepath):
+        usages = []
+        with open(filepath) as f:
+            f.seek(0)
+            content = f.read()
+            matches = re.findall(r"{{%(?:\s|-|\n)+?macro(?:\s|\n)(?:.|\n)+?endmacro(?:\s|-|\n)+?%}}", content)
+
+            for match in matches:
+                higher_macro = re.search(r"(?:\s|-)macro(?:\s|\n)+([^(]+)\((?:.|\n)+" + macro_name, match)
+                if higher_macro:
+                    usages.append(higher_macro.group(1))
+            return usages
+
+
     def find_usages(self):
         for content_file in get_repository_files():
             # The folder may contain any unexpected files - TODO: investigate which (prob. skip them)
@@ -67,7 +47,7 @@ class JinjaMacroChange:
                 if not self.name in f.read(): # Macro is not used in the file -> continue
                     continue
             if content_file.endswith(".jinja"):
-                higher_macros = find_where_macro_used(self.name, content_file)
+                higher_macros = self.find_where_macro_used(self.name, content_file)
                 for macro in higher_macros:
                     higher_macro_class = JinjaMacroChange(macro)
                     self.higher_macros.append(higher_macro_class)
@@ -125,9 +105,9 @@ class JinjaAnalysis(AbstractAnalysis):
         sys.modules["ssg"] = importlib.util.module_from_spec(spec)
         ssg_jinja = importlib.import_module("ssg.jinja", package="ssg")
         return ssg_jinja
-        
 
-    def analyse_macros(self, macros):
+
+    def analyse_macros_in_rules(self, macros):
         ssg_jinja = self.get_ssg_jinja_module()
         # Load macros from current project state
         default_macros = ssg_jinja.load_macros()
@@ -148,13 +128,26 @@ class JinjaAnalysis(AbstractAnalysis):
                 new_processed = ssg_jinja.process_file(rule, updated_macros)
                 file_record = mock_record(rule, old_processed, new_processed)
                 self.diff_struct.affected_files.append(file_record)
-            # Analyse tempaltes
+
+
+    def analyse_macros_in_templates(self, macros):
+        nonempty_macros = [macro for macro in macros if macro.in_templates]
+        if not nonempty_macros:
+            return
+
+        #git_wrapper.build_project("/build_new/", "/build_old/")
+        for macro in macros:
             for template in macro.in_templates:
                 self.analyse_template(template)
 
 
-    def analyse_template(self, template):
-        match = re.search(r"\/template_(\w+?)_(\w+)$", template)
+    def analyse_macros(self, macros):
+        self.analyse_macros_in_rules(macros)
+        self.analyse_macros_in_templates(macros)
+
+
+    def find_template_usage(self, filepath):
+        match = re.search(r"\/template_(\w+?)_(\w+)$", filepath)
         file_type = match.group(1)
         macro_name = match.group(2)
         in_rules = []
@@ -168,17 +161,21 @@ class JinjaAnalysis(AbstractAnalysis):
                     rule_name = re.search(r".+\/(\w+)\/\w+\.\w+$", content_file).group(1)
                     rule_name = rule_name + get_suffix(file_type)
                     in_rules.append(rule_name)
+        return in_rules
 
+
+    def analyse_template(self, template):
+        in_rules = self.find_template_usage(template)
         if not in_rules:
             return
 
         # Get new and old builded template and compare them
         for build_file in get_repository_files("/build_new"):
-            if not build_file in in_rules:
+            if not build_file.split("/")[-1] in in_rules:
                 continue
             with open(build_file) as f:
                 new_processed = f.read()
-            with open(build_file.replace("/build_new/", "/build_old/")) as f:
+            with open(build_file.replace("/build_old/", "/build_new/")) as f:
                 old_processed = f.read()
             file_record = mock_record(build_file, old_processed, new_processed)
             self.diff_struct.affected_files.append(file_record)
@@ -203,7 +200,7 @@ class JinjaAnalysis(AbstractAnalysis):
                 else:
                     change["number_of_lines"] = 1
                 changes.append(change)
-            m = re.match(r"^\+([^\+]*)$", line)
+            m = re.match(r"^(?:\+|-)([^\+-]*)$", line)
             if m:
                 change["changed_lines"].append(m.group(1))
         return changes 
@@ -247,13 +244,14 @@ class JinjaAnalysis(AbstractAnalysis):
         logger.info("Analyzing Jinja macro file " + self.filepath)
         diff = self.load_diff()
         changes = self.analyse_jinja_diff(diff)
-        marked_changes = self.mark_changes_in_content(changes, self.content_after)
-        all_macros = re.findall(r"{{%(?:\s|-|\n|>|<)+?macro(?:\s|\n|<|>)(?:.|\n)+?endmacro(?:\s|-|\n|>|<)+?%}}",
-                                marked_changes)
-        changed_macros = self.get_changed_macros(all_macros)
-
-        # TODO: Is this needed?
-        self.content_after = self.content_after.replace(">>>>>", "")
-        self.content_after = self.content_after.replace("<<<<<", "")
+        marked_old_changes = self.mark_changes_in_content(changes, self.content_before)
+        marked_new_changes = self.mark_changes_in_content(changes, self.content_after)
+        all_old_macros = re.findall(r"{{%(?:\s|-|\n|>|<)+?macro(?:\s|\n|<|>)(?:.|\n)+?endmacro(?:\s|-|\n|>|<)+?%}}",
+                                    marked_old_changes)
+        all_new_macros = re.findall(r"{{%(?:\s|-|\n|>|<)+?macro(?:\s|\n|<|>)(?:.|\n)+?endmacro(?:\s|-|\n|>|<)+?%}}",
+                                    marked_new_changes)
+        changed_old_macros = self.get_changed_macros(all_old_macros)
+        changed_new_macros = self.get_changed_macros(all_new_macros)
+        changed_macros = changed_new_macros if changed_new_macros else changed_old_macros
 
         self.analyse_macros(changed_macros)
