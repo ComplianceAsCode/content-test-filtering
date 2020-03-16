@@ -11,7 +11,7 @@ prepare_repository
 
     git add "$file" && git commit -m "test commit" &>/dev/null
 
-    python3 $BATS_TEST_DIRNAME/../content-test-filtering.py base_branch --local --repository "$repo_dir" test_branch &> "$tmp_file"
+    python3 $BATS_TEST_DIRNAME/../content_test_filtering.py base_branch --local --repository "$repo_dir" test_branch &> "$tmp_file"
 
     [ "$?" -eq 0 ]
 
@@ -28,7 +28,7 @@ prepare_repository
 
     git add "$file" && git commit -m "test commit" &>/dev/null
 
-    python3 $BATS_TEST_DIRNAME/../content-test-filtering.py base_branch --local --repository "$repo_dir" test_branch &> "$tmp_file"
+    python3 $BATS_TEST_DIRNAME/../content_test_filtering.py base_branch --local --repository "$repo_dir" test_branch &> "$tmp_file"
 
     [ "$?" -eq 0 ]
 
@@ -41,11 +41,11 @@ prepare_repository
 @test "Change remediation" {
     file="./linux_os/guide/services/sssd/sssd_run_as_sssd_user/bash/shared.sh"
     sed -i "s/chmod 600/chmod 744/" "$file"
-    regex_check="INFO .*\s-\s\[.*build_product ol8.*test_suite\.py rule.*sssd_run_as_sssd_user.*]$"
+    regex_check="INFO .*\s-\s\[.*build_product .*test_suite\.py rule.*sssd_run_as_sssd_user.*]$"
 
     git add "$file" && git commit -m "test commit" &>/dev/null
 
-    python3 $BATS_TEST_DIRNAME/../content-test-filtering.py base_branch --local --repository "$repo_dir" test_branch &> "$tmp_file"
+    python3 $BATS_TEST_DIRNAME/../content_test_filtering.py base_branch --local --repository "$repo_dir" test_branch &> "$tmp_file"
 
     [ "$?" -eq 0 ]
 
@@ -58,11 +58,11 @@ prepare_repository
 @test "Change templated remediation" {
     file="./linux_os/guide/services/ssh/ssh_server/sshd_use_strong_ciphers/bash/shared.sh"
     sed -i "s/bash_sshd_config_set/bash_some_template/" "$file"
-    regex_check="INFO .*\s-\s\[.*build_product rhel7.*test_suite\.py rule.*sshd_use_strong_ciphers.*]$"
+    regex_check="INFO .*\s-\s\[.*build_product .*test_suite\.py rule.*sshd_use_strong_ciphers.*]$"
 
     git add "$file" && git commit -m "test commit" &>/dev/null
 
-    python3 $BATS_TEST_DIRNAME/../content-test-filtering.py base_branch --local --repository "$repo_dir" test_branch &> "$tmp_file"
+    python3 $BATS_TEST_DIRNAME/../content_test_filtering.py base_branch --local --repository "$repo_dir" test_branch &> "$tmp_file"
 
     [ "$?" -eq 0 ]
 
