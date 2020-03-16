@@ -49,14 +49,14 @@ class GitDiffWrapper(metaclass=Singleton):
         except FileExistsError:
             pass
 
-        subprocess.run("cmake ../", shell=True, cwd=self.repo_path+new_build_path)
-        subprocess.run("cmake ../", shell=True, cwd=self.repo_path+old_build_path)
+        subprocess.run("cmake ../", shell=True, cwd=old_build)
+        subprocess.run("cmake ../", shell=True, cwd=new_build)
 
         for product in products:
             subprocess.run("make generate-internal-templated-content-"+product,
-                           shell=True, cwd=self.repo_path+new_build_path)
+                           shell=True, cwd=old_build)
             subprocess.run("make generate-internal-templated-content-"+product,
-                           shell=True, cwd=self.repo_path+old_build_path)
+                           shell=True, cwd=new_build)
 
 
     def is_dir(self, directory):

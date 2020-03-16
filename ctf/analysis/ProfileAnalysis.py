@@ -86,7 +86,7 @@ class ProfileAnalysis(AbstractAnalysis):
         # Find differencies in two dictionaries and ignore order
         deep_diff = DeepDiff(yaml_before, yaml_after, ignore_order=True)
 
-        for change_type, change in deep_diff:
+        for change_type, change in deep_diff.items():
             if change_type == "dictionary_item_added":
                 self.dict_added(change)
             elif change_type =="dictionary_item_removed":

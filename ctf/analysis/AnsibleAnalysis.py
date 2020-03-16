@@ -78,7 +78,7 @@ class AnsibleAnalysis(AbstractAnalysis):
                 continue
             # Important comment
             if re.match(r"^(\+|-)\s*#\s*(platform|reboot|strategy|complexity|disruption)\s*=\s*.*$", line):
-                self.add_product_test()
+                self.add_product_test()deep_diff
                 continue
             # Not important comment
             if re.match(r"^(\+|-)\s*#.*$", line):

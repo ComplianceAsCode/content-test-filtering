@@ -2,8 +2,11 @@ import sys
 import inspect
 import pkgutil
 import logging
+from os import path
+import pathlib
 
 logger = logging.getLogger("content-test-filtering.diff_analysis")
+
 
 class UnknownAnalysisFileType(Exception):
     def __init__(self, filepath=None):
@@ -31,7 +34,8 @@ def analyse_file(file_record):
     analysis_modules = []
 
     # Load all modules from ctf/analysis folder
-    for importer, package_name, _ in pkgutil.iter_modules(["ctf/analysis"]):
+    for importer, package_name, _ in pkgutil.iter_modules([path.dirname(__file__)
+                                                           + "/analysis"]):
         full_package_name = "%s.%s" % ("ctf.analysis", package_name)
         if full_package_name not in sys.modules:
             module = importer.find_module(full_package_name).load_module(

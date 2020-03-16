@@ -17,6 +17,7 @@ logger.addHandler(console_handler)
 
 if __name__ == '__main__':
     options = cli.parse_args()
+    already_analysed = []
     list_of_tests = []
     tests = ContentTests.ContentTests()
 
@@ -27,7 +28,14 @@ if __name__ == '__main__':
                                                pr_number=options.pr_number)
 
     # Analyze each file separately and make set of tests for each one
-    for file_record in changed_files:
+    while True:
+        if not changed_files: # Finish when all files are analysed
+            break
+
+        file_record = changed_files.pop(0)
+        if file_record["filepath"] in already_analysed: # Don't analyse files twice
+            continue
+
         try:
             diff_structure = diff_analysis.analyse_file(file_record)
             diff_structure.fill_tests(tests)
@@ -35,6 +43,10 @@ if __name__ == '__main__':
             logger.warning("Unknown type of file %s. Analysis has not been "
                            "performed for it." % file_record["filepath"])
             continue
+
+        already_analysed.append(file_record["filepath"])
+        # If change affected any other file -> analyse it
+        changed_files.extend(diff_structure.affected_files)
 
     list_of_tests = connect_to_labels.get_labels(tests)
 

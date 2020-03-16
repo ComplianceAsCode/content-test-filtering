@@ -76,7 +76,7 @@ class AbstractAnalysis(metaclass=ABCMeta):
     def get_rule_profiles(self, rule):
         profiles = []
         # Parse from matched profiles profile names
-        for profile_path in self.get_rule_profiles(rule):
+        for profile_path in self.find_rule_profiles(rule):
             parse_file = re.match(r".+/(?:\w|-)+/profiles/((?:\w|-)+)\.profile", profile_path)
             profiles.append(parse_file.group(1))
         
@@ -85,7 +85,7 @@ class AbstractAnalysis(metaclass=ABCMeta):
     def get_rule_products(self, rule):
         products = []
         # Parse from matched profiles product names
-        for profile_path in self.get_rule_profiles(rule):
+        for profile_path in self.find_rule_profiles(rule):
             parse_file = re.match(r".+/((?:\w|-)+)/profiles/(?:\w|-)+\.profile", profile_path)
             products.append(parse_file.group(1))
 
