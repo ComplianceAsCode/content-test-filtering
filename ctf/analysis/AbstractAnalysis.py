@@ -82,6 +82,7 @@ class AbstractAnalysis(metaclass=ABCMeta):
         
         return profiles
 
+
     def get_rule_products(self, rule):
         products = []
         # Parse from matched profiles product names
@@ -90,3 +91,25 @@ class AbstractAnalysis(metaclass=ABCMeta):
             products.append(parse_file.group(1))
 
         return products
+
+
+    def add_product_test(self, rule_name):
+        products = self.get_rule_products(rule_name)
+        if products:
+            self.diff_struct.product = products[0]
+
+
+    def add_rule_test(self, rule_name):
+        products = self.get_rule_products(rule_name)
+        if products:
+            self.diff_struct.product = products[0]
+        self.diff_struct.rule = rule_name
+
+
+    def add_profile_test(self, product, profile):
+        self.diff_struct.product = product
+        self.diff_struct.profile = profile
+
+
+    def add_sanity_test(self):
+        self.diff_struct.sanity = True

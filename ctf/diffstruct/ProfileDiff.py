@@ -54,17 +54,3 @@ class ProfileDiffStruct(AbstractDiffStruct):
             profile_name = path.split(".")[0]
             self.extended_profiles.append(profile_name)
             self.find_dependent_profiles(f, profile_name)
-        
-
-    def fill_tests(self, tests):
-        # Find if changed profile is extended by other profile
-        self.find_dependent_profiles(self.absolute_path, self.profile)
-
-        if self.profile and self.product:
-            tests.add_profile_test(self.absolute_path, self.profile, self.product)
-
-            for extended in self.extended_profiles:
-                tests.add_profile_test(None, extended, self.product)
-
-        if self.added_rules:
-            tests.add_rules_test(self.absolute_path, self.profile, self.product, self.added_rules)

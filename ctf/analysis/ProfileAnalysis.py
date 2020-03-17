@@ -39,12 +39,12 @@ class ProfileAnalysis(AbstractAnalysis):
 
 
     def item_added(self, items):
-        self.add_profile_information()
+        self.add_profile_test(self.product, self.profile)
         self.diff_struct.added_rules.update(self.iterate_changed_rules(items))
 
 
     def item_removed(self, items):
-        self.add_profile_information()
+        self.add_profile_test(self.product, self.profile)
         self.diff_struct.removed_rules.update(self.iterate_changed_rules(items))
 
 
@@ -54,28 +54,18 @@ class ProfileAnalysis(AbstractAnalysis):
                 self.diff_struct.added_rules.update(self.iterate_changed_rules(items))
 
 
-    def add_profile_information(self):
-        # Already defined for the file
-        if self.diff_struct.product is not None and \
-            self.diff_struct.profile is not None:
-            return
-
-        self.diff_struct.product = self.product
-        self.diff_struct.profile = self.profile
-
-
     def dict_added(self, items):
         if len(items) != len(set(items) & set(FILTER_LIST)):
-            self.add_profile_information()
+            self.add_profile_test(self.product, self.profile)
 
 
     def dict_removed(self, items):
         if len(items) != len(set(items) & set(FILTER_LIST)):
-            self.add_profile_information()
+            self.add_profile_test(self.product, self.profile)
 
 
     def type_changed(self, items):
-        self.add_profile_information()
+        self.add_profile_test(self.product, self.profile)
 
     
     def analyse_changes(self):
@@ -110,7 +100,7 @@ class ProfileAnalysis(AbstractAnalysis):
             self.diff_struct.added_rules = rules 
         except KeyError:
             logger.warning("New profile doesn't contain any rule.")
-        self.add_profile_information()
+        self.add_profile_test(self.product, self.profile)
 
 
     def process_analysis(self):
@@ -123,6 +113,8 @@ class ProfileAnalysis(AbstractAnalysis):
             return
 
         self.analyse_changes()
+        self.diff_struct.find_dependent_profiles(self.diff_struct.absolute_path,
+                                                 self.profile)
 
         logger.info("Added rules to profile: %s", " ".join(self.diff_struct.added_rules))
         logger.info("Removed rules to profile: %s", " ".join(self.diff_struct.removed_rules))

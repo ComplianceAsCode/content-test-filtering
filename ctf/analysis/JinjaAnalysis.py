@@ -224,7 +224,7 @@ class JinjaAnalysis(AbstractAnalysis):
         content = "\n".join(content)
         return content
 
-        
+
     def get_changed_macros(self, all_macros):
         changed_macros = []
         for macro in all_macros:

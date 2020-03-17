@@ -1,4 +1,5 @@
 class FileType:
+    NONE = 0
     PROFILE = 1
     PYTHON = 2
     YAML = 3

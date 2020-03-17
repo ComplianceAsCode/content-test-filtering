@@ -33,19 +33,6 @@ class BashAnalysis(AbstractAnalysis):
         return templated
 
 
-    def add_product_test(self):
-        products = self.get_rule_products(self.rule_name)
-        if products:
-            self.diff_struct.product = products[0]
-
-
-    def add_rule_test(self):
-        products = self.get_rule_products(self.rule_name)
-        if products:
-            self.diff_struct.product = products[0]
-        self.diff_struct.rule = self.rule_name
-
-
     def load_diff(self):
         diff = DeepDiff(self.content_before, self.content_after)
         diff = diff["values_changed"]["root"]["diff"]
@@ -79,12 +66,12 @@ class BashAnalysis(AbstractAnalysis):
                 continue
             # Important comment
             if re.match(r"^(\+|-)\s*#\s*(platform|reboot|strategy|complexity|disruption)\s*=\s*.*$", line):
-                self.add_product_test()
+                self.add_product_test(self.rule_name)
                 continue
             # Not important comment
             if re.match(r"^(\+|-)\s*#.*$", line):
                 continue
-            self.add_rule_test()
+            self.add_rule_test(self.rule_name)
 
 
     def analyse_bash(self):
@@ -102,16 +89,16 @@ class BashAnalysis(AbstractAnalysis):
         
         # At least one isn't empty -> stream reading was terminated -> something changed
         if token_before or token_after:
-            self.add_product_test()
-            self.add_rule_test()
+            self.add_product_test(self.rule_name)
+            self.add_rule_test(self.rule_name)
 
 
     def process_analysis(self):
         logger.info("Analyzing bash file " + self.filepath)
         
         if self.is_added():
-            self.add_product_test()
-            self.add_rule_test()
+            self.add_product_test(self.rule_name)
+            self.add_rule_test(self.rule_name)
         elif self.is_removed():
             return
 
@@ -121,7 +108,7 @@ class BashAnalysis(AbstractAnalysis):
         if was_templated and is_templated: # Was and is tempalted
             self.analyse_template()
         elif any([was_templated, is_templated]): # Templatization changed
-            self.add_product_test()
-            self.add_rule_test()
+            self.add_product_test(self.rule_name)
+            self.add_rule_test(self.rule_name)
         else: # Not templated
             self.analyse_bash()

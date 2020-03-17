@@ -43,7 +43,7 @@ class PythonAnalysis(AbstractAnalysis):
         logger.info("Analyzing python file " + self.filepath)
 
         if self.is_added():
-            self.diff_struct.changed = True
+            self.add_sanity_test()
             return
         elif self.is_removed():
             return
@@ -51,4 +51,4 @@ class PythonAnalysis(AbstractAnalysis):
         ast_before = ast.parse(self.content_before)
         ast_after = ast.parse(self.content_after)
         if not self.are_ast_same(ast_before, ast_after):
-            self.diff_struct.changed = True
+            self.add_sanity_test()

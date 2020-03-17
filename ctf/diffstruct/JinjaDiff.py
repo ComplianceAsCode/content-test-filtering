@@ -6,7 +6,3 @@ class JinjaDiffStruct(AbstractDiffStruct):
     def __init__(self, absolute_path):
         super().__init__(absolute_path)
         self.file_type = FileType.JINJA
-        self.affected_files = []
-
-    def fill_tests(self, tests):
-        pass

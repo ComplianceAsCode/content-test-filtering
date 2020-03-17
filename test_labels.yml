@@ -8,9 +8,11 @@ prepare_product: build_product {{ product }}
 
 ctest_build: (cd build && ctest -j4)
 
-yaml: /usr/bin/YAMLlint %file_path%
+yaml: /usr/bin/YAMLlint
 python: Pylint
 bash: ShellCheck
+xml: xmllint
+jinja: jinjalint
 
 profile: test_suite.py profile {{ target }} --datastream {{ datastream_file }} %profile_name%
 rule_ansible: test_suite.py rule {{ target }} --remediate ansible --datastream {{ datastream_file }} %rule_name%

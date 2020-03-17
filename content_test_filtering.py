@@ -38,7 +38,8 @@ if __name__ == '__main__':
 
         try:
             diff_structure = diff_analysis.analyse_file(file_record)
-            diff_structure.fill_tests(tests)
+            tests.fill_tests(diff_structure)
+            #diff_structure.fill_tests(tests)
         except diff_analysis.UnknownAnalysisFileType:
             logger.warning("Unknown type of file %s. Analysis has not been "
                            "performed for it." % file_record["filepath"])

@@ -42,15 +42,9 @@ class OVALAnalysis(AbstractAnalysis):
         return templated
 
 
-    def add_product_test(self):
-        # TODO solve if the rule is not present in any profile
-        products = self.get_rule_products(self.diff_struct.rule)
-        if products:
-            self.diff_struct.product = products[0]
-
-
     def find_affected_rules(self):
         all_ids = {self.diff_struct.rule}
+        affected_rules = []
 
         for node_id in chain(self.tree_before.findall(".//*[@id]"),
                              self.tree_after.findall(".//*[@id]")):
@@ -63,16 +57,17 @@ class OVALAnalysis(AbstractAnalysis):
                 for one_id in all_ids:
                     if 'definition_ref="' + one_id not in file_content:
                         continue
-                    rule_name = re.search(r"/((?:\w|-)+)/oval", content_file)
-                    self.diff_struct.affected_rules.add(rule_name.group(1))
+                    rule_match = re.search(r"/((?:\w|-)+)/oval", content_file)
+                    rule_name = rule_match.group(1)
+                    if not rule_name in affected_rules:
+                        affected_rules.append(rule_name)                            
+        return affected_rules
 
         
     def add_rule_test(self):
-        self.diff_struct.rule = self.rule_name
-        self.diff_struct.affected_rules.add(self.rule_name)
-        self.add_product_test()
-        if not self.diff_struct.affected_rules:
-            self.find_affected_rules()
+        super().add_rule_test(self.rule_name)
+        affected_rules = self.find_affected_rules()
+        self.diff_struct.other_affected_rules.extend(affected_rules)
 
 
     def load_diff(self):
@@ -191,7 +186,6 @@ class OVALAnalysis(AbstractAnalysis):
         ssg_const = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(ssg_const)
         return ssg_const
-        
 
 
     def create_valid_oval(self, oval_content, ssg_constants):
@@ -228,6 +222,6 @@ class OVALAnalysis(AbstractAnalysis):
             self.analyse_template()
         elif any([was_templated, is_templated]):
             self.add_rule_test()
-            self.add_product_test()
+            self.add_product_test(self.rule_name)
         else:
             self.analyse_oval()
