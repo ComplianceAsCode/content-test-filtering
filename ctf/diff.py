@@ -24,6 +24,7 @@ class GitDiffWrapper(metaclass=Singleton):
         self.repo_url = github_repo_url
         self.old_branch = None
         self.new_branch = None
+        self.diverge_commit = None
 
 
     def git_init(self, local_repo_path=None, local=False):
@@ -49,12 +50,16 @@ class GitDiffWrapper(metaclass=Singleton):
         except FileExistsError:
             pass
 
+        self.repository.git.checkout(self.diverge_commit)
         subprocess.run("cmake ../", shell=True, cwd=old_build)
+        self.repository.git.checkout(self.new_branch)
         subprocess.run("cmake ../", shell=True, cwd=new_build)
 
         for product in products:
+            self.repository.git.checkout(self.diverge_commit)
             subprocess.run("make generate-internal-templated-content-"+product,
                            shell=True, cwd=old_build)
+            self.repository.git.checkout(self.new_branch)
             subprocess.run("make generate-internal-templated-content-"+product,
                            shell=True, cwd=new_build)
 
@@ -171,8 +176,8 @@ class GitDiffWrapper(metaclass=Singleton):
             self.remote_name.fetch(fetch_refs, force=True)
         logger.info("Fetched to " + target_branch + " branch")
 
-        compare_commit = self.get_compare_commit(old_branch, new_branch)
-        file_records = self.create_file_records_from_diff(compare_commit)
+        self.diverge_commit = self.get_compare_commit(old_branch, target_branch)
+        file_records = self.create_file_records_from_diff(self.diverge_commit)
         return file_records
 
 
