@@ -67,7 +67,7 @@ class ProfileAnalysis(AbstractAnalysis):
     def type_changed(self, items):
         self.add_profile_test(self.product, self.profile)
 
-    
+
     def analyse_changes(self):
         # Load previous and new profile
         yaml_before = yaml.safe_load(self.content_before)
@@ -92,12 +92,12 @@ class ProfileAnalysis(AbstractAnalysis):
             elif change_type == "iterable_item_removed":
                 self.item_removed(change.items())
 
-            
+
     def new_profile_added(self):
         new_profile = yaml.safe_load(self.content_after)
         try:
             rules = new_profile["selections"]
-            self.diff_struct.added_rules = rules 
+            self.diff_struct.added_rules = rules
         except KeyError:
             logger.warning("New profile doesn't contain any rule.")
         self.add_profile_test(self.product, self.profile)
@@ -117,4 +117,5 @@ class ProfileAnalysis(AbstractAnalysis):
                                                  self.profile)
 
         logger.info("Added rules to profile: %s", " ".join(self.diff_struct.added_rules))
-        logger.info("Removed rules to profile: %s", " ".join(self.diff_struct.removed_rules))
+        logger.info("Removed rules from profile: %s", " ".join(self.diff_struct.removed_rules))
+
