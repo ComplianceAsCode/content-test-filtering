@@ -18,6 +18,10 @@ function clean_up() {
         git reset --hard master
 }
 
+function setup() {
+        tmp_file="$(mktemp)"
+}
+
 function teardown() {
         clean_up
 }
