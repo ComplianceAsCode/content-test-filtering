@@ -152,14 +152,14 @@ class GitDiffWrapper(metaclass=Singleton):
 
         for line in git_diff.splitlines():
             flag, filepath = line.split("\t")
-            if flag != "A":
-                file_before = self.repository.git.show(compare_commit + ":./" +
-                                                       filepath)
-            if flag != "D":
-                file_after = self.repository.git.show("HEAD:./" + filepath)
 
-            file_record = self.create_file_record(flag, filepath, file_before,
-                                                  file_after)
+            file_before = "" if flag == "A" else self.repository.git.show(
+                compare_commit + ":./" + filepath)
+            file_after = "" if flag == "D" else self.repository.git.show(
+                "HEAD:./" + filepath)
+
+            file_record = self.create_file_record(flag, filepath,
+                                                  file_before, file_after)
             file_records.append(file_record)
 
         return file_records
