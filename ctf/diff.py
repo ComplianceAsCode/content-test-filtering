@@ -25,6 +25,7 @@ class GitDiffWrapper(metaclass=Singleton):
         self.old_branch = None
         self.new_branch = None
         self.diverge_commit = None
+        self.current_branch = None
 
 
     def git_init(self, local_repo_path=None, local=False):
@@ -33,6 +34,11 @@ class GitDiffWrapper(metaclass=Singleton):
         self.repo_path = os.path.abspath(self.repo_path)
         self.repository = Repo(self.repo_path)
         self.only_local = local
+
+
+    def checkout_branch(self, branch):
+        self.repository.git.checkout(branch)
+        self.current_branch = branch
 
 
     def build_project(self, old_build_path, new_build_path,
@@ -50,16 +56,16 @@ class GitDiffWrapper(metaclass=Singleton):
         except FileExistsError:
             pass
 
-        self.repository.git.checkout(self.diverge_commit)
+        self.checkout_branch(self.diverge_commit)
         subprocess.run("cmake ../", shell=True, cwd=old_build)
-        self.repository.git.checkout(self.new_branch)
+        self.checkout_branch(self.new_branch)
         subprocess.run("cmake ../", shell=True, cwd=new_build)
 
         for product in products:
-            self.repository.git.checkout(self.diverge_commit)
+            self.checkout_branch(self.diverge_commit)
             subprocess.run("make generate-internal-templated-content-"+product,
                            shell=True, cwd=old_build)
-            self.repository.git.checkout(self.new_branch)
+            self.checkout_branch(self.new_branch)
             subprocess.run("make generate-internal-templated-content-"+product,
                            shell=True, cwd=new_build)
 
@@ -87,7 +93,7 @@ class GitDiffWrapper(metaclass=Singleton):
 
 
     def update_branch(self, branch):
-        self.repository.git.checkout(branch)
+        self.checkout_branch(branch)
         if not self.only_local:
             self.repository.remotes.origin.pull()
 
@@ -100,7 +106,7 @@ class GitDiffWrapper(metaclass=Singleton):
 
 
     def get_compare_commit(self, old_branch, new_branch):
-        self.repository.git.checkout(new_branch)
+        self.checkout_branch(new_branch)
 
         git_log_old = self.repository.git.log("--format=%H", old_branch)
         git_log_old = git_log_old.split()
