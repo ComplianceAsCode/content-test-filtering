@@ -116,4 +116,3 @@ class ProfileAnalysis(AbstractAnalysis):
 
         logger.info("Added rules to profile: %s", " ".join(self.diff_struct.added_rules))
         logger.info("Removed rules from profile: %s", " ".join(self.diff_struct.removed_rules))
-

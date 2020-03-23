@@ -237,18 +237,27 @@ class JinjaAnalysis(AbstractAnalysis):
         return changed_macros
 
 
+    def find_all_macros(self, input_string):
+        all_macros = re.findall(r"{{%(?:\s|-|\n|>|<)+?macro(?:\s|\n|<|>)(?:.|\n)+?endmacro(?:\s|-|\n|>|<)+?%}}",
+                                input_string)
+        return all_macros
+
+
+    def find_changed_macros(self, diff_output, content):
+        marked_changes = self.mark_changes_in_content(diff_output, content)
+        all_macros = self.find_all_macros(marked_changes)
+        changed_macros = self.get_changed_macros(all_macros)
+        return changed_macros
+
+
     def process_analysis(self):
         logger.info("Analyzing Jinja macro file " + self.filepath)
         diff = self.load_diff()
         changes = self.analyse_jinja_diff(diff)
-        marked_old_changes = self.mark_changes_in_content(changes, self.content_before)
-        marked_new_changes = self.mark_changes_in_content(changes, self.content_after)
-        all_old_macros = re.findall(r"{{%(?:\s|-|\n|>|<)+?macro(?:\s|\n|<|>)(?:.|\n)+?endmacro(?:\s|-|\n|>|<)+?%}}",
-                                    marked_old_changes)
-        all_new_macros = re.findall(r"{{%(?:\s|-|\n|>|<)+?macro(?:\s|\n|<|>)(?:.|\n)+?endmacro(?:\s|-|\n|>|<)+?%}}",
-                                    marked_new_changes)
-        changed_old_macros = self.get_changed_macros(all_old_macros)
-        changed_new_macros = self.get_changed_macros(all_new_macros)
+
+        changed_old_macros = self.find_changed_macros(changes, self.content_before)
+        changed_new_macros = self.find_changed_macros(changes, self.content_after)
+
         changed_macros = changed_new_macros if changed_new_macros else changed_old_macros
 
         self.analyse_macros(changed_macros)

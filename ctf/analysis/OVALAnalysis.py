@@ -74,6 +74,7 @@ class OVALAnalysis(AbstractAnalysis):
 
 
     def get_unidiff_changes(self, diff):
+        # Remove header and parse added/removed lines
         no_header = re.sub(r"^(\+\+\+\s*|---\s*|@@.+@@)\n", "", diff, flags=re.MULTILINE)
         changes = re.sub(r"^[^+-].*\n?", "", no_header, flags=re.MULTILINE)
         changes = re.sub(r"^\s*\n", "", changes, flags=re.MULTILINE)

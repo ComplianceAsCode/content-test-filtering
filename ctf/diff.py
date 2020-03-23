@@ -158,7 +158,7 @@ class GitDiffWrapper(metaclass=Singleton):
             file_after = "" if flag == "D" else self.repository.git.show(
                 "HEAD:./" + filepath)
 
-            file_record = self.create_file_record(flag, filepath,
+            file_record = self.create_file_record(flag, filepath, 
                                                   file_before, file_after)
             file_records.append(file_record)
 

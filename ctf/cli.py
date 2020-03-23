@@ -30,7 +30,7 @@ def parse_args():
     parser_pr.add_argument("pr_number", metavar="PR_NUMBER", default=None,
                            help=("Pull request number, which we want compare "
                                  "against base"))
-    #parser_pr.set_defaults(func...)
+
     parser_branch = subparsers.add_parser("base_branch",
                                           parents=[common_parser],
                                           help=("Compare base against "
