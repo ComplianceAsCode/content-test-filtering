@@ -4,17 +4,17 @@ Purpose of this project is automatic tests filtering for project [ComplianceAsCo
 This project filters tests based on static analysis of changed files. Changed files are taken from `git`, analysed based on a type of each file, and analysis result is used for test selection.
 
 ## Requirements
-  - Python 3.4 or newer
-  - Git 1.7 or newer
-  - GitPython (Python package)
-  - PyYAML (Python package)
-  - DeepDiff (Python package)
-  - Jinja2 (Python package)
-  - xmldiff (Python package)
+-  Python 3.4 or newer
+-  Git 1.7 or newer
+-  GitPython (Python package)
+-  PyYAML (Python package)
+-  DeepDiff (Python package)
+-  Jinja2 (Python package)
+-  xmldiff (Python package)
 
 ## Installation
 Fedora/RHEL:
-```
+```bash
 yum install python3 git
 pip install gitpython PyYAML deepdiff Jinja2 xmldiff
 git clone https://github.com/mildas/content-test-filtering
@@ -22,9 +22,9 @@ git clone https://github.com/mildas/content-test-filtering
 
 ## Usage
 Project has two modes how to get changes from `git`:
-  - **Pull request number** - get changes from specific [Pull request created for ComplianceAsCode project](https://github.com/ComplianceAsCode/content/pulls)
-  - **Branch name** - name of a branch
-```
+-  **Pull request number** - get changes from specific [Pull request created for ComplianceAsCode project](https://github.com/ComplianceAsCode/content/pulls)
+-  **Branch name** - name of a branch
+```bash
 $ python3 content_test_filtering.py --help
 usage: content_test_filtering.py [-h] {pr,base_branch} ...
 
@@ -38,13 +38,13 @@ optional arguments:
 ```
 
 Both modes have common optional arguments:
-  - **--base BASE_BRANCH** - Base branch which is used for comparison with new changes. If not provided, `master` branch is used as base branch.
-  - **--repository REPOSITORY_PATH** - Path to ComplianceAsCode repository. If not provided, the repository will be clonned into temporary folder under `/tmp` path. *WARNING:* Newly clonned repository is **NOT deleted** after finishing.
+-  **--base BASE_BRANCH** - Base branch which is used for comparison with new changes. If not provided, `master` branch is used as base branch.
+-  **--repository REPOSITORY_PATH** - Path to ComplianceAsCode repository. If not provided, the repository will be clonned into temporary folder under `/tmp` path. *WARNING:* Newly clonned repository is **NOT deleted** after finishing.
 
 ### Examples
 **Pull request mode**
 As an example of is used [PR#4957](https://github.com/ComplianceAsCode/content/pull/4957)
-```
+```bash
 $ python3 content_test_filtering.py pr --repository /tmp/content 4957
 INFO 16:46:52 - Getting files from 'git diff'
 INFO 16:46:54 - Fetched to pr-4957 branch
@@ -58,7 +58,7 @@ INFO 16:46:56 - Finished
 
 **Base branch mode**
 Branch mode is similar as Pull request mode. The difference is in arguments used.
-```
+```bash
 $ python3 content_test_filtering.py base_branch --repository /tmp/content stabilization-v0.1.49
 INFO 16:52:54 - Getting files from 'git diff'
 INFO 16:52:56 - Fetched to stabilization-v0.1.49 branch
