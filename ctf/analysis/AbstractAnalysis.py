@@ -4,7 +4,6 @@ import os
 from abc import ABCMeta, abstractmethod
 from ctf.diff import git_wrapper
 import jinja2
-from ruamel.yaml import YAML
 
 logger = logging.getLogger("content_test_filtering.diff_analysis")
 
