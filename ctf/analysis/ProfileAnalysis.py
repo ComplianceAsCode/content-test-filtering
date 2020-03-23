@@ -3,8 +3,6 @@ import yaml
 from deepdiff import DeepDiff
 from ctf.analysis.AbstractAnalysis import AbstractAnalysis
 from ctf.diffstruct.ProfileDiff import ProfileDiffStruct
-from ctf.diff import git_wrapper
-
 
 logger = logging.getLogger("content-test-filtering.diff_analysis")
 

@@ -1,6 +1,5 @@
 import re
 import logging
-import yaml
 from deepdiff import DeepDiff
 from ctf.analysis.AbstractAnalysis import AbstractAnalysis
 from ctf.diffstruct.AnsibleDiff import AnsibleDiffStruct
@@ -87,7 +86,7 @@ class AnsibleAnalysis(AbstractAnalysis):
             if re.match(r"^(\+|-)\s*-?\s*name\s*:\s*\S+.*$", line):
                 continue
             self.add_rule_test(self.rule_name)
-            
+
 
     def process_analysis(self):
         logger.info("Analyzing ansible file " + self.filepath)

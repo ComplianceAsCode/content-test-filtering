@@ -3,16 +3,14 @@ Purpose of this project is automatic tests filtering for project [ComplianceAsCo
 
 This project filters tests based on static analysis of changed files. Changed files are taken from `git`, analysed based on a type of each file, and analysis result is used for test selection.
 
-
 ## Requirements
-- Python 3.4 or newer
-- Git 1.7 or newer
-- GitPython (Python package)
-- PyYAML (Python package)
-- DeepDiff (Python package)
-- Jinja2 (Python package)
-- xmldiff (Python package)
-
+  - Python 3.4 or newer
+  - Git 1.7 or newer
+  - GitPython (Python package)
+  - PyYAML (Python package)
+  - DeepDiff (Python package)
+  - Jinja2 (Python package)
+  - xmldiff (Python package)
 
 ## Installation
 Fedora/RHEL:
@@ -24,8 +22,8 @@ git clone https://github.com/mildas/content-test-filtering
 
 ## Usage
 Project has two modes how to get changes from `git`:
-- **Pull request number** - get changes from specific [Pull request created for ComplianceAsCode project](https://github.com/ComplianceAsCode/content/pulls)
-- **Branch name** - name of a branch
+  - **Pull request number** - get changes from specific [Pull request created for ComplianceAsCode project](https://github.com/ComplianceAsCode/content/pulls)
+  - **Branch name** - name of a branch
 ```
 $ python3 content_test_filtering.py --help
 usage: content_test_filtering.py [-h] {pr,base_branch} ...
@@ -40,9 +38,8 @@ optional arguments:
 ```
 
 Both modes have common optional arguments:
-- **--base BASE_BRANCH**- Base branch which is used for comparison with new changes. If not provided, `master` branch is used as base branch.
-- **--repository REPOSITORY_PATH**- Path to ComplianceAsCode repository. If not provided, the repository will be clonned into temporary folder under `/tmp` path. *WARNING:* Newly clonned repository is **NOT deleted** after finishing.
-
+  - **--base BASE_BRANCH** - Base branch which is used for comparison with new changes. If not provided, `master` branch is used as base branch.
+  - **--repository REPOSITORY_PATH** - Path to ComplianceAsCode repository. If not provided, the repository will be clonned into temporary folder under `/tmp` path. *WARNING:* Newly clonned repository is **NOT deleted** after finishing.
 
 ### Examples
 **Pull request mode**
@@ -76,7 +73,7 @@ For testing purposes on local changes is created `--local` argument.
 When the argument is passed, no branches will be pulled from remote repository, passed branch must be at local repository.
 
 Local testing example:
-```
+```bash
 $ cd /tmp/content
 $ git checkout -b "test_branch"
 Switched to a new branch 'test_branch'

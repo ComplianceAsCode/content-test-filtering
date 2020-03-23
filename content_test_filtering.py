@@ -1,9 +1,7 @@
 #!/usr/bin/python3
 import logging
-import sys
 from ctf import cli, diff_analysis, connect_to_labels, ContentTests
 from ctf.diff import git_wrapper
-import deepdiff
 
 logger = logging.getLogger("content-test-filtering")
 logger.setLevel(logging.INFO)

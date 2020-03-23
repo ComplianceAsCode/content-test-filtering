@@ -3,13 +3,10 @@ import logging
 import codecs
 import importlib
 import sys
-from io import StringIO
 from deepdiff import DeepDiff
 from ctf.analysis.AbstractAnalysis import AbstractAnalysis
 from ctf.diffstruct.JinjaDiff import JinjaDiffStruct
 from ctf.utils import get_repository_files, get_suffix
-from ctf.diff import git_wrapper
-
 
 logger = logging.getLogger("content-test-filtering.diff_analysis")
 
@@ -64,7 +61,7 @@ class JinjaMacroChange:
         else:
             raise TypeError
 
-    
+
     def update_all_usages(self):
         # Find all usages in higher macros and update with usages lower macros
         for higher_macro in self.higher_macros:
@@ -203,7 +200,7 @@ class JinjaAnalysis(AbstractAnalysis):
             m = re.match(r"^(?:\+|-)([^\+-]*)$", line)
             if m:
                 change["changed_lines"].append(m.group(1))
-        return changes 
+        return changes
 
 
     def mark_changes_in_content(self, changes, content):

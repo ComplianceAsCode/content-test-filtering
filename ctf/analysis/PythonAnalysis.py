@@ -1,9 +1,7 @@
 import ast
-import itertools
 import logging
 from ctf.analysis.AbstractAnalysis import AbstractAnalysis
 from ctf.diffstruct.PythonDiff import PythonDiffStruct
-
 
 logger = logging.getLogger("content-test-filtering.diff_analysis")
 
@@ -38,7 +36,7 @@ class PythonAnalysis(AbstractAnalysis):
         else:
             return node1 == node2
 
-        
+
     def process_analysis(self):
         logger.info("Analyzing python file " + self.filepath)
 

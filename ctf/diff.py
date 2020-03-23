@@ -2,7 +2,7 @@ import os
 import re
 import subprocess
 import logging
-from git import Repo, remote
+from git import Repo
 from tempfile import mkdtemp
 
 logger = logging.getLogger("content-test-filtering.diff")

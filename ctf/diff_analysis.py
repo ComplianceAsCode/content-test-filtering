@@ -3,7 +3,6 @@ import inspect
 import pkgutil
 import logging
 from os import path
-import pathlib
 
 logger = logging.getLogger("content-test-filtering.diff_analysis")
 
@@ -11,14 +10,14 @@ logger = logging.getLogger("content-test-filtering.diff_analysis")
 class UnknownAnalysisFileType(Exception):
     def __init__(self, filepath=None):
         self.message = filepath if filepath else None
-            
+
     def __str__(self):
         if self.message:
             return ("Unknown type of file %s" % self.message)
         else:
             return "Unknown file type for analysis"
 
-        
+
 def get_analyse_classes(modules):
     for module in modules:
         classes = inspect.getmembers(module, predicate=inspect.isclass)
@@ -27,7 +26,7 @@ def get_analyse_classes(modules):
             for method_name, _ in methods:
                 if method_name == "is_valid":
                     yield class_obj
-        
+
 
 def analyse_file(file_record):
     file_analyzer = None

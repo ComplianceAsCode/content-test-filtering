@@ -47,7 +47,7 @@ class BashAnalysis(AbstractAnalysis):
         changes = re.sub(r"^[^+-].*\n?", "", no_header, flags=re.MULTILINE)
         changes = re.sub(r"^\s*\n", "", changes, flags=re.MULTILINE)
         changes = [line for line in changes.split("\n") if line.strip() != ""]
-        return changes 
+        return changes
 
 
     def get_changes(self):
@@ -86,7 +86,7 @@ class BashAnalysis(AbstractAnalysis):
                 break
             token_before = tokens_before.get_token()
             token_after = tokens_after.get_token()
-        
+
         # At least one isn't empty -> stream reading was terminated -> something changed
         if token_before or token_after:
             self.add_product_test(self.rule_name)

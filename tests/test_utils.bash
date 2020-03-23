@@ -16,11 +16,6 @@ function prepare_repository() {
 function clean_up() {
         cd "$repo_dir"
         git reset --hard master
-        #rm "$tmp_file"
-}
-
-function setup() {
-        tmp_file="$(mktemp)"
 }
 
 function teardown() {

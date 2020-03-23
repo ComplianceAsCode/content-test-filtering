@@ -1,4 +1,4 @@
-from abc import ABC, abstractmethod
+from abc import ABC
 from ctf.diff import git_wrapper
 from ctf.constants import FileType
 

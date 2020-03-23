@@ -1,15 +1,12 @@
-import os
 import re
-import sys
 import logging
 import importlib
+import xml.etree.ElementTree as ET
 from itertools import chain
 from deepdiff import DeepDiff
-from xmldiff import main, formatting, actions
+from xmldiff import main, actions
 from ctf.analysis.AbstractAnalysis import AbstractAnalysis
 from ctf.diffstruct.OVALDiff import OVALDiffStruct
-import xml.etree.ElementTree as ET
-from io import StringIO
 from ctf.utils import get_repository_files
 
 
@@ -60,10 +57,10 @@ class OVALAnalysis(AbstractAnalysis):
                     rule_match = re.search(r"/((?:\w|-)+)/oval", content_file)
                     rule_name = rule_match.group(1)
                     if not rule_name in affected_rules:
-                        affected_rules.append(rule_name)                            
+                        affected_rules.append(rule_name)
         return affected_rules
 
-        
+
     def add_rule_test(self):
         super().add_rule_test(self.rule_name)
         affected_rules = self.find_affected_rules()
@@ -109,7 +106,7 @@ class OVALAnalysis(AbstractAnalysis):
         else:
             self.add_rule_test()
 
-        
+
     def delete_attr_change(self, change):
         if change.name == "comment" or change.name == "version":
             return
@@ -136,7 +133,7 @@ class OVALAnalysis(AbstractAnalysis):
         if "/title" in change.node or "/description" in change.node or "platform" in change.node:
             return
         else:
-            self.add_rule_test() 
+            self.add_rule_test()
 
 
     def analyse_oval_change(self, change):
@@ -160,7 +157,7 @@ class OVALAnalysis(AbstractAnalysis):
             self.add_rule_test()
         # InsertAttrib and InsertComment changes are ignored
 
-    
+
     def get_changes(self):
         diff = self.load_diff()
         changes = self.get_unidiff_changes(diff)
@@ -177,7 +174,7 @@ class OVALAnalysis(AbstractAnalysis):
                 continue
             self.add_rule_test()
 
-            
+
     def get_ssg_constants_module(self):
         git_diff = importlib.import_module("ctf.diff")
         spec  = importlib.util.spec_from_file_location("ssg.constants",
@@ -196,7 +193,7 @@ class OVALAnalysis(AbstractAnalysis):
                         self.content_before +
                         ssg_constants.oval_footer)
         return wrapped_oval
-        
+
     def analyse_oval(self):
         # Load constants for OVAL header and footer
         ssg_const = self.get_ssg_constants_module()
