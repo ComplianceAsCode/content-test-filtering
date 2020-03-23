@@ -130,10 +130,10 @@ class ContentTests:
         if hasattr(diff_struct, "product") and diff_struct.product:
             self.add_product_build(diff_struct.absolute_path, diff_struct.product)
             if hasattr(diff_struct, "rule") and diff_struct.rule:
-                if diff_struct.file_type == FileType.BASH:
-                    remediation_type = "bash"
-                elif diff_struct.file_type == FileType.YAML:
+                if diff_struct.file_type == FileType.YAML:
                     remediation_type = "ansible"
+                else:
+                    remediation_type = "bash"
                 self.add_rules_test(diff_struct.absolute_path, diff_struct.profile,
                                     diff_struct.product, [diff_struct.rule], remediation_type)
             if hasattr(diff_struct, "other_affected_files") and diff_struct.other_affected_files:

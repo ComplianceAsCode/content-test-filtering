@@ -48,6 +48,8 @@ class OVALAnalysis(AbstractAnalysis):
             all_ids.add(node_id.attrib["id"])
 
         for content_file in get_repository_files():
+            if not content_file.endswith(".xml"):
+                continue
             with open(content_file) as f:
                 f.seek(0)
                 file_content = f.read()
@@ -191,7 +193,7 @@ class OVALAnalysis(AbstractAnalysis):
         header_without_ns = re.sub(r'\sxmlns="[^"]+"', '',
                                    ssg_constants.oval_header, count=1)
         wrapped_oval = (header_without_ns +
-                        self.content_before +
+                        oval_content +
                         ssg_constants.oval_footer)
         return wrapped_oval
 
@@ -212,6 +214,14 @@ class OVALAnalysis(AbstractAnalysis):
 
     def process_analysis(self):
         logger.info("Analyzing OVAL file " + self.filepath)
+
+        if self.is_added():
+            self.add_product_test(self.rule_name)
+            # Do not search for rule references if newly added. Just add rule test
+            super().add_rule_test(self.rule_name)
+            return
+        elif self.is_removed():
+            return
 
         was_templated = self.is_templated(self.content_before)
         is_templated = self.is_templated(self.content_after)
