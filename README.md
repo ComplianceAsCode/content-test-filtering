@@ -11,7 +11,6 @@ This project filters tests based on static analysis of changed files. Changed fi
 - PyYAML (Python package)
 - DeepDiff (Python package)
 - Jinja2 (Python package)
-- ruamel.yaml (Python package)
 - xmldiff (Python package)
 
 
@@ -19,7 +18,7 @@ This project filters tests based on static analysis of changed files. Changed fi
 Fedora/RHEL:
 ```
 yum install python3 git
-pip install gitpython PyYAML deepdiff Jinja2 ruamel.yaml xmldiff
+pip install gitpython PyYAML deepdiff Jinja2 xmldiff
 git clone https://github.com/mildas/content-test-filtering
 ```
 
