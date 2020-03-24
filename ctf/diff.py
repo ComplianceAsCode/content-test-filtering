@@ -182,6 +182,7 @@ class GitDiffWrapper(metaclass=Singleton):
             self.remote_name.fetch(fetch_refs, force=True)
         logger.info("Fetched to " + target_branch + " branch")
 
+        self.new_branch = target_branch
         self.diverge_commit = self.get_compare_commit(old_branch, target_branch)
         file_records = self.create_file_records_from_diff(self.diverge_commit)
         return file_records
