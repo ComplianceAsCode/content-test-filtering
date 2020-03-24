@@ -13,13 +13,11 @@ class AnsibleAnalysis(AbstractAnalysis):
         self.diff_struct = AnsibleDiffStruct(self.filepath)
         self.rule_name = re.match(r".+/(\w+)/ansible/\w+\.yml$", self.filepath).group(1)
 
-
     @staticmethod
     def is_valid(filepath):
         if re.match(r".+/ansible/\w+\.yml$", filepath):
             return True
         return False
-
 
     def is_templated(self, content):
         # Delete template {{{ ... }}}
@@ -29,15 +27,13 @@ class AnsibleAnalysis(AbstractAnalysis):
         # Delete empty and commented lines
         lines = [line for line in lines if not re.match(r"^\s*(\s*|#.*)$", line)]
         # If no lines left - only important code was template -> templated
-        templated = False if lines else True
+        templated = not lines
         return templated
-
 
     def load_diff(self):
         diff = DeepDiff(self.content_before, self.content_after)
         diff = diff["values_changed"]["root"]["diff"]
         return diff
-
 
     def get_unidiff_changes(self, diff):
         # Remove unified diff header
@@ -47,8 +43,7 @@ class AnsibleAnalysis(AbstractAnalysis):
         changes = re.sub(r"^[^+-].*\n?", "", no_header, flags=re.MULTILINE)
         changes = re.sub(r"^\s*\n", "", changes, flags=re.MULTILINE)
         changes = [line for line in changes.split("\n") if line.strip() != ""]
-        return changes 
-
+        return changes
 
     def get_changes(self):
         diff = self.load_diff()
@@ -71,7 +66,6 @@ class AnsibleAnalysis(AbstractAnalysis):
                 continue
             self.add_rule_test(self.rule_name)
 
-
     def analyse_ansible(self):
         changes = self.get_changes()
         # Check all changed lines
@@ -87,9 +81,8 @@ class AnsibleAnalysis(AbstractAnalysis):
                 continue
             self.add_rule_test(self.rule_name)
 
-
     def process_analysis(self):
-        logger.info("Analyzing ansible file " + self.filepath)
+        logger.info("Analyzing ansible file %s", self.filepath)
 
         if self.is_added():
             self.add_product_test(self.rule_name)
@@ -101,10 +94,10 @@ class AnsibleAnalysis(AbstractAnalysis):
         was_templated = self.is_templated(self.content_before)
         is_templated = self.is_templated(self.content_after)
 
-        if was_templated and is_templated: # Was and is templated
+        if was_templated and is_templated:  # Was and is templated
             self.analyse_template()
-        elif any([was_templated, is_templated]): # Templatization changed
+        elif any([was_templated, is_templated]):  # Templatization changed
             self.add_product_test(self.rule_name)
             self.add_rule_test(self.rule_name)
-        else: # Not templated
+        else:  # Not templated
             self.analyse_ansible()

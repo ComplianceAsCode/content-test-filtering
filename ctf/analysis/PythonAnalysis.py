@@ -11,13 +11,11 @@ class PythonAnalysis(AbstractAnalysis):
         super().__init__(file_record)
         self.diff_struct = PythonDiffStruct(self.filepath)
 
-
     @staticmethod
     def is_valid(filepath):
         if filepath.endswith(".py"):
             return True
         return False
-
 
     # Source: https://stackoverflow.com/a/19598419/11067001 by Yorik.sar
     def are_ast_same(self, node1, node2):
@@ -36,9 +34,8 @@ class PythonAnalysis(AbstractAnalysis):
         else:
             return node1 == node2
 
-
     def process_analysis(self):
-        logger.info("Analyzing python file " + self.filepath)
+        logger.info("Analyzing python file %s", self.filepath)
 
         if self.is_added():
             self.add_sanity_test()

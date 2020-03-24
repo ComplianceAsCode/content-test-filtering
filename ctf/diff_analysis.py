@@ -1,4 +1,3 @@
-import sys
 import inspect
 import pkgutil
 import logging
@@ -9,13 +8,15 @@ logger = logging.getLogger("content-test-filtering.diff_analysis")
 
 class UnknownAnalysisFileType(Exception):
     def __init__(self, filepath=None):
+        super().__init__(filepath)
         self.message = filepath if filepath else None
 
     def __str__(self):
         if self.message:
-            return ("Unknown type of file %s" % self.message)
+            message = "Unknown type of file %s" % self.message
         else:
-            return "Unknown file type for analysis"
+            message = "Unknown file type for analysis"
+        return message
 
 
 def get_analyse_classes(modules):

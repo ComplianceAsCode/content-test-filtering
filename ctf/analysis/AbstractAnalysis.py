@@ -20,31 +20,26 @@ class AbstractAnalysis(metaclass=ABCMeta):
     def process_analysis(self):
         pass
 
-
     @staticmethod
     @abstractmethod
     def is_valid(filepath):
         return False
 
-
     def analyse(self):
         self.process_analysis()
         return self.diff_struct
 
-
     def is_added(self):
         if self.file_flag == "A":
-            logger.info("File %s has been added." % self.filepath)
+            logger.info("File %s has been added.", self.filepath)
             return True
         return False
-
 
     def is_removed(self):
         if self.file_flag == "D":
-            logger.info("File %s has been removed." % self.filepath)
+            logger.info("File %s has been removed.", self.filepath)
             return True
         return False
-        
 
     def find_rule_profiles(self, rule):
         product_folders = []
@@ -70,32 +65,30 @@ class AbstractAnalysis(metaclass=ABCMeta):
                         if find_rule.search(line):
                             yield profile_file
 
-
     def get_rule_profiles(self, rule):
         profiles = []
         # Parse from matched profiles profile names
         for profile_path in self.find_rule_profiles(rule):
-            parse_file = re.match(r".+/(?:\w|-)+/profiles/((?:\w|-)+)\.profile", profile_path)
+            parse_file = re.match(r".+/(?:\w|-)+/profiles/((?:\w|-)+)\.profile",
+                                  profile_path)
             profiles.append(parse_file.group(1))
-        
-        return profiles
 
+        return profiles
 
     def get_rule_products(self, rule):
         products = []
         # Parse from matched profiles product names
         for profile_path in self.find_rule_profiles(rule):
-            parse_file = re.match(r".+/((?:\w|-)+)/profiles/(?:\w|-)+\.profile", profile_path)
+            parse_file = re.match(r".+/((?:\w|-)+)/profiles/(?:\w|-)+\.profile",
+                                  profile_path)
             products.append(parse_file.group(1))
 
         return products
-
 
     def add_product_test(self, rule_name):
         products = self.get_rule_products(rule_name)
         if products:
             self.diff_struct.product = products[0]
-
 
     def add_rule_test(self, rule_name):
         products = self.get_rule_products(rule_name)
@@ -103,11 +96,9 @@ class AbstractAnalysis(metaclass=ABCMeta):
             self.diff_struct.product = products[0]
         self.diff_struct.rule = rule_name
 
-
     def add_profile_test(self, product, profile):
         self.diff_struct.product = product
         self.diff_struct.profile = profile
-
 
     def add_sanity_test(self):
         self.diff_struct.sanity = True

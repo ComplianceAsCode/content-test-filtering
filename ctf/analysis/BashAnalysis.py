@@ -12,19 +12,18 @@ class BashAnalysis(AbstractAnalysis):
     def __init__(self, file_record):
         super().__init__(file_record)
         self.diff_struct = BashDiffStruct(self.filepath)
-        rule_name_match = re.match(r".+/((?:\w|_|-)+)/bash/((?:\w|_|-)+)\.sh$", self.filepath)
+        rule_name_match = re.match(r".+/((?:\w|_|-)+)/bash/((?:\w|_|-)+)\.sh$",
+                                   self.filepath)
         if rule_name_match.group(2) == "shared":
             self.rule_name = rule_name_match.group(1)
         else:
             self.rule_name = rule_name_match.group(2)
-
 
     @staticmethod
     def is_valid(filepath):
         if re.match(r".*/bash/\w+\.sh$", filepath):
             return True
         return False
-
 
     def is_templated(self, content):
         no_templates = re.sub(r"^\s*{{{(.|\n)+?}}}\s*$", "", content,
@@ -33,15 +32,13 @@ class BashAnalysis(AbstractAnalysis):
         # Delete empty and commented lines
         lines = [line for line in lines if not re.match(r"^\s*(\s*|#.*)$", line)]
         # If no lines left - only important code was template -> templated
-        templated = False if lines else True
+        templated = not lines
         return templated
-
 
     def load_diff(self):
         diff = DeepDiff(self.content_before, self.content_after)
         diff = diff["values_changed"]["root"]["diff"]
         return diff
-
 
     def get_unidiff_changes(self, diff):
         # Remove unified diff header
@@ -53,12 +50,10 @@ class BashAnalysis(AbstractAnalysis):
         changes = [line for line in changes.split("\n") if line.strip() != ""]
         return changes
 
-
     def get_changes(self):
         diff = self.load_diff()
         changes = self.get_unidiff_changes(diff)
         return changes
-
 
     def analyse_template(self):
         changes = self.get_changes()
@@ -77,7 +72,6 @@ class BashAnalysis(AbstractAnalysis):
                 continue
             self.add_rule_test(self.rule_name)
 
-
     def analyse_bash(self):
         tokens_before = shlex.shlex(self.content_before)
         tokens_after = shlex.shlex(self.content_after)
@@ -86,7 +80,7 @@ class BashAnalysis(AbstractAnalysis):
         token_before = tokens_before.get_token()
         token_after = tokens_after.get_token()
         while token_before and token_after:
-            if token_before != token_after: # Something has changed
+            if token_before != token_after:  # Something has changed
                 break
             token_before = tokens_before.get_token()
             token_after = tokens_after.get_token()
@@ -95,10 +89,9 @@ class BashAnalysis(AbstractAnalysis):
             self.add_product_test(self.rule_name)
             self.add_rule_test(self.rule_name)
 
-
     def process_analysis(self):
-        logger.info("Analyzing bash file " + self.filepath)
-        
+        logger.info("Analyzing bash file %s", self.filepath)
+
         if self.is_added():
             self.add_product_test(self.rule_name)
             self.add_rule_test(self.rule_name)
@@ -108,10 +101,10 @@ class BashAnalysis(AbstractAnalysis):
         was_templated = self.is_templated(self.content_before)
         is_templated = self.is_templated(self.content_after)
 
-        if was_templated and is_templated: # Was and is tempalted
+        if was_templated and is_templated:  # Was and is tempalted
             self.analyse_template()
-        elif any([was_templated, is_templated]): # Templatization changed
+        elif any([was_templated, is_templated]):  # Templatization changed
             self.add_product_test(self.rule_name)
             self.add_rule_test(self.rule_name)
-        else: # Not templated
+        else:  # Not templated
             self.analyse_bash()

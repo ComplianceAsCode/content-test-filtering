@@ -15,7 +15,6 @@ class ProfileDiffStruct(AbstractDiffStruct):
         self.removed_rules = set()
         self.extended_profiles = []
 
-
     def find_dependent_profiles(self, absolute_path, profile):
         # No profile - no dependencies
         if not self.profile:

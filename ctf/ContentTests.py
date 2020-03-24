@@ -11,11 +11,9 @@ class AbstractTest:
         self.absolute_path = path
         self.product = product
 
-
     @abstractmethod
     def get_tests(self, yaml_content):
         pass
-
 
     def translate_variable(self, replacement, placeholder, value):
         replaced = replacement.replace(placeholder, value)
@@ -47,7 +45,6 @@ class ProductTest(AbstractTest):
     def __init__(self, path, product):
         super().__init__(path, product)
 
-
     def get_tests(self, yaml_content):
         return []
 
@@ -58,7 +55,6 @@ class RulesTest(AbstractTest):
         self.profile = profile
         self.rules_list = rules_list
         self.remediation = remediation
-
 
     def get_tests(self, yaml_content):
         tests = []
@@ -75,7 +71,6 @@ class ProfileTest(AbstractTest):
     def __init__(self, path, profile, product):
         super().__init__(path, product)
         self.profile = profile
-
 
     def get_tests(self, yaml_content):
         tests = []
@@ -98,11 +93,10 @@ class LintTest(AbstractTest):
         FileType.JINJA: "jinjalint"
     }
 
-
     def __init__(self, path, file_type):
+        super().__init__(path, None)
         self.path = path
         self.type = self.TYPES[file_type]
-
 
     def get_tests(self, yaml_content):
         if self.type == FileType.NONE:
@@ -124,7 +118,6 @@ class ContentTests:
         self.product_build = []
         self.rules = []
         self.profiles = []
-
 
     def fill_tests(self, diff_struct):
         if hasattr(diff_struct, "product") and diff_struct.product:
@@ -151,31 +144,26 @@ class ContentTests:
         if hasattr(diff_struct, "sanity") and diff_struct.sanity:
             self.add_python_test(diff_struct.absolute_path)
 
-
     def add_product_build(self, path, product):
         product_build = ProductTest(path, product)
         self.products_affected.add(product)
         self.test_classes.append(product_build)
-
 
     def add_profile_test(self, path, profile, product):
         profile_test = ProfileTest(path, profile, product)
         self.products_affected.add(product)
         self.test_classes.append(profile_test)
 
-
     def add_rules_test(self, path, profile, product, rules_list, remediation="bash"):
         rules_test = RulesTest(path, profile, product, rules_list, remediation)
         self.products_affected.add(product)
         self.test_classes.append(rules_test)
-
 
     def add_python_test(self, path):
         product = "no_product"
         python_test = PythonTest(path, product)
         self.products_affected.add(product)
         self.test_classes.append(python_test)
-
 
     def get_product(self):
         for profile in self.profiles:

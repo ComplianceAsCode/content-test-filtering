@@ -4,9 +4,9 @@ from ctf.diff import git_wrapper
 
 def get_repository_files(subfolder=""):
     for root, dirs, files in os.walk(git_wrapper.repo_path + subfolder):
-        dirs[:] = list(filter(lambda x: not x in
-                                ["build", "build_new", "build_old",
-                                "docs", "utils", ".git"], dirs))
+        dirs[:] = list(filter(lambda x: x not in
+                              ["build", "build_new", "build_old",
+                               "docs", "utils", ".git"], dirs))
         for f in files:
             if f.endswith(".pyc") or f.endswith(".cache"):
                 continue

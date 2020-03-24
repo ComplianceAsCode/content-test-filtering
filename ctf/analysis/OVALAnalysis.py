@@ -22,22 +22,21 @@ class OVALAnalysis(AbstractAnalysis):
         self.tree_before = None
         self.tree_after = None
 
-
     @staticmethod
     def is_valid(filepath):
         if re.match(r".*/oval/\w+\.xml$", filepath):
             return True
         return False
 
-
     def is_templated(self, content):
-        no_templates = re.sub(r"^\s*{{{(.|\n)+?}}}\s*$", "", content, flags=re.MULTILINE)
-        no_comments = re.sub(r"^\s*<\!--(.|\n)+?-->\s*$", "", no_templates, flags=re.MULTILINE)
+        no_templates = re.sub(r"^\s*{{{(.|\n)+?}}}\s*$", "",
+                              content, flags=re.MULTILINE)
+        no_comments = re.sub(r"^\s*<\!--(.|\n)+?-->\s*$", "",
+                             no_templates, flags=re.MULTILINE)
         lines = no_comments.split("\n")
         lines = [line for line in lines if not re.match(r"\s*(\s*|#.*)$", line)]
-        templated = False if lines else True
+        templated = not lines
         return templated
-
 
     def find_affected_rules(self):
         all_ids = {self.diff_struct.rule}
@@ -58,89 +57,72 @@ class OVALAnalysis(AbstractAnalysis):
                         continue
                     rule_match = re.search(r"/((?:\w|-)+)/oval", content_file)
                     rule_name = rule_match.group(1)
-                    if not rule_name in affected_rules:
+                    if rule_name not in affected_rules:
                         affected_rules.append(rule_name)
         return affected_rules
-
 
     def add_rule_test(self):
         super().add_rule_test(self.rule_name)
         affected_rules = self.find_affected_rules()
         self.diff_struct.other_affected_rules.extend(affected_rules)
 
-
     def load_diff(self):
         diff = DeepDiff(self.content_before, self.content_after)
         diff = diff["values_changed"]["root"]["diff"]
         return diff
 
-
     def get_unidiff_changes(self, diff):
         # Remove header and parse added/removed lines
-        no_header = re.sub(r"^(\+\+\+\s*|---\s*|@@.+@@)\n", "", diff, flags=re.MULTILINE)
+        no_header = re.sub(r"^(\+\+\+\s*|---\s*|@@.+@@)\n", "",
+                           diff, flags=re.MULTILINE)
         changes = re.sub(r"^[^+-].*\n?", "", no_header, flags=re.MULTILINE)
         changes = re.sub(r"^\s*\n", "", changes, flags=re.MULTILINE)
         changes = [line for line in changes.split("\n") if line.strip() != ""]
         return changes
 
-
     def insert_node_change(self, change):
-        if "/metadata/" in change.target:
-            return
-        else:
+        if "/metadata/" not in change.target:
             self.add_rule_test()
-
 
     def delete_node_change(self, change):
-        if "/metadata/" in change.node:
-            return
-        else:
+        if "/metadata/" not in change.node:
             self.add_rule_test()
-
 
     def move_node_change(self, change):
         # Node moved within same node should not change behavior of the rule
         if ("/metadata/" in change.node and "/metadata/" in change.target) or\
            ("/criteria/" in change.node and "/criteria/" in change.target) or\
-           ("textfilecontent54_test/" in change.node and "textfilecontent54_test/" in change.target) or\
-           ("textfilecontent54_object/" in change.node and "textfilecontent54_object/" in change.target) or\
-           ("textfilecontent54_state/" in change.node and "textfilecontent54_state/" in change.target):
+           ("textfilecontent54_test/" in change.node and
+            "textfilecontent54_test/" in change.target) or\
+           ("textfilecontent54_object/" in change.node and
+            "textfilecontent54_object/" in change.target) or\
+           ("textfilecontent54_state/" in change.node and
+            "textfilecontent54_state/" in change.target):
             return
         else:
             self.add_rule_test()
-
 
     def delete_attr_change(self, change):
-        if change.name == "comment" or change.name == "version":
-            return
-        else:
+        if change.name != "comment" and change.name != "version":
             self.add_rule_test()
-
 
     def rename_attr_change(self, change):
-        if change.oldname == "comment" or change.oldname == "version":
-            # Probably should perform product build for sanity (doesn't need to be tested)
-            return
-        else:
+        if change.oldname != "comment" and change.oldname != "version":
             self.add_rule_test()
-
+        # Probably should perform product build for sanity?
 
     def update_attr_change(self, change):
-        if change.name == "comment" or change.name == "version":
-            return
-        else:
+        if change.name != "comment" and change.name != "version":
             self.add_rule_test()
-
 
     def update_text_change(self, change):
-        if "/title" in change.node or "/description" in change.node or "platform" in change.node:
-            return
-        else:
+        if ("/title" not in change.node and
+            "/description" not in change.node and
+            "platform" not in change.node):
             self.add_rule_test()
 
-
     def analyse_oval_change(self, change):
-        # TODO: Should it be analysed separately each change or could it be merged?
+        # TODO: Should it be analysed separately each change?
         if isinstance(change, actions.InsertNode):
             self.insert_node_change(change)
         elif isinstance(change, actions.DeleteNode):
@@ -155,17 +137,15 @@ class OVALAnalysis(AbstractAnalysis):
             self.update_attr_change(change)
         elif isinstance(change, actions.UpdateTextIn):
             self.update_text_change(change)
-        # Looks like a new text after node (NOT in node) -> must be tested everytime
+        # Looks like a new text after node (NOT in node) -> must be tested
         elif isinstance(change, actions.UpdateTextAfter):
             self.add_rule_test()
         # InsertAttrib and InsertComment changes are ignored
-
 
     def get_changes(self):
         diff = self.load_diff()
         changes = self.get_unidiff_changes(diff)
         return changes
-
 
     def analyse_template(self):
         changes = self.get_changes()
@@ -177,7 +157,6 @@ class OVALAnalysis(AbstractAnalysis):
                 continue
             self.add_rule_test()
 
-
     def get_ssg_constants_module(self):
         git_diff = importlib.import_module("ctf.diff")
         spec  = importlib.util.spec_from_file_location("ssg.constants",
@@ -187,9 +166,8 @@ class OVALAnalysis(AbstractAnalysis):
         spec.loader.exec_module(ssg_const)
         return ssg_const
 
-
     def create_valid_oval(self, oval_content, ssg_constants):
-        # Remove empty namespace from XML (caused errors in ElemetTree processing)
+        # Remove empty namespace from XML (caused errors in ET processing)
         header_without_ns = re.sub(r'\sxmlns="[^"]+"', '',
                                    ssg_constants.oval_header, count=1)
         wrapped_oval = (header_without_ns +
@@ -201,8 +179,10 @@ class OVALAnalysis(AbstractAnalysis):
         # Load constants for OVAL header and footer
         ssg_const = self.get_ssg_constants_module()
         # Wrap OVAL for valid XML file
-        wrapped_oval_before = self.create_valid_oval(self.content_before, ssg_const)
-        wrapped_oval_after = self.create_valid_oval(self.content_after, ssg_const)
+        wrapped_oval_before = self.create_valid_oval(self.content_before,
+                                                     ssg_const)
+        wrapped_oval_after = self.create_valid_oval(self.content_after,
+                                                    ssg_const)
         # Create ElementTrees
         self.tree_before = ET.fromstring(wrapped_oval_before)
         self.tree_after = ET.fromstring(wrapped_oval_after)
@@ -211,13 +191,12 @@ class OVALAnalysis(AbstractAnalysis):
         for change in changes:
             self.analyse_oval_change(change)
 
-
     def process_analysis(self):
-        logger.info("Analyzing OVAL file " + self.filepath)
+        logger.info("Analyzing OVAL file %s", self.filepath)
 
         if self.is_added():
             self.add_product_test(self.rule_name)
-            # Do not search for rule references if newly added. Just add rule test
+            # Don't search for rule references if newly added.
             super().add_rule_test(self.rule_name)
             return
         elif self.is_removed():

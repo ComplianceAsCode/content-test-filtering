@@ -12,7 +12,7 @@ TEST_LABELS = "test_labels.yml"
 def get_labels(content_tests):
     template_loader = jinja2.FileSystemLoader(
                         searchpath=str(Path(__file__).parent / ".."))
-    template_env = jinja2.Environment(loader=template_loader)
+    template_env = jinja2.Environment(loader=template_loader, autoescape=True)
     tests = []
 
     for product in content_tests.products_affected:
