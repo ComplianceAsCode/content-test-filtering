@@ -12,7 +12,11 @@ class BashAnalysis(AbstractAnalysis):
     def __init__(self, file_record):
         super().__init__(file_record)
         self.diff_struct = BashDiffStruct(self.filepath)
-        self.rule_name = re.match(r".+/(\w+)/bash/\w+\.sh$", self.filepath).group(1)
+        rule_name_match = re.match(r".+/((?:\w|_|-)+)/bash/((?:\w|_|-)+)\.sh$", self.filepath)
+        if rule_name_match.group(2) == "shared":
+            self.rule_name = rule_name_match.group(1)
+        else:
+            self.rule_name = rule_name_match.group(2)
 
 
     @staticmethod
@@ -86,9 +90,8 @@ class BashAnalysis(AbstractAnalysis):
                 break
             token_before = tokens_before.get_token()
             token_after = tokens_after.get_token()
-
-        # At least one isn't empty -> stream reading was terminated -> something changed
-        if token_before or token_after:
+        # If they are different
+        if token_before != token_after:
             self.add_product_test(self.rule_name)
             self.add_rule_test(self.rule_name)
 
