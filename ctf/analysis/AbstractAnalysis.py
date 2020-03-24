@@ -22,12 +22,8 @@ class AbstractAnalysis(metaclass=ABCMeta):
 
     @staticmethod
     @abstractmethod
-    def is_valid(filepath):
+    def can_analyse(filepath):
         return False
-
-    def analyse(self):
-        self.process_analysis()
-        return self.diff_struct
 
     def is_added(self):
         if self.file_flag == "A":

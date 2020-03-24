@@ -83,7 +83,7 @@ class JinjaAnalysis(AbstractAnalysis):
         self.diff_struct = JinjaDiffStruct(self.filepath)
 
     @staticmethod
-    def is_valid(filepath):
+    def can_analyse(filepath):
         if filepath.endswith(".jinja"):
             return True
         return False
@@ -244,3 +244,5 @@ class JinjaAnalysis(AbstractAnalysis):
                                             else changed_old_macros
 
         self.analyse_macros(changed_macros)
+
+        return self.diff_struct

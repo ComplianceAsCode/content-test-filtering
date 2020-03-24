@@ -12,7 +12,7 @@ class PythonAnalysis(AbstractAnalysis):
         self.diff_struct = PythonDiffStruct(self.filepath)
 
     @staticmethod
-    def is_valid(filepath):
+    def can_analyse(filepath):
         if filepath.endswith(".py"):
             return True
         return False
@@ -39,11 +39,13 @@ class PythonAnalysis(AbstractAnalysis):
 
         if self.is_added():
             self.add_sanity_test()
-            return
+            return self.diff_struct
         elif self.is_removed():
-            return
+            return self.diff_struct
 
         ast_before = ast.parse(self.content_before)
         ast_after = ast.parse(self.content_after)
         if not self.are_ast_same(ast_before, ast_after):
             self.add_sanity_test()
+
+        return self.diff_struct

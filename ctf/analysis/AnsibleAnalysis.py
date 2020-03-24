@@ -14,7 +14,7 @@ class AnsibleAnalysis(AbstractAnalysis):
         self.rule_name = re.match(r".+/(\w+)/ansible/\w+\.yml$", self.filepath).group(1)
 
     @staticmethod
-    def is_valid(filepath):
+    def can_analyse(filepath):
         if re.match(r".+/ansible/\w+\.yml$", filepath):
             return True
         return False
@@ -87,9 +87,9 @@ class AnsibleAnalysis(AbstractAnalysis):
         if self.is_added():
             self.add_product_test(self.rule_name)
             self.add_rule_test(self.rule_name)
-            return
+            return self.diff_struct
         elif self.is_removed():
-            return
+            return self.diff_struct
 
         was_templated = self.is_templated(self.content_before)
         is_templated = self.is_templated(self.content_after)
@@ -101,3 +101,5 @@ class AnsibleAnalysis(AbstractAnalysis):
             self.add_rule_test(self.rule_name)
         else:  # Not templated
             self.analyse_ansible()
+
+        return self.diff_struct

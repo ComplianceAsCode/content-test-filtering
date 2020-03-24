@@ -21,7 +21,7 @@ class ProfileAnalysis(AbstractAnalysis):
         self.profile = path[-1].split(".")[0]
 
     @staticmethod
-    def is_valid(filepath):
+    def can_analyse(filepath):
         if filepath.endswith(".profile"):
             return True
         return False
@@ -95,9 +95,9 @@ class ProfileAnalysis(AbstractAnalysis):
 
         if self.is_added():
             self.new_profile_added()
-            return
+            return self.diff_struct
         elif self.is_removed():
-            return
+            return self.diff_struct
 
         self.analyse_changes()
         self.diff_struct.find_dependent_profiles(self.diff_struct.absolute_path,
@@ -107,3 +107,5 @@ class ProfileAnalysis(AbstractAnalysis):
                     " ".join(self.diff_struct.added_rules))
         logger.info("Removed rules from profile: %s",
                     " ".join(self.diff_struct.removed_rules))
+
+        return self.diff_struct

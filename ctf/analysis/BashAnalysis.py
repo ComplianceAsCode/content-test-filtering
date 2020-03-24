@@ -20,7 +20,7 @@ class BashAnalysis(AbstractAnalysis):
             self.rule_name = rule_name_match.group(2)
 
     @staticmethod
-    def is_valid(filepath):
+    def can_analyse(filepath):
         if re.match(r".*/bash/\w+\.sh$", filepath):
             return True
         return False
@@ -95,8 +95,9 @@ class BashAnalysis(AbstractAnalysis):
         if self.is_added():
             self.add_product_test(self.rule_name)
             self.add_rule_test(self.rule_name)
+            return self.diff_struct
         elif self.is_removed():
-            return
+            return self.diff_struct
 
         was_templated = self.is_templated(self.content_before)
         is_templated = self.is_templated(self.content_after)
@@ -108,3 +109,5 @@ class BashAnalysis(AbstractAnalysis):
             self.add_rule_test(self.rule_name)
         else:  # Not templated
             self.analyse_bash()
+
+        return self.diff_struct

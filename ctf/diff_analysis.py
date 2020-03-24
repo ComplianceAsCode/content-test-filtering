@@ -25,7 +25,7 @@ def get_analyse_classes(modules):
         for _, class_obj in classes:
             methods = inspect.getmembers(class_obj, predicate=inspect.isfunction)
             for method_name, _ in methods:
-                if method_name == "is_valid":
+                if method_name == "can_analyse":
                     yield class_obj
 
 
@@ -43,7 +43,7 @@ def analyse_file(file_record):
 
     # Get all classes with "is_valid" method
     for analyse_class in get_analyse_classes(analysis_modules):
-        if analyse_class.is_valid(file_record["filepath"]):
+        if analyse_class.can_analyse(file_record["filepath"]):
             file_analyzer = analyse_class(file_record)
             break
 
@@ -51,4 +51,4 @@ def analyse_file(file_record):
     if not file_analyzer:
         raise UnknownAnalysisFileType(file_record["filepath"])
 
-    return file_analyzer.analyse()
+    return file_analyzer.process_analysis()

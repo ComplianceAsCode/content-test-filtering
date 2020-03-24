@@ -23,7 +23,7 @@ class OVALAnalysis(AbstractAnalysis):
         self.tree_after = None
 
     @staticmethod
-    def is_valid(filepath):
+    def can_analyse(filepath):
         if re.match(r".*/oval/\w+\.xml$", filepath):
             return True
         return False
@@ -198,9 +198,9 @@ class OVALAnalysis(AbstractAnalysis):
             self.add_product_test(self.rule_name)
             # Don't search for rule references if newly added.
             super().add_rule_test(self.rule_name)
-            return
+            return self.diff_struct
         elif self.is_removed():
-            return
+            return self.diff_struct
 
         was_templated = self.is_templated(self.content_before)
         is_templated = self.is_templated(self.content_after)
@@ -212,3 +212,5 @@ class OVALAnalysis(AbstractAnalysis):
             self.add_product_test(self.rule_name)
         else:
             self.analyse_oval()
+
+        return self.diff_struct
