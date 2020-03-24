@@ -4,9 +4,9 @@ load test_utils
 prepare_repository
 
 
-@test "Change documentation_complete" {
-    file="rhel8/profiles/ospp.profile"
-    sed -i 's/documentation_complete: true/documentation_complete: false/' "$file"
+@test "Add comment line" {
+    file="./linux_os/guide/system/software/integrity/disable_prelink/oval/shared.xml"
+    sed -i "/<def-group>/a <!--comment-->" "$file"
     regex_check="INFO .*\s-\s\[]$"
 
     git add "$file" && git commit -m "test commit" &>/dev/null
@@ -21,10 +21,10 @@ prepare_repository
     fi
 }
 
-@test "Change title" {
-    file="rhel8/profiles/ospp.profile"
-    sed -i "s/title: .*/title: 'Some title'/" "$file"
-    regex_check="INFO .*\s-\s\[]$"
+@test "Change filepath in OVAL" {
+    file="./linux_os/guide/system/software/integrity/disable_prelink/oval/shared.xml"
+    sed -i 's/PRELINKING=no/PRELINKING=yes/' "$file"
+    regex_check="INFO .*\s-\s\[.*build_product .*test_suite.py rule.*disable_prelink.*]$"
 
     git add "$file" && git commit -m "test commit" &>/dev/null
 
@@ -38,15 +38,13 @@ prepare_repository
     fi
 }
 
-@test "Add new category" {
-    file="rhel8/profiles/ospp.profile"
-    echo >> "$file"
-    sed -i "\$asome_category: 'with_string'" "$file"
-    regex_check="INFO .*\s-\s\[.*build_product\srhel8.*]$"
+@test "Change node in OVAL" {
+    file="./linux_os/guide/system/software/integrity/disable_prelink/oval/shared.xml"
+    sed -i '/PRELINKING=/d' "$file"
+    regex_check="INFO .*\s-\s\[.*build_product .*test_suite.py rule.*disable_prelink.*]$"
 
     git add "$file" && git commit -m "test commit" &>/dev/null
 
-    echo $tmp_file
     python3 $BATS_TEST_DIRNAME/../content_test_filtering.py base_branch --local --repository "$repo_dir" test_branch &> "$tmp_file"
 
     [ "$?" -eq 0 ]
@@ -57,26 +55,8 @@ prepare_repository
     fi
 }
 
-@test "Change rule (= adding new rule and removing old one)" {
-    file="rhel8/profiles/ospp.profile"
-    sed -i 's/disable_host_auth/enable_host_auth/' "$file"
-    regex_check="INFO .*\s-\s\[.*build_product rhel8.*test_suite\.py profile.*ospp.*]$"
-
-    git add "$file" && git commit -m "test commit" &>/dev/null
-
-    echo $tmp_file
-    python3 $BATS_TEST_DIRNAME/../content_test_filtering.py base_branch --local --repository "$repo_dir" test_branch &> "$tmp_file"
-
-    [ "$?" -eq 0 ]
-
-    if ! grep -q "$regex_check" "$tmp_file"; then
-        echo "$regex_check not found in:" && cat "$tmp_file"
-        return 1
-    fi
-}
-
-@test "Remove profile" {
-    file="rhel8/profiles/ospp.profile"
+@test "Remove OVAL check" {
+    file="./linux_os/guide/system/software/integrity/disable_prelink/oval/shared.xml"
     rm -f "$file"
     regex_check="INFO .*\s-\s\[]"
 
@@ -92,10 +72,11 @@ prepare_repository
     fi
 }
 
-@test "Add new profile" {
-    file="rhel8/profiles/some_profile.profile"
-    cat "rhel8/profiles/ospp.profile" > "$file"
-    regex_check="INFO .*\s-\s\[.*build_product rhel8.*test_suite\.py profile.*some_profile.*]"
+@test "Add new OVAL check" {
+    file="./linux_os/guide/services/ssh/ssh_server/sshd_disable_rhosts/oval/shared.xml"
+    mkdir -p "./linux_os/guide/services/ssh/ssh_server/sshd_disable_rhosts/oval/"
+    cat "./linux_os/guide/system/software/integrity/disable_prelink/oval/shared.xml" > "$file"
+    regex_check="INFO .*\s-\s\[.*build_product.*,.*test_suite\.py rule.*sshd_disable_rhosts.*]"
 
     git add "$file" && git commit -m "test commit" &>/dev/null
 

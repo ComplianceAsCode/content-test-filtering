@@ -72,3 +72,38 @@ prepare_repository
     fi
 }
 
+
+@test "Remove bash remediation" {
+    file="./linux_os/guide/services/ssh/ssh_server/sshd_use_approved_macs/bash/shared.sh"
+    rm -f "$file"
+    regex_check="INFO .*\s-\s\[]"
+
+    git add "$file" && git commit -m "test commit" &>/dev/null
+
+    python3 $BATS_TEST_DIRNAME/../content_test_filtering.py base_branch --local --repository "$repo_dir" test_branch &> "$tmp_file"
+
+    [ "$?" -eq 0 ]
+
+    if ! grep -q "$regex_check" "$tmp_file"; then
+        echo "$regex_check not found in:" && cat "$tmp_file"
+        return 1
+    fi
+}
+
+@test "Add new bash remediation" {
+    file="./linux_os/guide/services/ssh/ssh_server/sshd_disable_rhosts/bash/shared.sh"
+    mkdir -p "./linux_os/guide/services/ssh/ssh_server/sshd_disable_rhosts/bash/"
+    echo "echo \"IgnoreRhosts yes\" > /tmp/ssh_tmp_file" > "$file"
+    regex_check="INFO .*\s-\s\[.*build_product.*,.*test_suite\.py rule.*bash.*sshd_disable_rhosts.*]"
+
+    git add "$file" && git commit -m "test commit" &>/dev/null
+
+    python3 $BATS_TEST_DIRNAME/../content_test_filtering.py base_branch --local --repository "$repo_dir" test_branch &> "$tmp_file"
+
+    [ "$?" -eq 0 ]
+
+    if ! grep -q "$regex_check" "$tmp_file"; then
+        echo "$regex_check not found in:" && cat "$tmp_file"
+        return 1
+    fi
+}

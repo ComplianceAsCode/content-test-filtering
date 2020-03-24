@@ -54,5 +54,3 @@ prepare_repository
         return 1
     fi
 }
-
-
