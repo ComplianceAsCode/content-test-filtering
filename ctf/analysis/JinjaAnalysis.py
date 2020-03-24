@@ -7,6 +7,7 @@ from deepdiff import DeepDiff
 from ctf.analysis.AbstractAnalysis import AbstractAnalysis
 from ctf.diffstruct.JinjaDiff import JinjaDiffStruct
 from ctf.utils import get_repository_files, get_suffix
+from ctf.diff import git_wrapper
 
 logger = logging.getLogger("content-test-filtering.diff_analysis")
 
@@ -56,7 +57,7 @@ class JinjaMacroChange:
     def parse_macro_usage(self, filepath):
         if re.search(r"/(\w+)/(?:bash/|ansible/|oval/|rule\.yml)", filepath):
             self.in_rules.add(filepath)
-        elif re.search(r"\/template_\w+?_(\w+)$", filepath):
+        elif re.search(r"\/template_\w+?_((?:\w|_|-)+)$", filepath):
             self.in_templates.add(filepath)
         else:
             raise TypeError
@@ -144,7 +145,7 @@ class JinjaAnalysis(AbstractAnalysis):
 
 
     def find_template_usage(self, filepath):
-        match = re.search(r"\/template_(\w+?)_(\w+)$", filepath)
+        match = re.search(r"\/template_(\w+?)_((?:\w|_|-)+)$", filepath)
         file_type = match.group(1)
         macro_name = match.group(2)
         in_rules = []
@@ -166,13 +167,14 @@ class JinjaAnalysis(AbstractAnalysis):
         if not in_rules:
             return
 
+        git_wrapper.build_project("/build_old/", "/build_new/")
         # Get new and old builded template and compare them
         for build_file in get_repository_files("/build_new"):
             if not build_file.split("/")[-1] in in_rules:
                 continue
             with open(build_file) as f:
                 new_processed = f.read()
-            with open(build_file.replace("/build_old/", "/build_new/")) as f:
+            with open(build_file.replace("/build_new/", "/build_old/")) as f:
                 old_processed = f.read()
             file_record = mock_record(build_file, old_processed, new_processed)
             self.diff_struct.affected_files.append(file_record)
