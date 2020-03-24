@@ -24,7 +24,7 @@ class GitDiffWrapper(metaclass=Singleton):
         self.repository = None
         self.repo_path = None
         self.only_local = False
-        self.remote_name = None
+        self.remote = None
         self.old_branch = None
         self.new_branch = None
         self.diverge_commit = None
@@ -91,13 +91,14 @@ class GitDiffWrapper(metaclass=Singleton):
     def update_branch(self, branch):
         self.checkout_branch(branch)
         if not self.only_local:
-            self.repository.remotes.origin.pull()
+            self.remote.pull()
 
     def find_remote(self, remote):
         for r in self.repository.remotes:
             if re.search(remote, r.url):
-                self.remote_name = r
+                remote = r
                 break
+        return remote
 
     def get_compare_commit(self, old_branch, new_branch):
         self.checkout_branch(new_branch)
@@ -160,8 +161,8 @@ class GitDiffWrapper(metaclass=Singleton):
     def git_diff_files(self, old_branch, new_branch=None, pr_number=None):
         assert new_branch or pr_number
 
+        self.remote = self.find_remote(self.repo_url)
         self.update_branch(old_branch)
-        self.find_remote(self.repo_url)
 
         if new_branch:
             target_branch = new_branch
@@ -171,8 +172,8 @@ class GitDiffWrapper(metaclass=Singleton):
             fetch_refs = "pull/" + pr_number + "/head:" + target_branch
 
         if not self.only_local:
-            self.remote_name.fetch(fetch_refs, force=True)
-        logger.info("Fetched to %s branch")
+            self.remote.fetch(fetch_refs, force=True)
+        logger.info("Fetched to %s branch", target_branch)
 
         self.new_branch = target_branch
         self.diverge_commit = self.get_compare_commit(old_branch, target_branch)
