@@ -5,7 +5,7 @@ import importlib
 import sys
 from deepdiff import DeepDiff
 from ctf.analysis.AbstractAnalysis import AbstractAnalysis
-from ctf.diffstruct.JinjaDiff import JinjaDiffStruct
+from ctf.constants import FileType
 from ctf.utils import get_repository_files, get_suffix
 from ctf.diff import git_wrapper
 
@@ -67,9 +67,10 @@ class JinjaMacroChange:
 
 
 def mock_record(filepath, old_content, new_content):
+    relative_filepath = filepath.replace(git_wrapper.repo_path, "")
     record = {
         "flag": "M",
-        "filepath": filepath,
+        "filepath": relative_filepath,
         "file_before": old_content,
         "file_after": new_content
     }
@@ -80,7 +81,7 @@ def mock_record(filepath, old_content, new_content):
 class JinjaAnalysis(AbstractAnalysis):
     def __init__(self, file_record):
         super().__init__(file_record)
-        self.diff_struct = JinjaDiffStruct(self.filepath)
+        self.diff_struct.file_type = FileType.JINJA
 
     @staticmethod
     def can_analyse(filepath):
@@ -234,6 +235,12 @@ class JinjaAnalysis(AbstractAnalysis):
 
     def process_analysis(self):
         logger.info("Analyzing Jinja macro file %s", self.filepath)
+        if self.is_added():
+            return
+        elif self.is_removed():
+            self.diff_struct.add_funcionality_test()
+            return
+
         diff = self.load_diff()
         changes = self.analyse_jinja_diff(diff)
 

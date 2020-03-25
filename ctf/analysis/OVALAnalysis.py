@@ -6,7 +6,7 @@ from itertools import chain
 from deepdiff import DeepDiff
 from xmldiff import main, actions
 from ctf.analysis.AbstractAnalysis import AbstractAnalysis
-from ctf.diffstruct.OVALDiff import OVALDiffStruct
+from ctf.constants import FileType
 from ctf.utils import get_repository_files
 
 
@@ -16,7 +16,7 @@ logger = logging.getLogger("content-test-filtering.diff_analysis")
 class OVALAnalysis(AbstractAnalysis):
     def __init__(self, file_record):
         super().__init__(file_record)
-        self.diff_struct = OVALDiffStruct(self.filepath)
+        self.diff_struct.file_type = FileType.OVAL
         self.rule_name = re.match(r".+/(\w+)/oval/\w+\.xml$",
                                   self.diff_struct.absolute_path).group(1)
         self.tree_before = None
@@ -39,7 +39,7 @@ class OVALAnalysis(AbstractAnalysis):
         return templated
 
     def find_affected_rules(self):
-        all_ids = {self.diff_struct.rule}
+        all_ids = set()
         affected_rules = []
 
         for node_id in chain(self.tree_before.findall(".//*[@id]"),
@@ -62,9 +62,10 @@ class OVALAnalysis(AbstractAnalysis):
         return affected_rules
 
     def add_rule_test(self):
-        super().add_rule_test(self.rule_name)
+        self.diff_struct.add_changed_rule(self.rule_name)
         affected_rules = self.find_affected_rules()
-        self.diff_struct.other_affected_rules.extend(affected_rules)
+        for affected_rule in affected_rules:
+            self.diff_struct.add_changed_rule(affected_rule)
 
     def load_diff(self):
         diff = DeepDiff(self.content_before, self.content_after)
@@ -195,9 +196,9 @@ class OVALAnalysis(AbstractAnalysis):
         logger.info("Analyzing OVAL file %s", self.filepath)
 
         if self.is_added():
-            self.add_product_test(self.rule_name)
+            self.diff_struct.add_changed_product_by_rule(self.rule_name)
             # Don't search for rule references if newly added.
-            super().add_rule_test(self.rule_name)
+            self.diff_struct.add_changed_rule(self.rule_name)
             return self.diff_struct
         elif self.is_removed():
             return self.diff_struct
@@ -208,8 +209,8 @@ class OVALAnalysis(AbstractAnalysis):
         if was_templated and is_templated:
             self.analyse_template()
         elif any([was_templated, is_templated]):
-            self.add_rule_test()
-            self.add_product_test(self.rule_name)
+            self.diff_struct.add_changed_product_by_rule(self.rule_name)
+            self.diff_struct.add_changed_rule(self.rule_name)
         else:
             self.analyse_oval()
 

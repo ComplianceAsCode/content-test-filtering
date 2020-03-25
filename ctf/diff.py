@@ -2,6 +2,7 @@ import os
 import re
 import subprocess
 import logging
+import shutil
 from git import Repo
 from tempfile import mkdtemp
 
@@ -47,6 +48,8 @@ class GitDiffWrapper(metaclass=Singleton):
         old_build = self.repo_path + old_build_path
         new_build = self.repo_path + new_build_path
 
+        shutil.rmtree(old_build)
+        shutil.rmtree(new_build)
         try:
             os.mkdir(old_build)
         except FileExistsError:

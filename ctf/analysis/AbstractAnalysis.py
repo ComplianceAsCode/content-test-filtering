@@ -2,6 +2,7 @@ import re
 import logging
 import os
 from abc import ABCMeta, abstractmethod
+from ctf.DiffStruct import DiffStruct
 from ctf.diff import git_wrapper
 
 logger = logging.getLogger("content_test_filtering.diff_analysis")
@@ -9,12 +10,12 @@ logger = logging.getLogger("content_test_filtering.diff_analysis")
 
 class AbstractAnalysis(metaclass=ABCMeta):
     def __init__(self, file_record):
-        self.diff_struct = None
         self.filepath = file_record["filepath"]
         self.file_flag = file_record["flag"]
         self.file_name = self.filepath.split("/")[-1]
         self.content_before = file_record["file_before"]
         self.content_after = file_record["file_after"]
+        self.diff_struct = DiffStruct(self.filepath)
 
     @abstractmethod
     def process_analysis(self):

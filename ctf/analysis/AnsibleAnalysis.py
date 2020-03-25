@@ -1,8 +1,8 @@
 import re
 import logging
 from deepdiff import DeepDiff
+from ctf.constants import FileType
 from ctf.analysis.AbstractAnalysis import AbstractAnalysis
-from ctf.diffstruct.AnsibleDiff import AnsibleDiffStruct
 
 logger = logging.getLogger("content_test_filtering.diff_analysis")
 
@@ -10,7 +10,8 @@ logger = logging.getLogger("content_test_filtering.diff_analysis")
 class AnsibleAnalysis(AbstractAnalysis):
     def __init__(self, file_record):
         super().__init__(file_record)
-        self.diff_struct = AnsibleDiffStruct(self.filepath)
+        #self.diff_struct = AnsibleDiffStruct(self.filepath)
+        self.diff_struct.file_type = FileType.YAML
         self.rule_name = re.match(r".+/(\w+)/ansible/\w+\.yml$", self.filepath).group(1)
 
     @staticmethod
@@ -59,7 +60,7 @@ class AnsibleAnalysis(AbstractAnalysis):
                 continue
             # Important comment
             if re.match(r"^(\+|-)\s*#\s*(platform|reboot|strategy|complexity|disruption)\s*=\s*.*$", line):
-                self.add_product_test(self.rule_name)
+                self.diff_struct.add_changed_product_by_rule(self.rule_name)
                 continue
             # Not important comment
             if re.match(r"^(\+|-)\s*#.*$", line):
@@ -73,20 +74,20 @@ class AnsibleAnalysis(AbstractAnalysis):
             if re.match(r"^(\+|-)\s*$", line):
                 continue
             if re.match(r"^(\+|-)\s*#\s*(platform|reboot|strategy|complexity|disruption)\s*=\s*.*$", line):
-                self.add_product_test(self.rule_name)
+                self.diff_struct.add_changed_product_by_rule(self.rule_name)
                 continue
             if re.match(r"^(\+|-)\s*#.*$", line):
                 continue
             if re.match(r"^(\+|-)\s*-?\s*name\s*:\s*\S+.*$", line):
                 continue
-            self.add_rule_test(self.rule_name)
+            self.diff_struct.add_changed_rule(self.rule_name)
 
     def process_analysis(self):
         logger.info("Analyzing ansible file %s", self.filepath)
 
         if self.is_added():
-            self.add_product_test(self.rule_name)
-            self.add_rule_test(self.rule_name)
+            self.diff_struct.add_changed_product_by_rule(self.rule_name)
+            self.diff_struct.add_changed_rule(self.rule_name)
             return self.diff_struct
         elif self.is_removed():
             return self.diff_struct
@@ -97,8 +98,8 @@ class AnsibleAnalysis(AbstractAnalysis):
         if was_templated and is_templated:  # Was and is templated
             self.analyse_template()
         elif any([was_templated, is_templated]):  # Templatization changed
-            self.add_product_test(self.rule_name)
-            self.add_rule_test(self.rule_name)
+            self.diff_struct.add_changed_product_by_rule(self.rule_name)
+            self.diff_struct.add_changed_rule(self.rule_name)
         else:  # Not templated
             self.analyse_ansible()
 

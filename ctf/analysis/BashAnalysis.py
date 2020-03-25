@@ -3,7 +3,7 @@ import logging
 import shlex
 from deepdiff import DeepDiff
 from ctf.analysis.AbstractAnalysis import AbstractAnalysis
-from ctf.diffstruct.BashDiff import BashDiffStruct
+from ctf.constants import FileType
 
 logger = logging.getLogger("content-test-filtering.diff_analysis")
 
@@ -11,7 +11,7 @@ logger = logging.getLogger("content-test-filtering.diff_analysis")
 class BashAnalysis(AbstractAnalysis):
     def __init__(self, file_record):
         super().__init__(file_record)
-        self.diff_struct = BashDiffStruct(self.filepath)
+        self.diff_struct.file_type = FileType.BASH
         rule_name_match = re.match(r".+/((?:\w|_|-)+)/bash/((?:\w|_|-)+)\.sh$",
                                    self.filepath)
         if rule_name_match.group(2) == "shared":
@@ -65,12 +65,12 @@ class BashAnalysis(AbstractAnalysis):
                 continue
             # Important comment
             if re.match(r"^(\+|-)\s*#\s*(platform|reboot|strategy|complexity|disruption)\s*=\s*.*$", line):
-                self.add_product_test(self.rule_name)
+                self.diff_struct.add_changed_product_by_rule(self.rule_name)
                 continue
             # Not important comment
             if re.match(r"^(\+|-)\s*#.*$", line):
                 continue
-            self.add_rule_test(self.rule_name)
+            self.diff_struct.add_changed_rule(self.rule_name)
 
     def analyse_bash(self):
         tokens_before = shlex.shlex(self.content_before)
@@ -86,15 +86,15 @@ class BashAnalysis(AbstractAnalysis):
             token_after = tokens_after.get_token()
         # If they are different
         if token_before != token_after:
-            self.add_product_test(self.rule_name)
-            self.add_rule_test(self.rule_name)
+            self.diff_struct.add_changed_product_by_rule(self.rule_name)
+            self.diff_struct.add_changed_rule(self.rule_name)
 
     def process_analysis(self):
         logger.info("Analyzing bash file %s", self.filepath)
 
         if self.is_added():
-            self.add_product_test(self.rule_name)
-            self.add_rule_test(self.rule_name)
+            self.diff_struct.add_changed_product_by_rule(self.rule_name)
+            self.diff_struct.add_changed_rule(self.rule_name)
             return self.diff_struct
         elif self.is_removed():
             return self.diff_struct
@@ -105,8 +105,8 @@ class BashAnalysis(AbstractAnalysis):
         if was_templated and is_templated:  # Was and is tempalted
             self.analyse_template()
         elif any([was_templated, is_templated]):  # Templatization changed
-            self.add_product_test(self.rule_name)
-            self.add_rule_test(self.rule_name)
+            self.diff_struct.add_changed_product_by_rule(self.rule_name)
+            self.diff_struct.add_changed_rule(self.rule_name)
         else:  # Not templated
             self.analyse_bash()
 

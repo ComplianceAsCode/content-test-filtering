@@ -1,8 +1,9 @@
+import os
 import logging
 import yaml
 from deepdiff import DeepDiff
 from ctf.analysis.AbstractAnalysis import AbstractAnalysis
-from ctf.diffstruct.ProfileDiff import ProfileDiffStruct
+from ctf.constants import FileType
 
 logger = logging.getLogger("content-test-filtering.diff_analysis")
 
@@ -14,17 +15,25 @@ FILTER_LIST = ["root['documentation_complete']", "root['title']",
 class ProfileAnalysis(AbstractAnalysis):
     def __init__(self, file_record):
         super().__init__(file_record)
-        self.diff_struct = ProfileDiffStruct(self.filepath)
+        self.diff_struct.file_type = FileType.PROFILE
         path = self.filepath.split("/")
         # format: PRODUCT/profiles/PROFILE.profile
         self.product = path[0]
         self.profile = path[-1].split(".")[0]
+        self.added_rules = []
+        self.removed_rules = []
 
     @staticmethod
     def can_analyse(filepath):
         if filepath.endswith(".profile"):
             return True
         return False
+
+    def add_profile_test(self):
+        self.diff_struct.add_changed_profile(self.profile, self.product)
+        self.find_dependent_profiles(self.diff_struct.absolute_path,
+                                     self.profile)
+
 
     def iterate_changed_rules(self, items):
         items_list = []
@@ -34,28 +43,29 @@ class ProfileAnalysis(AbstractAnalysis):
         return items_list
 
     def item_added(self, items):
-        self.add_profile_test(self.product, self.profile)
-        self.diff_struct.added_rules.update(self.iterate_changed_rules(items))
+        self.add_profile_test()
+        self.added_rules.extend(self.iterate_changed_rules(items))
 
     def item_removed(self, items):
-        self.add_profile_test(self.product, self.profile)
-        self.diff_struct.removed_rules.update(self.iterate_changed_rules(items))
+        self.add_profile_test()
+        self.removed_rules.extend(self.iterate_changed_rules(items))
 
     def check_changed_values(self, items):
         for key in items:
             if "root['selections']" in key:
-                self.diff_struct.added_rules.update(self.iterate_changed_rules(items))
+                self.add_profile_test()
+                return
 
     def dict_added(self, items):
         if len(items) != len(set(items) & set(FILTER_LIST)):
-            self.add_profile_test(self.product, self.profile)
+            self.add_profile_test()
 
     def dict_removed(self, items):
         if len(items) != len(set(items) & set(FILTER_LIST)):
-            self.add_profile_test(self.product, self.profile)
+            self.add_profile_test()
 
     def type_changed(self):
-        self.add_profile_test(self.product, self.profile)
+        self.add_profile_test()
 
     def analyse_changes(self):
         # Load previous and new profile
@@ -85,10 +95,48 @@ class ProfileAnalysis(AbstractAnalysis):
         new_profile = yaml.safe_load(self.content_after)
         try:
             rules = new_profile["selections"]
-            self.diff_struct.added_rules = rules
+            self.added_rules = rules
         except KeyError:
             logger.warning("New profile doesn't contain any rule.")
-        self.add_profile_test(self.product, self.profile)
+        self.add_profile_test()
+
+    def find_dependent_profiles(self, absolute_path, profile):
+        # No profile - no dependencies
+        if not self.profile:
+            return
+
+        extended_profiles = []
+        folder = os.path.dirname(absolute_path)
+        # Look to profiles for same product
+        for f in os.listdir(folder):
+            # Not a profile file
+            if not f.endswith(".profile"):
+                continue
+
+            filepath = folder + "/" + f
+            with open(filepath, "r") as stream:
+                # Load to dict
+                try:
+                    profile_file = yaml.safe_load(stream)
+                except yaml.YAMLError as e:
+                    print(e)
+
+                # Try get which profile it extends
+                try:
+                    extends = profile_file["extends"]
+                    if extends == profile:
+                        extended_profiles.append(filepath)
+                # Profile does not extend any other profile
+                except KeyError:
+                    pass
+
+        # For each profile which is extended by changed profile
+        # add it for testing and find which profiles they are extended by
+        for f in extended_profiles:
+            path = f.split("/")[-1]
+            profile_name = path.split(".")[0]
+            self.diff_struct.add_changed_profile(profile_name, self.product)
+            self.find_dependent_profiles(f, profile_name)
 
     def process_analysis(self):
         logger.info("Analyzing profile file %s", self.filepath)
@@ -100,12 +148,10 @@ class ProfileAnalysis(AbstractAnalysis):
             return self.diff_struct
 
         self.analyse_changes()
-        self.diff_struct.find_dependent_profiles(self.diff_struct.absolute_path,
-                                                 self.profile)
 
         logger.info("Added rules to profile: %s",
-                    " ".join(self.diff_struct.added_rules))
+                    " ".join(self.added_rules))
         logger.info("Removed rules from profile: %s",
-                    " ".join(self.diff_struct.removed_rules))
+                    " ".join(self.removed_rules))
 
         return self.diff_struct

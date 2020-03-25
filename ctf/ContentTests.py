@@ -2,7 +2,6 @@ import logging
 from abc import abstractmethod
 from ctf.constants import FileType
 
-
 logger = logging.getLogger("content-test-filtering.ContentTests")
 
 
@@ -50,9 +49,8 @@ class ProductTest(AbstractTest):
 
 
 class RulesTest(AbstractTest):
-    def __init__(self, path, profile, product, rules_list, remediation="bash"):
+    def __init__(self, path, product, rules_list, remediation="bash"):
         super().__init__(path, product)
-        self.profile = profile
         self.rules_list = rules_list
         self.remediation = remediation
 
@@ -120,28 +118,20 @@ class ContentTests:
         self.profiles = []
 
     def fill_tests(self, diff_struct):
-        if hasattr(diff_struct, "product") and diff_struct.product:
-            self.add_product_build(diff_struct.absolute_path, diff_struct.product)
-            if hasattr(diff_struct, "rule") and diff_struct.rule:
-                if diff_struct.file_type == FileType.YAML:
-                    remediation_type = "ansible"
-                else:
-                    remediation_type = "bash"
-                self.add_rules_test(diff_struct.absolute_path, diff_struct.profile,
-                                    diff_struct.product, [diff_struct.rule], remediation_type)
-            if hasattr(diff_struct, "other_affected_files") and diff_struct.other_affected_files:
-                self.add_rules_test(diff_struct.absolute_path, diff_struct.profile,
-                                    diff_struct.product, diff_struct.other_affected_files)
-            if hasattr(diff_struct, "profile") and diff_struct.profile:
-                self.add_profile_test(diff_struct.absolute_path, diff_struct.profile,
-                                      diff_struct.product)
-            if hasattr(diff_struct, "extended_profiles") and diff_struct.extended_profiles:
-                for extended in diff_struct.extended_profiles:
-                    self.add_profile_test(None, extended, diff_struct.product)
-            if hasattr(diff_struct, "added_rules") and diff_struct.added_rules:
-                self.add_rules_test(diff_struct.absolute_path, diff_struct.profile,
-                                    diff_struct.product, diff_struct.added_rules)
-        if hasattr(diff_struct, "sanity") and diff_struct.sanity:
+        remediation_type = "ansible" if diff_struct.file_type == FileType.YAML\
+                                     else "bash"
+
+        for product in diff_struct.changed_products:
+            self.add_product_build(diff_struct.absolute_path, product)
+
+        for product, rule in diff_struct.get_changed_rules_with_products():
+            self.add_rule_test(diff_struct.absolute_path, product, rule,
+                               remediation_type)
+
+        for product, profile in diff_struct.get_changed_profiles_with_products():
+            self.add_profile_test(diff_struct.absolute_path, product, profile)
+
+        if diff_struct.funcionality_changed:
             self.add_python_test(diff_struct.absolute_path)
 
     def add_product_build(self, path, product):
@@ -149,13 +139,18 @@ class ContentTests:
         self.products_affected.add(product)
         self.test_classes.append(product_build)
 
-    def add_profile_test(self, path, profile, product):
+    def add_profile_test(self, path, product, profile):
         profile_test = ProfileTest(path, profile, product)
         self.products_affected.add(product)
         self.test_classes.append(profile_test)
 
+    def add_rule_test(self, path, product, rule, remediation="bash"):
+        rule_test = RulesTest(path, product, [rule], remediation)
+        self.products_affected.add(product)
+        self.test_classes.append(rule_test)
+
     def add_rules_test(self, path, profile, product, rules_list, remediation="bash"):
-        rules_test = RulesTest(path, profile, product, rules_list, remediation)
+        rules_test = RulesTest(path, product, rules_list, remediation)
         self.products_affected.add(product)
         self.test_classes.append(rules_test)
 
