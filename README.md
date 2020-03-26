@@ -14,7 +14,7 @@ This project filters tests based on static analysis of changed files. Changed fi
 
 ## Installation
 Fedora/RHEL:
-```bash
+```
 yum install python3 git
 pip install gitpython PyYAML deepdiff Jinja2 xmldiff
 git clone https://github.com/mildas/content-test-filtering
@@ -24,14 +24,14 @@ git clone https://github.com/mildas/content-test-filtering
 Project has two modes how to get changes from `git`:
 -  **Pull request number** - get changes from specific [Pull request created for ComplianceAsCode project](https://github.com/ComplianceAsCode/content/pulls)
 -  **Branch name** - name of a branch
-```bash
+```
 $ python3 content_test_filtering.py --help
-usage: content_test_filtering.py [-h] {pr,base_branch} ...
+usage: content_test_filtering.py [-h] {pr,branch} ...
 
 positional arguments:
-  {pr,base_branch}  Subcommands: pr, branch
+  {pr,branch}  Subcommands: pr, branch
     pr              Compare base against selected pull request
-    base_branch     Compare base against selected branch
+    branch     Compare base against selected branch
 
 optional arguments:
   -h, --help        show this help message and exit
@@ -40,11 +40,12 @@ optional arguments:
 Both modes have common optional arguments:
 -  **--base BASE_BRANCH** - Base branch which is used for comparison with new changes. If not provided, `master` branch is used as base branch.
 -  **--repository REPOSITORY_PATH** - Path to ComplianceAsCode repository. If not provided, the repository will be clonned into temporary folder under `/tmp` path. *WARNING:* Newly clonned repository is **NOT deleted** after finishing.
+-  **--remote_repo REMOTE_REPO** - Remote repository for pulling, updating and finding branches (Pull requests). Default is `https://github.com/ComplianceAsCode/content`.
 
 ### Examples
 **Pull request mode**
 As an example of is used [PR#4957](https://github.com/ComplianceAsCode/content/pull/4957)
-```bash
+```
 $ python3 content_test_filtering.py pr --repository /tmp/content 4957
 INFO 16:46:52 - Getting files from 'git diff'
 INFO 16:46:54 - Fetched to pr-4957 branch
@@ -56,16 +57,24 @@ INFO 16:46:56 - ['build_product rhel7', 'test_suite.py profile --libvirt qemu://
 INFO 16:46:56 - Finished
 ```
 
-**Base branch mode**
+**Branch mode**
 Branch mode is similar as Pull request mode. The difference is in arguments used.
-```bash
-$ python3 content_test_filtering.py base_branch --repository /tmp/content stabilization-v0.1.49
-INFO 16:52:54 - Getting files from 'git diff'
-INFO 16:52:56 - Fetched to stabilization-v0.1.49 branch
-INFO 16:52:57 - Comparing commit b3d8dc340d71659167be6304a0bbd3f2e4ee9fac with HEAD of stabilization-v0.1.49
-WARNING 16:52:57 - Unknown type of file Contributors.md. Analysis has not been performed for it.
-WARNING 16:52:57 - Unknown type of file Contributors.xml. Analysis has not been performed for it.
-INFO 16:52:57 - []
+[ComplainceAsCode](https://github.com/ComplianceAsCode/content) project usually doesn't have any branches, so for testing purposes was created [ctf_test_branch](https://github.com/ComplianceAsCode/content/compare/master...mildas:ctf_test_branch) at [forked repository](https://github.com/mildas/scap-security-guide).
+
+*WARNING*: You need to specify [remote repository](https://github.com/mildas/scap-security-guide). And add it to git tracked repositories (`git remote` command) or let `content-test-filtering` to clone it's own repository.
+```
+$ python3 content_test_filtering.py branch --remote_repo https://github.com/mildas/scap-security-guide --repository /tmp/content ctf_test_branch
+INFO 22:05:50 - Getting files from 'git diff'
+INFO 22:05:52 - Fetched to ctf_test_branch branch
+INFO 22:05:52 - Comparing commit 9bcd1c9f004d539cde8eddfed918b60633d8aaef with HEAD of ctf_test_branch
+INFO 22:05:53 - Analyzing ansible file linux_os/guide/services/ssh/ssh_server/sshd_use_approved_macs/ansible/shared.yml
+INFO 22:05:53 - Analyzing bash file linux_os/guide/system/software/integrity/software-integrity/rpm_verification/rpm_verify_permissions/bash/shared.sh
+INFO 22:05:53 - Analyzing profile file rhel8/profiles/ospp.profile
+INFO 22:05:53 - Added rules to profile: 
+INFO 22:05:53 - Removed rules from profile: 
+INFO 22:05:53 - Analyzing python file ssg/utils.py
+INFO 22:05:53 - ['(cd build && ctest -j4)', 'build_product wrlinux1019', 'test_suite.py rule --libvirt qemu:///system test-suite-vm --remediate ansible --datastream build/ssg-wrlinux1019-ds.xml sshd_use_approved_macs', 'test_suite.py rule --libvirt qemu:///system test-suite-vm --remediate bash --datastream build/ssg-wrlinux1019-ds.xml rpm_verify_permissions']
+INFO 22:05:53 - Finished
 ```
 
 ### Local testing
@@ -86,7 +95,7 @@ $ git diff
 $ git add ./linux_os/guide/services/ssh/ssh_server/sshd_disable_compression/ansible/shared.yml
 $ git commit -m "Update remediation"
 $ cd ~/content-test-filtering
-$ python3 content_test_filtering.py base_branch --local --repository /tmp/content test_branch
+$ python3 content_test_filtering.py branch --local --repository /tmp/content test_branch
 INFO 17:10:42 - Getting files from 'git diff'
 INFO 17:10:42 - Fetched to test_branch branch
 INFO 17:10:42 - Comparing commit 0f7a0015b15af9dad9950c622b19ecb292b5c83f with HEAD of test_branch
