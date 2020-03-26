@@ -1,6 +1,9 @@
 import os
 import re
+import logging
 from ctf.diff import git_wrapper
+
+logger = logging.getLogger("content-test-filtering.diff")
 
 
 class DiffStruct:
@@ -94,6 +97,8 @@ class DiffStruct:
         if product_name:
             product_name = product_name[0]
         else:
+            logger.warning("%s rule was doesn't occur in any profile nor "
+                           "product. It won't be tested." , rule_name)
             return
 
         self.changed_products.add(product_name)

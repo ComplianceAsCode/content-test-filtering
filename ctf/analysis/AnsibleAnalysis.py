@@ -4,7 +4,7 @@ from deepdiff import DeepDiff
 from ctf.constants import FileType
 from ctf.analysis.AbstractAnalysis import AbstractAnalysis
 
-logger = logging.getLogger("content_test_filtering.diff_analysis")
+logger = logging.getLogger("content-test-filtering.diff_analysis")
 
 
 class AnsibleAnalysis(AbstractAnalysis):

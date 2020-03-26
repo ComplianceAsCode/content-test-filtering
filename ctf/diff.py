@@ -20,8 +20,8 @@ class Singleton(type):
 
 
 class GitDiffWrapper(metaclass=Singleton):
-    def __init__(self, github_repo_url):
-        self.repo_url = github_repo_url
+    def __init__(self):
+        self.repo_url = None
         self.repository = None
         self.repo_path = None
         self.only_local = False
@@ -31,7 +31,8 @@ class GitDiffWrapper(metaclass=Singleton):
         self.diverge_commit = None
         self.current_branch = None
 
-    def git_init(self, local_repo_path=None, local=False):
+    def git_init(self, remote_repo, local_repo_path=None, local=False):
+        self.repo_url = remote_repo
         self.repo_path = local_repo_path
         self.prepare_repo_dir()
         self.repo_path = os.path.abspath(self.repo_path)
@@ -184,4 +185,4 @@ class GitDiffWrapper(metaclass=Singleton):
         return file_records
 
 
-git_wrapper = GitDiffWrapper(URL)
+git_wrapper = GitDiffWrapper()

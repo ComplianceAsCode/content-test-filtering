@@ -29,13 +29,13 @@ class PythonTest(AbstractTest):
         test_build = yaml_content["ctest_build"]
         tests.append(test_build)
 
-        profile = yaml_content["profile"]
-        profile = self.translate_variable(profile, "%profile_name%", "ospp")
-        tests.append(profile)
-
-        rule = yaml_content["rule_bash"]
-        rule = self.translate_variable(rule, "%rule_name%", "some_rule")
-        tests.append(rule)
+        # TODO: Does it make sense to test profile and rule when Python file changes?
+        #profile = yaml_content["profile"]
+        #profile = self.translate_variable(profile, "%profile_name%", "ospp")
+        #tests.append(profile)
+        #rule = yaml_content["rule_bash"]
+        #rule = self.translate_variable(rule, "%rule_name%", "some_rule")
+        #tests.append(rule)
 
         return tests
 

@@ -13,7 +13,7 @@ prepare_repository
 
     git add "$file" && git commit -m "test commit" &>/dev/null
 
-    python3 $BATS_TEST_DIRNAME/../content_test_filtering.py base_branch --local --repository "$repo_dir" test_branch &> "$tmp_file"
+    python3 $BATS_TEST_DIRNAME/../content_test_filtering.py branch --local --repository "$repo_dir" test_branch &> "$tmp_file"
 
     [ "$?" -eq 0 ]
 

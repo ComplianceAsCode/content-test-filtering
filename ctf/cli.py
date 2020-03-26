@@ -13,6 +13,11 @@ def parse_args():
                                help=("Path to ComplianceAsCode repository. "
                                      "If not provided, the repository will be "
                                      "cloned into /tmp folder."))
+    common_parser.add_argument("--remote_repo", dest="remote_repo",
+                               default="https://github.com/ComplianceAsCode/content",
+                               help=("Remote repository string serving as "
+                                     "search pattern for finding remote repository "
+                                     "name. Default is /ComplianceAsCode/content."))
 
     common_parser.add_argument("--local", dest="local", default=False,
                                action="store_true", help="Do not pull from remote, "
@@ -31,10 +36,8 @@ def parse_args():
                            help=("Pull request number, which we want compare "
                                  "against base"))
 
-    parser_branch = subparsers.add_parser("base_branch",
-                                          parents=[common_parser],
-                                          help=("Compare base against "
-                                                "selected branch"))
+    parser_branch = subparsers.add_parser("branch", parents=[common_parser],
+                                          help=("Compare base against selected branch"))
     parser_branch.add_argument("branch", metavar="BRANCH_NAME", default=None,
                                help=("Branch, which we want compare "
                                      "against base"))
