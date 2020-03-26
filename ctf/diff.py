@@ -3,11 +3,20 @@ import re
 import subprocess
 import logging
 import shutil
-from git import Repo
+from git import Repo, GitCommandError
 from tempfile import mkdtemp
 
 logger = logging.getLogger("content-test-filtering.diff")
 URL = "https://github.com/ComplianceAsCode/content"
+
+
+class RemoteNotFound(Exception):
+    def __init__(self, message):
+        super().__init__(message)
+        self.message = message
+
+    def __str__(self):
+        return self.message
 
 
 class Singleton(type):
@@ -95,13 +104,17 @@ class GitDiffWrapper(metaclass=Singleton):
     def update_branch(self, branch):
         self.checkout_branch(branch)
         if not self.only_local:
-            self.remote.pull()
+            self.remote.pull(branch)
 
-    def find_remote(self, remote):
+    def find_remote(self, remote_url):
+        remote = None
         for r in self.repository.remotes:
-            if re.search(remote, r.url):
+            if re.search(remote_url, r.url):
                 remote = r
                 break
+        if not remote:
+            raise RemoteNotFound("Remote repository '%s' was not found "
+                                 "in local tracked repositories." % remote_url)
         return remote
 
     def get_compare_commit(self, old_branch, new_branch):

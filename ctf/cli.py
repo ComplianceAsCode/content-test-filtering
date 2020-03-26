@@ -15,9 +15,9 @@ def parse_args():
                                      "cloned into /tmp folder."))
     common_parser.add_argument("--remote_repo", dest="remote_repo",
                                default="https://github.com/ComplianceAsCode/content",
-                               help=("Remote repository string serving as "
-                                     "search pattern for finding remote repository "
-                                     "name. Default is /ComplianceAsCode/content."))
+                               help=("Remote repository for pulling, updating "
+                                     "and finding branches (Pull requests). Default "
+                                     "is https://github.com/ComplianceAsCode/content."))
 
     common_parser.add_argument("--local", dest="local", default=False,
                                action="store_true", help="Do not pull from remote, "
