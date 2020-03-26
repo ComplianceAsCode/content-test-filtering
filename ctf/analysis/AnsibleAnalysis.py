@@ -10,7 +10,6 @@ logger = logging.getLogger("content-test-filtering.diff_analysis")
 class AnsibleAnalysis(AbstractAnalysis):
     def __init__(self, file_record):
         super().__init__(file_record)
-        #self.diff_struct = AnsibleDiffStruct(self.filepath)
         self.diff_struct.file_type = FileType.YAML
         self.rule_name = re.match(r".+/(\w+)/ansible/\w+\.yml$", self.filepath).group(1)
 

@@ -34,7 +34,6 @@ class ProfileAnalysis(AbstractAnalysis):
         self.find_dependent_profiles(self.diff_struct.absolute_path,
                                      self.profile)
 
-
     def iterate_changed_rules(self, items):
         items_list = []
         for key, value in items:

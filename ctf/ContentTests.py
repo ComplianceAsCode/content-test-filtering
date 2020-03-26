@@ -149,7 +149,7 @@ class ContentTests:
         self.products_affected.add(product)
         self.test_classes.append(rule_test)
 
-    def add_rules_test(self, path, profile, product, rules_list, remediation="bash"):
+    def add_rules_test(self, path, product, rules_list, remediation="bash"):
         rules_test = RulesTest(path, product, rules_list, remediation)
         self.products_affected.add(product)
         self.test_classes.append(rules_test)

@@ -98,7 +98,7 @@ class DiffStruct:
             product_name = product_name[0]
         else:
             logger.warning("%s rule was doesn't occur in any profile nor "
-                           "product. It won't be tested." , rule_name)
+                           "product. It won't be tested.", rule_name)
             return
 
         self.changed_products.add(product_name)

@@ -160,9 +160,9 @@ class OVALAnalysis(AbstractAnalysis):
 
     def get_ssg_constants_module(self):
         git_diff = importlib.import_module("ctf.diff")
-        spec  = importlib.util.spec_from_file_location("ssg.constants",
-                                                       git_diff.git_wrapper.repo_path
-                                                       + "/ssg/constants.py")
+        spec = importlib.util.spec_from_file_location("ssg.constants",
+                                                      git_diff.git_wrapper.repo_path
+                                                      + "/ssg/constants.py")
         ssg_const = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(ssg_const)
         return ssg_const

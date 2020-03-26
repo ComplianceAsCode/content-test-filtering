@@ -17,7 +17,7 @@ class JinjaMacroChange:
         self.name = name
         self.higher_macros = []
         self.in_rules = set()
-        self.in_templates = set()  # TODO - vyplnit + pokud pujde o template, pak poresit
+        self.in_templates = set()
         self.find_usages()
 
     def find_where_macro_used(self, macro_name, filepath):
@@ -194,7 +194,7 @@ class JinjaAnalysis(AbstractAnalysis):
         changed_lines = []
         # Find lines in changed part of content (starting and number of
         # lines is known from unified diff)
-        for i, line in enumerate(content.split("\n"), start=1): # unidiff starts at 1
+        for i, line in enumerate(content.split("\n"), start=1):  # unidiff starts at 1
             for change in changes:
                 if i not in range(change["starting_line"],
                                   change["starting_line"]+change["number_of_lines"]):
@@ -236,10 +236,10 @@ class JinjaAnalysis(AbstractAnalysis):
     def process_analysis(self):
         logger.info("Analyzing Jinja macro file %s", self.filepath)
         if self.is_added():
-            return
+            return self.diff_struct
         elif self.is_removed():
             self.diff_struct.add_funcionality_test()
-            return
+            return self.diff_struct
 
         diff = self.load_diff()
         changes = self.analyse_jinja_diff(diff)
