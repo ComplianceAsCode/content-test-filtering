@@ -28,7 +28,7 @@ class JinjaMacroChange:
             matches = re.findall(r"{{%(?:\s|-|\n)+?macro(?:\s|\n)(?:.|\n)+?endmacro(?:\s|-|\n)+?%}}", content)
 
             for match in matches:
-                higher_macro = re.search(r"(?:\s|-)macro(?:\s|\n)+([^(]+)\((?:.|\n)+" + macro_name, match)
+                higher_macro = re.search(r"(?:\s|-)macro(?:\s|\n)+([^(]+)\((?:.|\n)+\{{3}(?:\s|-|\n)" + macro_name + r"(?:\s|\n)*\(", match)
                 if higher_macro:
                     usages.append(higher_macro.group(1))
             return usages
@@ -175,6 +175,8 @@ class JinjaAnalysis(AbstractAnalysis):
     def analyse_jinja_diff(self, diff):
         changes = []
         for line in diff.split("\n"):
+            if re.match(r"^(\+{3}|-{3})\s", line):
+                continue
             m = re.match(r"@@\s-(.+)\s\+(.+)\s@@", line)
             if m:
                 change = {"changed_lines": []}
@@ -185,7 +187,7 @@ class JinjaAnalysis(AbstractAnalysis):
                 else:
                     change["number_of_lines"] = 1
                 changes.append(change)
-            m = re.match(r"^(?:\+|-)([^\+-]*)$", line)
+            m = re.match(r"^(?:\+|-)(.*)$", line)
             if m:
                 change["changed_lines"].append(m.group(1))
         return changes

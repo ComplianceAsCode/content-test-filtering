@@ -8,7 +8,7 @@ def get_repository_files(subfolder=""):
                               ["build", "build_new", "build_old",
                                "docs", "utils", ".git"], dirs))
         for f in files:
-            if f.endswith(".pyc") or f.endswith(".cache"):
+            if f.endswith(".pyc") or f.endswith(".cache") or f.endswith(".swp"):
                 continue
             filepath = root + "/" + f
             yield filepath
