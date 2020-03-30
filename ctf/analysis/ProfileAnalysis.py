@@ -38,11 +38,19 @@ class ProfileAnalysis(AbstractAnalysis):
         self.find_dependent_profiles(self.diff_struct.absolute_path,
                                      self.profile)
 
+    def is_rule(self, value):
+        if "=" in value:
+            logger.info("Value of %s variable in %s profile for %s changed.",
+                        value.split("=")[0], self.profile, self.product)
+            return False
+        return True
+
     def iterate_changed_rules(self, items):
         items_list = []
         for key, value in items:
             if "root['selections']" in key:
-                items_list.append(value)
+                if self.is_rule(value):
+                    items_list.append(value)
         return items_list
 
     def item_added(self, items):
