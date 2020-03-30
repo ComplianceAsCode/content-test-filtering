@@ -20,6 +20,7 @@ function clean_up() {
 
 function setup() {
         tmp_file="$(mktemp)"
+        no_test_regex="No test to run."
 }
 
 function teardown() {

@@ -76,6 +76,8 @@ class DiffStruct:
             if product_name:
                 product_name = product_name[0]
             else:
+                logger.warning("%s rule doesn't occur in any profile nor "
+                               "product. It won't be tested.", rule_name)
                 return
 
         if product_name in self.changed_rules:
@@ -97,7 +99,7 @@ class DiffStruct:
         if product_name:
             product_name = product_name[0]
         else:
-            logger.warning("%s rule was doesn't occur in any profile nor "
+            logger.warning("%s rule doesn't occur in any profile nor "
                            "product. It won't be tested.", rule_name)
             return
 

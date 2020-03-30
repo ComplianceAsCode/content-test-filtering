@@ -57,6 +57,7 @@ class OVALAnalysis(AbstractAnalysis):
                         continue
                     rule_match = re.search(r"/((?:\w|-)+)/oval", content_file)
                     rule_name = rule_match.group(1)
+                    logger.info("%s rule affected by the change.", rule_name)
                     if rule_name not in affected_rules:
                         affected_rules.append(rule_name)
         return affected_rules
@@ -125,21 +126,29 @@ class OVALAnalysis(AbstractAnalysis):
     def analyse_oval_change(self, change):
         # TODO: Should it be analysed separately each change?
         if isinstance(change, actions.InsertNode):
+            logger.info("New node to XML added.")
             self.insert_node_change(change)
         elif isinstance(change, actions.DeleteNode):
+            logger.info("Node from XML deleted.")
             self.delete_node_change(change)
         elif isinstance(change, actions.MoveNode):
+            logger.info("Node within XML moved.")
             self.move_node_change(change)
         elif isinstance(change, actions.DeleteAttrib):
+            logger.info("Atrribute in XML deleted.")
             self.delete_attr_change(change)
         elif isinstance(change, actions.RenameAttrib):
+            logger.info("Atrribute in XML renamed.")
             self.rename_attr_change(change)
         elif isinstance(change, actions.UpdateAttrib):
+            logger.info("Attributed in XML updated.")
             self.update_attr_change(change)
         elif isinstance(change, actions.UpdateTextIn):
+            logger.info("Text in XML changed.")
             self.update_text_change(change)
         # Looks like a new text after node (NOT in node) -> must be tested
         elif isinstance(change, actions.UpdateTextAfter):
+            logger.info("Text added outside XML node.")
             self.add_rule_test()
         # InsertAttrib and InsertComment changes are ignored
 
@@ -194,13 +203,16 @@ class OVALAnalysis(AbstractAnalysis):
 
     def process_analysis(self):
         logger.info("Analyzing OVAL file %s", self.filepath)
+        logger.info("Rule name: %s", self.rule_name)
 
         if self.is_added():
+            logger.info("OVAL check for %s is newly added.", self.rule_name)
             self.diff_struct.add_changed_product_by_rule(self.rule_name)
             # Don't search for rule references if newly added.
             self.diff_struct.add_changed_rule(self.rule_name)
             return self.diff_struct
         elif self.is_removed():
+            logger.info("OVAL check for %s was deleted.", self.rule_name)
             return self.diff_struct
 
         was_templated = self.is_templated(self.content_before)
@@ -209,6 +221,8 @@ class OVALAnalysis(AbstractAnalysis):
         if was_templated and is_templated:
             self.analyse_template()
         elif any([was_templated, is_templated]):
+            logger.info("Templatization change for %s OVAL check.",
+                        self.rule_name)
             self.diff_struct.add_changed_product_by_rule(self.rule_name)
             self.diff_struct.add_changed_rule(self.rule_name)
         else:

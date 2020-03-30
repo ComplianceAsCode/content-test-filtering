@@ -22,6 +22,7 @@ class ProfileAnalysis(AbstractAnalysis):
         self.profile = path[-1].split(".")[0]
         self.added_rules = []
         self.removed_rules = []
+        self.test_already_added = False
 
     @staticmethod
     def can_analyse(filepath):
@@ -30,6 +31,9 @@ class ProfileAnalysis(AbstractAnalysis):
         return False
 
     def add_profile_test(self):
+        if self.test_already_added:
+            return
+        self.test_already_added = True
         self.diff_struct.add_changed_profile(self.profile, self.product)
         self.find_dependent_profiles(self.diff_struct.absolute_path,
                                      self.profile)
@@ -134,11 +138,12 @@ class ProfileAnalysis(AbstractAnalysis):
         for f in extended_profiles:
             path = f.split("/")[-1]
             profile_name = path.split(".")[0]
+            logger.info("%s profile extends %s.", profile_name.upper(), profile.upper())
             self.diff_struct.add_changed_profile(profile_name, self.product)
             self.find_dependent_profiles(f, profile_name)
 
     def process_analysis(self):
-        logger.info("Analyzing profile file %s", self.filepath)
+        logger.info("Analyzing profile %s for %s", self.profile.upper(), self.product)
 
         if self.is_added():
             self.new_profile_added()
@@ -148,9 +153,11 @@ class ProfileAnalysis(AbstractAnalysis):
 
         self.analyse_changes()
 
-        logger.info("Added rules to profile: %s",
-                    " ".join(self.added_rules))
-        logger.info("Removed rules from profile: %s",
-                    " ".join(self.removed_rules))
+        if self.added_rules:
+            logger.info("Added rules to profile: %s",
+                        " ".join(self.added_rules))
+        if self.removed_rules:
+            logger.info("Removed rules from profile: %s",
+                        " ".join(self.removed_rules))
 
         return self.diff_struct

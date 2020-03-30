@@ -7,9 +7,10 @@ prepare_repository
 @test "Change sshd macro" {
     file="./shared/macros-bash.jinja"
     sed -i "/macro bash_sshd_config_set/a echo 1" "$file"
-    regex_check1="INFO .*\s-\s\[.*build_product.*test_suite.py rule.*sshd_use_strong_macs.*]$"
-    regex_check2="INFO .*\s-\s\[.*build_product.*test_suite.py rule.*sshd_set_loglevel_info.*]$"
-    regex_check3="INFO .*\s-\s\[.*build_product.*test_suite.py rule.*sshd_disable_rhosts.*]$"
+    regex_check_1="build_product"
+    regex_check_2="test_suite.py rule.*sshd_use_strong_macs"
+    regex_check_3="test_suite.py rule.*sshd_set_loglevel_info"
+    regex_check_4="test_suite.py rule.*sshd_disable_rhosts"
 
     git add "$file" && git commit -m "test commit" &>/dev/null
 
@@ -17,8 +18,21 @@ prepare_repository
 
     [ "$?" -eq 0 ]
 
-    if ! grep -q "$regex_check" "$tmp_file"; then
-        echo "$regex_check not found in:" && cat "$tmp_file"
+    if ! grep -q "$regex_check_1" "$tmp_file"; then
+        echo "$regex_check_1 not found in:" && cat "$tmp_file"
+        return 1
+    fi
+    if ! grep -q "$regex_check_2" "$tmp_file"; then
+        echo "$regex_check_2 not found in:" && cat "$tmp_file"
+        return 1
+    fi
+    if ! grep -q "$regex_check_3" "$tmp_file"; then
+        echo "$regex_check_3 not found in:" && cat "$tmp_file"
+        return 1
+    fi
+    if ! grep -q "$regex_check_4" "$tmp_file"; then
+        echo "$regex_check_4 not found in:" && cat "$tmp_file"
         return 1
     fi
 }
+

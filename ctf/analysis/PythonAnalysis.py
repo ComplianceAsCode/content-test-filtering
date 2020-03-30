@@ -38,14 +38,17 @@ class PythonAnalysis(AbstractAnalysis):
         logger.info("Analyzing python file %s", self.filepath)
 
         if self.is_added():
+            logger.info("Python file %s is newly added.", self.filepath)
             self.diff_struct.add_funcionality_test()
             return self.diff_struct
         elif self.is_removed():
+            logger.info("Python file %s was removed.", self.filepath)
             return self.diff_struct
 
         ast_before = ast.parse(self.content_before)
         ast_after = ast.parse(self.content_after)
         if not self.are_ast_same(ast_before, ast_after):
+            logger.info("Change in Pythons AST found.")
             self.diff_struct.add_funcionality_test()
 
         return self.diff_struct

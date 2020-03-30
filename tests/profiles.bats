@@ -7,7 +7,6 @@ prepare_repository
 @test "Change documentation_complete" {
     file="rhel8/profiles/ospp.profile"
     sed -i 's/documentation_complete: true/documentation_complete: false/' "$file"
-    regex_check="INFO .*\s-\s\[]$"
 
     git add "$file" && git commit -m "test commit" &>/dev/null
 
@@ -15,8 +14,8 @@ prepare_repository
 
     [ "$?" -eq 0 ]
 
-    if ! grep -q "$regex_check" "$tmp_file"; then
-        echo "$regex_check not found in:" && cat "$tmp_file"
+    if ! grep -q "$no_test_regex" "$tmp_file"; then
+        echo "$no_test_regex not found in:" && cat "$tmp_file"
         return 1
     fi
 }
@@ -24,7 +23,6 @@ prepare_repository
 @test "Change title" {
     file="rhel8/profiles/ospp.profile"
     sed -i "s/title: .*/title: 'Some title'/" "$file"
-    regex_check="INFO .*\s-\s\[]$"
 
     git add "$file" && git commit -m "test commit" &>/dev/null
 
@@ -32,8 +30,8 @@ prepare_repository
 
     [ "$?" -eq 0 ]
 
-    if ! grep -q "$regex_check" "$tmp_file"; then
-        echo "$regex_check not found in:" && cat "$tmp_file"
+    if ! grep -q "$no_test_regex" "$tmp_file"; then
+        echo "$no_test_regex not found in:" && cat "$tmp_file"
         return 1
     fi
 }
@@ -42,7 +40,7 @@ prepare_repository
     file="rhel8/profiles/ospp.profile"
     echo >> "$file"
     sed -i "\$asome_category: 'with_string'" "$file"
-    regex_check="INFO .*\s-\s\[.*build_product\srhel8.*]$"
+    regex_check="build_product rhel8"
 
     git add "$file" && git commit -m "test commit" &>/dev/null
 
@@ -60,7 +58,8 @@ prepare_repository
 @test "Change rule (= adding new rule and removing old one)" {
     file="rhel8/profiles/ospp.profile"
     sed -i 's/disable_host_auth/enable_host_auth/' "$file"
-    regex_check="INFO .*\s-\s\[.*build_product rhel8.*test_suite\.py profile.*ospp.*]$"
+    regex_check_1="build_product rhel8"
+    regex_check_2="test_suite\.py profile.*ospp"
 
     git add "$file" && git commit -m "test commit" &>/dev/null
 
@@ -69,8 +68,12 @@ prepare_repository
 
     [ "$?" -eq 0 ]
 
-    if ! grep -q "$regex_check" "$tmp_file"; then
-        echo "$regex_check not found in:" && cat "$tmp_file"
+    if ! grep -q "$regex_check_1" "$tmp_file"; then
+        echo "$regex_check_1 not found in:" && cat "$tmp_file"
+        return 1
+    fi
+    if ! grep -q "$regex_check_2" "$tmp_file"; then
+        echo "$regex_check_2 not found in:" && cat "$tmp_file"
         return 1
     fi
 }
@@ -78,7 +81,6 @@ prepare_repository
 @test "Remove profile" {
     file="rhel8/profiles/ospp.profile"
     rm -f "$file"
-    regex_check="INFO .*\s-\s\[]"
 
     git add "$file" && git commit -m "test commit" &>/dev/null
 
@@ -86,8 +88,8 @@ prepare_repository
 
     [ "$?" -eq 0 ]
 
-    if ! grep -q "$regex_check" "$tmp_file"; then
-        echo "$regex_check not found in:" && cat "$tmp_file"
+    if ! grep -q "$no_test_regex" "$tmp_file"; then
+        echo "$no_test_regex not found in:" && cat "$tmp_file"
         return 1
     fi
 }
@@ -95,7 +97,8 @@ prepare_repository
 @test "Add new profile" {
     file="rhel8/profiles/some_profile.profile"
     cat "rhel8/profiles/ospp.profile" > "$file"
-    regex_check="INFO .*\s-\s\[.*build_product rhel8.*test_suite\.py profile.*some_profile.*]"
+    regex_check_1="build_product rhel8"
+    regex_check_2="test_suite\.py profile.*some_profile"
 
     git add "$file" && git commit -m "test commit" &>/dev/null
 
@@ -103,8 +106,12 @@ prepare_repository
 
     [ "$?" -eq 0 ]
 
-    if ! grep -q "$regex_check" "$tmp_file"; then
-        echo "$regex_check not found in:" && cat "$tmp_file"
+    if ! grep -q "$regex_check_1" "$tmp_file"; then
+        echo "$regex_check_1 not found in:" && cat "$tmp_file"
+        return 1
+    fi
+    if ! grep -q "$regex_check_2" "$tmp_file"; then
+        echo "$regex_check_2 not found in:" && cat "$tmp_file"
         return 1
     fi
 }

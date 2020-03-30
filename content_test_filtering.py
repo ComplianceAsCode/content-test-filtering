@@ -6,7 +6,7 @@ from ctf.diff import git_wrapper
 logger = logging.getLogger("content-test-filtering")
 logger.setLevel(logging.INFO)
 console_handler = logging.StreamHandler()
-console_formatter = logging.Formatter("%(levelname)s %(asctime)s - %(message)s",
+console_formatter = logging.Formatter("%(levelname)-7s %(module)-22s - %(message)s",
                                       "%H:%M:%S")
 console_handler.setFormatter(console_formatter)
 logger.addHandler(console_handler)
@@ -48,5 +48,8 @@ if __name__ == '__main__':
 
     list_of_tests = connect_to_labels.get_labels(tests)
 
-    logger.info(list_of_tests)
+    if list_of_tests:
+        logger.info("List of tests to run:\n%s", "\n".join(list_of_tests))
+    else:
+        logger.info("No test to run.")
     logger.info("Finished")

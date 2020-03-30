@@ -7,7 +7,6 @@ prepare_repository
 @test "Add comment" {
     file="tests/test_suite.py"
     sed -i "1 i # some comment" "$file"
-    regex_check="INFO .*\s-\s\[]$"
 
     git add "$file" && git commit -m "test commit" &>/dev/null
 
@@ -15,8 +14,8 @@ prepare_repository
 
     [ "$?" -eq 0 ]
 
-    if ! grep -q "$regex_check" "$tmp_file"; then
-        echo "$regex_check not found in:" && cat "$tmp_file"
+    if ! grep -q "$no_test_regex" "$tmp_file"; then
+        echo "$no_test_regex not found in:" && cat "$tmp_file"
         return 1
     fi
 }
@@ -24,7 +23,6 @@ prepare_repository
 @test "Delete comments" {
     file="tests/test_suite.py"
     sed -i "/^\s*#.*/d" "$file"
-    regex_check="INFO .*\s-\s\[]$"
 
     git add "$file" && git commit -m "test commit" &>/dev/null
 
@@ -32,8 +30,8 @@ prepare_repository
 
     [ "$?" -eq 0 ]
 
-    if ! grep -q "$regex_check" "$tmp_file"; then
-        echo "$regex_check not found in:" && cat "$tmp_file"
+    if ! grep -q "$no_test_regex" "$tmp_file"; then
+        echo "$no_test_regex not found in:" && cat "$tmp_file"
         return 1
     fi
 }
@@ -41,7 +39,7 @@ prepare_repository
 @test "Change code" {
     file="tests/test_suite.py"
     sed -i "/^\s*subparsers\.required.*/d" "$file"
-    regex_check="INFO .*\s-\s\[.*ctest.*]$"
+    regex_check="ctest"
 
     git add "$file" && git commit -m "test commit" &>/dev/null
 

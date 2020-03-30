@@ -66,11 +66,15 @@ class BashAnalysis(AbstractAnalysis):
             # Important comment
             if re.match(r"^(\+|-)\s*#\s*(platform|reboot|strategy|complexity|disruption)\s*=\s*.*$", line):
                 self.diff_struct.add_changed_product_by_rule(self.rule_name)
+                logger.info("Metadata change in templated bash remediation "
+                            "for %s rule.", self.rule_name)
                 continue
             # Not important comment
             if re.match(r"^(\+|-)\s*#.*$", line):
                 continue
             self.diff_struct.add_changed_rule(self.rule_name)
+            logger.info("Template usage change in bash remediation "
+                        "for %s rule.", self.rule_name)
 
     def analyse_bash(self):
         tokens_before = shlex.shlex(self.content_before)
@@ -86,17 +90,22 @@ class BashAnalysis(AbstractAnalysis):
             token_after = tokens_after.get_token()
         # If they are different
         if token_before != token_after:
+            logger.info("Found change in bash remediation for %s rule.",
+                        self.rule_name)
             self.diff_struct.add_changed_product_by_rule(self.rule_name)
             self.diff_struct.add_changed_rule(self.rule_name)
 
     def process_analysis(self):
         logger.info("Analyzing bash file %s", self.filepath)
+        logger.info("Rule name: %s", self.rule_name)
 
         if self.is_added():
+            logger.info("Bash remediation for %s is newly added.", self.rule_name)
             self.diff_struct.add_changed_product_by_rule(self.rule_name)
             self.diff_struct.add_changed_rule(self.rule_name)
             return self.diff_struct
         elif self.is_removed():
+            logger.info("Bash remediation for %s was deleted.", self.rule_name)
             return self.diff_struct
 
         was_templated = self.is_templated(self.content_before)
@@ -105,6 +114,8 @@ class BashAnalysis(AbstractAnalysis):
         if was_templated and is_templated:  # Was and is tempalted
             self.analyse_template()
         elif any([was_templated, is_templated]):  # Templatization changed
+            logger.info("Templatization change for %s bash remediation.",
+                        self.rule_name)
             self.diff_struct.add_changed_product_by_rule(self.rule_name)
             self.diff_struct.add_changed_rule(self.rule_name)
         else:  # Not templated

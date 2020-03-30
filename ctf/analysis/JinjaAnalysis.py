@@ -119,6 +119,7 @@ class JinjaAnalysis(AbstractAnalysis):
                 new_processed = ssg_jinja.process_file(rule, updated_macros)
                 file_record = mock_record(rule, old_processed, new_processed)
                 self.diff_struct.affected_files.append(file_record)
+                logger.info("%s macro - used in %s rule.", macro.name, file_record["filepath"])
 
     def analyse_macros_in_templates(self, macros):
         nonempty_macros = [macro for macro in macros if macro.in_templates]
@@ -128,6 +129,7 @@ class JinjaAnalysis(AbstractAnalysis):
         git_wrapper.build_project("/build_old/", "/build_new/")
         for macro in macros:
             for template in macro.in_templates:
+                logger.info("%s macro - used in %s template.", macro.name, template)
                 self.analyse_template(template)
 
     def analyse_macros(self, macros):
@@ -147,6 +149,7 @@ class JinjaAnalysis(AbstractAnalysis):
                 f.seek(0)
                 if macro_name in f.read():
                     rule_name = re.search(r".+\/(\w+)\/\w+\.\w+$", content_file).group(1)
+                    logger.info("%s template - used in %s rule.", macro_name, rule_name)
                     rule_name = rule_name + get_suffix(file_type)
                     in_rules.append(rule_name)
         return in_rules
@@ -220,6 +223,7 @@ class JinjaAnalysis(AbstractAnalysis):
             # Find macro name
             macro_header = re.search(r"(?:\s|-)macro(?:\s|\n)+([^(]+)", macro)
             macro_name = macro_header.group(1)
+            logger.info("Macro %s was changed.", macro_name)
             macro_class = JinjaMacroChange(macro_name)
             changed_macros.append(macro_class)
         return changed_macros
@@ -238,8 +242,10 @@ class JinjaAnalysis(AbstractAnalysis):
     def process_analysis(self):
         logger.info("Analyzing Jinja macro file %s", self.filepath)
         if self.is_added():
+            logger.info("Jinja macro file %s is newly added.", self.filepath)
             return self.diff_struct
         elif self.is_removed():
+            logger.info("Jinja macro file %s was deleted.", self.filepath)
             self.diff_struct.add_funcionality_test()
             return self.diff_struct
 
