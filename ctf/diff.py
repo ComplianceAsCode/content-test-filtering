@@ -155,6 +155,21 @@ class GitDiffWrapper(metaclass=Singleton):
         file_record["file_after"] = file_after
         return file_record
 
+    def file_added(self, new_file):
+        file_before = ""
+        file_after = self.repository.git.show("HEAD:./" + new_file)
+        return file_before, file_after
+
+    def file_deleted(self, old_file):
+        file_before = self.repository.git.show(self.diverge_commit + ":./" + old_file)
+        file_after = ""
+        return file_before, file_after
+
+    def file_modified(self, old_file, new_file):
+        file_before = self.repository.git.show(self.diverge_commit + ":./" + old_file)
+        file_after = self.repository.git.show("HEAD:./" + new_file)
+        return file_before, file_after
+
     def create_file_records_from_diff(self, compare_commit):
         file_records = []
 
@@ -162,12 +177,19 @@ class GitDiffWrapper(metaclass=Singleton):
                                             compare_commit + "..HEAD")
 
         for line in git_diff.splitlines():
-            flag, filepath = line.split("\t")
+            git_diff_output = line.split("\t")
+            if git_diff_output[0].startswith("R"):
+                flag, old_filepath, filepath = git_diff_output
+            else:
+                flag, filepath = git_diff_output
+                old_filepath = filepath
 
-            file_before = "" if flag == "A" else self.repository.git.show(
-                compare_commit + ":./" + filepath)
-            file_after = "" if flag == "D" else self.repository.git.show(
-                "HEAD:./" + filepath)
+            if flag == "A":
+                file_before, file_after = self.file_added(filepath)
+            elif flag == "D":
+                file_before, file_after = self.file_deleted(filepath)
+            else:
+                file_before, file_after = self.file_modified(old_filepath, filepath)
 
             file_record = self.create_file_record(flag, filepath,
                                                   file_before, file_after)
