@@ -212,7 +212,7 @@ class GitDiffWrapper(metaclass=Singleton):
 
         if not self.only_local:
             self.remote.fetch(fetch_refs, force=True)
-        logger.info("Fetched to %s branch", target_branch)
+        logger.debug("Fetched to %s branch", target_branch)
 
         self.new_branch = target_branch
         self.diverge_commit = self.get_compare_commit(old_branch, target_branch)

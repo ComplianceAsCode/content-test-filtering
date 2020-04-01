@@ -35,20 +35,18 @@ class PythonAnalysis(AbstractAnalysis):
             return node1 == node2
 
     def process_analysis(self):
-        logger.info("Analyzing python file %s", self.filepath)
+        logger.debug("Analyzing python file %s", self.filepath)
 
         if self.is_added():
-            logger.info("Python file %s is newly added.", self.filepath)
-            self.diff_struct.add_funcionality_test()
+            self.diff_struct.add_funcionality_test("Python file %s is newly added")
             return self.diff_struct
         elif self.is_removed():
-            logger.info("Python file %s was removed.", self.filepath)
+            self.diff_struct.add_funcionality_test("Python file %s was deleted")
             return self.diff_struct
 
         ast_before = ast.parse(self.content_before)
         ast_after = ast.parse(self.content_after)
         if not self.are_ast_same(ast_before, ast_after):
-            logger.info("Change in Pythons AST found.")
-            self.diff_struct.add_funcionality_test()
+            self.diff_struct.add_funcionality_test("Change in Python abstract syntax tree found")
 
         return self.diff_struct

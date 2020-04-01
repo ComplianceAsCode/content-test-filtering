@@ -30,17 +30,18 @@ class ProfileAnalysis(AbstractAnalysis):
             return True
         return False
 
-    def add_profile_test(self):
+    def add_profile_test(self, msg):
         if self.test_already_added:
             return
         self.test_already_added = True
-        self.diff_struct.add_changed_profile(self.profile, self.product)
+        self.diff_struct.add_changed_profile(
+            self.profile, self.product, msg=msg)
         self.find_dependent_profiles(self.diff_struct.absolute_path,
                                      self.profile)
 
     def is_rule(self, value):
         if "=" in value:
-            logger.info("Value of %s variable in %s profile for %s changed.",
+            logger.debug("Value of %s variable in %s profile for %s changed.",
                         value.split("=")[0], self.profile, self.product)
             return False
         return True
@@ -54,29 +55,30 @@ class ProfileAnalysis(AbstractAnalysis):
         return items_list
 
     def item_added(self, items):
-        self.add_profile_test()
+        self.add_profile_test("Rules %s added to profile" % 
+                              ", ".join(self.iterate_changed_rules(items)))
         self.added_rules.extend(self.iterate_changed_rules(items))
 
     def item_removed(self, items):
-        self.add_profile_test()
+        self.add_profile_test("Rules %s removed from profile" %
+                              ", ".join(self.iterate_changed_rules(items)))
         self.removed_rules.extend(self.iterate_changed_rules(items))
 
     def check_changed_values(self, items):
         for key in items:
             if "root['selections']" in key:
-                self.add_profile_test()
-                return
+                self.add_profile_test("Selection of rules changed in profile")
 
     def dict_added(self, items):
         if len(items) != len(set(items) & set(FILTER_LIST)):
-            self.add_profile_test()
+            self.add_profile_test("Key deleted from profile")
 
     def dict_removed(self, items):
         if len(items) != len(set(items) & set(FILTER_LIST)):
-            self.add_profile_test()
+            self.add_profile_test("New key in profile")
 
     def type_changed(self):
-        self.add_profile_test()
+        self.add_profile_test("Type of key in profile changed")
 
     def analyse_changes(self):
         # Load previous and new profile
@@ -108,8 +110,10 @@ class ProfileAnalysis(AbstractAnalysis):
             rules = new_profile["selections"]
             self.added_rules = rules
         except KeyError:
-            logger.warning("New profile doesn't contain any rule.")
-        self.add_profile_test()
+            logger.info("New profile %s doesn't contain any rule. No test for it will be selected",
+                        self.profile)
+            return
+        self.add_profile_test("Newly added profile")
 
     def find_dependent_profiles(self, absolute_path, profile):
         # No profile - no dependencies
@@ -146,12 +150,13 @@ class ProfileAnalysis(AbstractAnalysis):
         for f in extended_profiles:
             path = f.split("/")[-1]
             profile_name = path.split(".")[0]
-            logger.info("%s profile extends %s.", profile_name.upper(), profile.upper())
-            self.diff_struct.add_changed_profile(profile_name, self.product)
+            self.diff_struct.add_changed_profile(profile_name, self.product,
+                                                 msg="%s profile is extended by %s profile"
+                                                 % (profile_name.upper(), profile.upper()))
             self.find_dependent_profiles(f, profile_name)
 
     def process_analysis(self):
-        logger.info("Analyzing profile %s for %s", self.profile.upper(), self.product)
+        logger.debug("Analyzing profile %s for %s", self.profile.upper(), self.product)
 
         if self.is_added():
             self.new_profile_added()
@@ -163,9 +168,9 @@ class ProfileAnalysis(AbstractAnalysis):
 
         if self.added_rules:
             logger.info("Added rules to profile: %s",
-                        " ".join(self.added_rules))
+                        ", ".join(self.added_rules))
         if self.removed_rules:
             logger.info("Removed rules from profile: %s",
-                        " ".join(self.removed_rules))
+                        ", ".join(self.removed_rules))
 
         return self.diff_struct

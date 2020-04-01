@@ -15,6 +15,7 @@ class DiffStruct:
         self.changed_products = set()
         self.funcionality_changed = False
         self.affected_files = []
+        self.test_selection_reasons = []
 
     def get_changed_rules_with_products(self):
         for product in self.changed_rules:
@@ -70,7 +71,7 @@ class DiffStruct:
 
         return products
 
-    def add_changed_rule(self, rule_name, product_name=None):
+    def add_changed_rule(self, rule_name, product_name=None, msg=""):
         if not product_name:
             product_name = self.get_rule_products(rule_name)
             if product_name:
@@ -79,31 +80,36 @@ class DiffStruct:
                 logger.warning("%s rule doesn't occur in any profile nor "
                                "product. It won't be tested.", rule_name)
                 return
-
+        logger.info("%s - test for the %s rule will be selected.",
+                    msg, rule_name)
         if product_name in self.changed_rules:
             self.changed_rules[product_name].add(rule_name)
         else:
             self.changed_rules[product_name] = set([rule_name])
 
-    def add_changed_profile(self, profile_name, product_name):
+    def add_changed_profile(self, profile_name, product_name, msg=""):
+        logger.info("%s - test for the %s profile will be selected.",
+                    msg, profile_name.upper())
         if product_name in self.changed_profiles:
             self.changed_profiles[product_name].add(profile_name)
         else:
             self.changed_profiles[product_name] = set([profile_name])
 
-    def add_changed_product(self, product_name):
+    def add_changed_product(self, product_name, msg=""):
         self.changed_products.add(product_name)
 
-    def add_changed_product_by_rule(self, rule_name):
+    def add_changed_product_by_rule(self, rule_name, msg=""):
         product_name = self.get_rule_products(rule_name)
         if product_name:
             product_name = product_name[0]
         else:
-            logger.warning("%s rule doesn't occur in any profile nor "
+            logger.warning("Changed %s rule doesn't occur in any profile nor "
                            "product. It won't be tested.", rule_name)
             return
-
+        logger.info("%s - test for the %s rule will be selected.",
+                    msg, rule_name)
         self.changed_products.add(product_name)
 
-    def add_funcionality_test(self):
+    def add_funcionality_test(self, msg=""):
+        logger.info("%s - ctest will be selected.")
         self.funcionality_changed = True

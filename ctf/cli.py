@@ -23,6 +23,10 @@ def parse_args():
                                action="store_true", help="Do not pull from remote, "
                                "use local branches. Mainly for testing purposes.")
 
+    common_parser.add_argument("--verbose", dest="verbose", default=False,
+                               action="store_true", help="Increase verbose level of "
+                               "logging to DEBUG level. Default level is INFO")
+
     parser.set_defaults(pr_number=None, branch=None)
 
     subparsers = parser.add_subparsers(dest="subcommand",

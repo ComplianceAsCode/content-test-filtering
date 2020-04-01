@@ -57,16 +57,18 @@ class OVALAnalysis(AbstractAnalysis):
                         continue
                     rule_match = re.search(r"/((?:\w|-)+)/oval", content_file)
                     rule_name = rule_match.group(1)
-                    logger.info("%s rule affected by the change.", rule_name)
+                    logger.debug("%s rule affected by the change.", rule_name)
                     if rule_name not in affected_rules:
                         affected_rules.append(rule_name)
         return affected_rules
 
-    def add_rule_test(self):
-        self.diff_struct.add_changed_rule(self.rule_name)
+    def add_rule_test(self, msg):
+        self.diff_struct.add_changed_rule(self.rule_name, msg=msg)
         affected_rules = self.find_affected_rules()
         for affected_rule in affected_rules:
-            self.diff_struct.add_changed_rule(affected_rule)
+            self.diff_struct.add_changed_rule(affected_rule,
+                                              msg="%s is affected by %s change" %
+                                              (affected_rule, self.rule_name))
 
     def load_diff(self):
         diff = DeepDiff(self.content_before, self.content_after)
@@ -84,11 +86,11 @@ class OVALAnalysis(AbstractAnalysis):
 
     def insert_node_change(self, change):
         if "/metadata/" not in change.target:
-            self.add_rule_test()
+            self.add_rule_test("New node inserted to OVAL check")
 
     def delete_node_change(self, change):
         if "/metadata/" not in change.node:
-            self.add_rule_test()
+            self.add_rule_test("Node deleted from OVAL check")
 
     def move_node_change(self, change):
         # Node moved within same node should not change behavior of the rule
@@ -102,54 +104,46 @@ class OVALAnalysis(AbstractAnalysis):
             "textfilecontent54_state/" in change.target):
             return
         else:
-            self.add_rule_test()
+            self.add_rule_test("Node moved within OVAL check")
 
     def delete_attr_change(self, change):
         if change.name != "comment" and change.name != "version":
-            self.add_rule_test()
+            self.add_rule_test("Deleted attribute from OVAL check")
 
     def rename_attr_change(self, change):
         if change.oldname != "comment" and change.oldname != "version":
-            self.add_rule_test()
+            self.add_rule_test("Attribute renamed in OVAL check")
         # Probably should perform product build for sanity?
 
     def update_attr_change(self, change):
         if change.name != "comment" and change.name != "version":
-            self.add_rule_test()
+            self.add_rule_test("Attribute value changed in OVAL check")
 
     def update_text_change(self, change):
         if ("/title" not in change.node and
             "/description" not in change.node and
             "platform" not in change.node):
-            self.add_rule_test()
+            self.add_rule_test("Text changed in OVAL check")
 
     def analyse_oval_change(self, change):
         # TODO: Should it be analysed separately each change?
         if isinstance(change, actions.InsertNode):
-            logger.info("New node to XML added.")
             self.insert_node_change(change)
         elif isinstance(change, actions.DeleteNode):
-            logger.info("Node from XML deleted.")
             self.delete_node_change(change)
         elif isinstance(change, actions.MoveNode):
-            logger.info("Node within XML moved.")
             self.move_node_change(change)
         elif isinstance(change, actions.DeleteAttrib):
-            logger.info("Atrribute in XML deleted.")
             self.delete_attr_change(change)
         elif isinstance(change, actions.RenameAttrib):
-            logger.info("Atrribute in XML renamed.")
             self.rename_attr_change(change)
         elif isinstance(change, actions.UpdateAttrib):
-            logger.info("Attributed in XML updated.")
             self.update_attr_change(change)
         elif isinstance(change, actions.UpdateTextIn):
-            logger.info("Text in XML changed.")
             self.update_text_change(change)
         # Looks like a new text after node (NOT in node) -> must be tested
         elif isinstance(change, actions.UpdateTextAfter):
-            logger.info("Text added outside XML node.")
-            self.add_rule_test()
+            self.add_rule_test("Text added outsite tags in OVAL check" % self.filepath)
         # InsertAttrib and InsertComment changes are ignored
 
     def get_changes(self):
@@ -165,7 +159,7 @@ class OVALAnalysis(AbstractAnalysis):
                 continue
             if re.match(r"^(\+|-)\s*#.*$", line):
                 continue
-            self.add_rule_test()
+            self.add_rule_test("Template usage changed in OVAL check")
 
     def get_ssg_constants_module(self):
         git_diff = importlib.import_module("ctf.diff")
@@ -202,17 +196,18 @@ class OVALAnalysis(AbstractAnalysis):
             self.analyse_oval_change(change)
 
     def process_analysis(self):
-        logger.info("Analyzing OVAL file %s", self.filepath)
-        logger.info("Rule name: %s", self.rule_name)
+        logger.debug("Analyzing OVAL file %s", self.filepath)
+        logger.debug("Rule name: %s", self.rule_name)
 
         if self.is_added():
-            logger.info("OVAL check for %s is newly added.", self.rule_name)
-            self.diff_struct.add_changed_product_by_rule(self.rule_name)
+            msg = "OVAL check is newly added"
+            self.diff_struct.add_changed_product_by_rule(self.rule_name, msg=msg)
             # Don't search for rule references if newly added.
-            self.diff_struct.add_changed_rule(self.rule_name)
+            self.diff_struct.add_changed_rule(self.rule_name, msg=msg)
             return self.diff_struct
         elif self.is_removed():
-            logger.info("OVAL check for %s was deleted.", self.rule_name)
+            logger.info("OVAL check for %s was deleted. No test for it will be selected.",
+                        self.rule_name)
             return self.diff_struct
 
         was_templated = self.is_templated(self.content_before)
@@ -221,10 +216,9 @@ class OVALAnalysis(AbstractAnalysis):
         if was_templated and is_templated:
             self.analyse_template()
         elif any([was_templated, is_templated]):
-            logger.info("Templatization change for %s OVAL check.",
-                        self.rule_name)
-            self.diff_struct.add_changed_product_by_rule(self.rule_name)
-            self.diff_struct.add_changed_rule(self.rule_name)
+            msg = "Templatization usage changed in %s" % self.filepath
+            self.diff_struct.add_changed_product_by_rule(self.rule_name, msg=msg)
+            self.diff_struct.add_changed_rule(self.rule_name, msg=msg)
         else:
             self.analyse_oval()
 

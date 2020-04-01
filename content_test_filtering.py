@@ -18,7 +18,9 @@ if __name__ == '__main__':
     list_of_tests = []
     tests = ContentTests.ContentTests()
 
-    logger.info("Getting files from 'git diff'")
+    if options.verbose:
+        logger.setLevel(logging.DEBUG)
+    logger.debug("Getting files from 'git diff'")
     git_wrapper.git_init(options.remote_repo, options.repository_path,
                          local=options.local)
     changed_files = git_wrapper.git_diff_files(options.base_branch,
