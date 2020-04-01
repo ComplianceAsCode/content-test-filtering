@@ -40,8 +40,8 @@ if __name__ == '__main__':
             diff_structure = diff_analysis.analyse_file(file_record)
             tests.fill_tests(diff_structure)
         except diff_analysis.UnknownAnalysisFileType:
-            logger.warning("Unknown type of file %s. Analysis has not been "
-                           "performed for it.", file_record["filepath"])
+            logger.debug("Unknown type of file %s. Analysis has not been "
+                         "performed for it.", file_record["filepath"])
             continue
 
         already_analysed.append(file_record["filepath"])
