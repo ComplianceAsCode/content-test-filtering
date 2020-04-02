@@ -18,8 +18,11 @@ if __name__ == '__main__':
     list_of_tests = []
     tests = ContentTests.ContentTests()
 
-    if options.verbose:
+    if options.output_tests:
+        logging.disable(logging.CRITICAL)
+    elif options.verbose:
         logger.setLevel(logging.DEBUG)
+
     logger.debug("Getting files from 'git diff'")
     git_wrapper.git_init(options.remote_repo, options.repository_path,
                          local=options.local)
@@ -51,7 +54,8 @@ if __name__ == '__main__':
     list_of_tests = connect_to_labels.get_labels(tests)
 
     if list_of_tests:
-        logger.info("List of tests to run:\n%s", "\n".join(list_of_tests))
+        logger.info("List of tests to run:")
+        print("\n".join(list_of_tests))
     else:
         logger.info("No test to run.")
     logger.info("Finished")

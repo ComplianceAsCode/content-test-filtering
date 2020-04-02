@@ -111,5 +111,5 @@ class DiffStruct:
         self.changed_products.add(product_name)
 
     def add_funcionality_test(self, msg=""):
-        logger.info("%s - ctest will be selected.")
+        logger.info("%s - ctest will be selected.", msg)
         self.funcionality_changed = True
