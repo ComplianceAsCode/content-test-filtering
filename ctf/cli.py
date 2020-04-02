@@ -18,14 +18,15 @@ def parse_args():
                                help=("Remote repository for pulling, updating "
                                      "and finding branches (Pull requests). Default "
                                      "is https://github.com/ComplianceAsCode/content."))
-
     common_parser.add_argument("--local", dest="local", default=False,
                                action="store_true", help="Do not pull from remote, "
                                "use local branches. Mainly for testing purposes.")
-
     common_parser.add_argument("--verbose", dest="verbose", default=False,
                                action="store_true", help="Increase verbose level of "
                                "logging to DEBUG level. Default level is INFO")
+    common_parser.add_argument("--output-tests", dest="output_tests", default=False,
+                               action="store_true", help="Output only list of tests. "
+                               "Completely turns off all other outputs.")
 
     parser.set_defaults(pr_number=None, branch=None)
 
