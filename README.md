@@ -1,5 +1,6 @@
 # content-test-filtering
 Purpose of this project is automatic tests filtering for project [ComplianceAsCode](https://github.com/ComplianceAsCode/content/).
+test
 
 This project filters tests based on static analysis of changed files. Changed files are taken from `git`, analysed based on a type of each file, and analysis result is used for test selection.
 
