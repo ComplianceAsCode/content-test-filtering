@@ -187,6 +187,9 @@ class OVALAnalysis(AbstractAnalysis):
                                                      ssg_const)
         wrapped_oval_after = self.create_valid_oval(self.content_after,
                                                     ssg_const)
+        # TODO: This is temporary solution to parse partially templated XMLs
+        wrapped_oval_before = re.sub(r"{{%(.|\n)+?%}}", "", wrapped_oval_before)
+        wrapped_oval_after = re.sub(r"{{%(.|\n)+?%}}", "", wrapped_oval_after)
         # Create ElementTrees
         self.tree_before = ET.fromstring(wrapped_oval_before)
         self.tree_after = ET.fromstring(wrapped_oval_after)
