@@ -58,8 +58,15 @@ class GitDiffWrapper(metaclass=Singleton):
         old_build = self.repo_path + old_build_path
         new_build = self.repo_path + new_build_path
 
-        shutil.rmtree(old_build)
-        shutil.rmtree(new_build)
+        try:
+            shutil.rmtree(old_build)
+        except FileNotFoundError:
+            pass
+        try:
+            shutil.rmtree(new_build)
+        except FileNotFoundError:
+            pass
+
         try:
             os.mkdir(old_build)
         except FileExistsError:
@@ -70,17 +77,33 @@ class GitDiffWrapper(metaclass=Singleton):
             pass
 
         self.checkout_branch(self.diverge_commit)
-        subprocess.run("cmake ../", shell=True, cwd=old_build)
+        logger.debug("Building old content...")
+        build_process = subprocess.run("cmake ../", shell=True, cwd=old_build,
+                                       stdout=subprocess.DEVNULL)
+        if build_process.returncode:
+            raise Exception
+        logger.debug("Old content build finished.")
+
         self.checkout_branch(self.new_branch)
-        subprocess.run("cmake ../", shell=True, cwd=new_build)
+        logger.debug("Building new content...")
+        build_process = subprocess.run("cmake ../", shell=True, cwd=new_build,
+                                       stdout=subprocess.DEVNULL)
+        if build_process.returncode:
+            raise Exception
+        logger.debug("New content build finished.")
 
         for product in products:
             self.checkout_branch(self.diverge_commit)
-            subprocess.run("make generate-internal-templated-content-"+product,
-                           shell=True, cwd=old_build)
+            build_process = subprocess.run("make generate-internal-templated-content-"+product,
+                                           shell=True, cwd=old_build, stdout=subprocess.DEVNULL)
+            if build_process.returncode:
+                raise Exception
+
             self.checkout_branch(self.new_branch)
-            subprocess.run("make generate-internal-templated-content-"+product,
-                           shell=True, cwd=new_build)
+            build_process = subprocess.run("make generate-internal-templated-content-"+product,
+                                           shell=True, cwd=new_build, stdout=subprocess.DEVNULL)
+            if build_process.returncode:
+                raise Exception
 
     def is_dir(self, directory):
         is_directory = True
