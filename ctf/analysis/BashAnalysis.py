@@ -12,7 +12,7 @@ class BashAnalysis(AbstractAnalysis):
     def __init__(self, file_record):
         super().__init__(file_record)
         self.diff_struct.file_type = FileType.BASH
-        rule_name_match = re.match(r".+/((?:\w|_|-)+)/bash/((?:\w|_|-)+)\.sh$",
+        rule_name_match = re.match(r".+/((?:\w|-)+)/bash/((?:\w|-)+)\.sh$",
                                    self.filepath)
         if rule_name_match.group(2) == "shared":
             self.rule_name = rule_name_match.group(1)
