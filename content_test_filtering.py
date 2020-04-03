@@ -1,11 +1,12 @@
 #!/usr/bin/python3
 import logging
+from sys import stdout
 from ctf import cli, diff_analysis, connect_to_labels, ContentTests
 from ctf.diff import git_wrapper
 
 logger = logging.getLogger("content-test-filtering")
 logger.setLevel(logging.INFO)
-console_handler = logging.StreamHandler()
+console_handler = logging.StreamHandler(stdout)
 console_formatter = logging.Formatter("%(levelname)-7s %(module)-22s - %(message)s",
                                       "%H:%M:%S")
 console_handler.setFormatter(console_formatter)
@@ -58,4 +59,4 @@ if __name__ == '__main__':
         print("\n".join(list_of_tests))
     else:
         logger.info("No test to run.")
-    logger.info("Finished")
+    logger.debug("Finished")
