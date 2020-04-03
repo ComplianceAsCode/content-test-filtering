@@ -106,8 +106,8 @@ class DiffStruct:
             logger.warning("Changed %s rule doesn't occur in any profile nor "
                            "product. It won't be tested.", rule_name)
             return
-        logger.info("%s - test for the %s rule will be selected.",
-                    msg, rule_name)
+        logger.info("%s - test for the %s product will be selected.",
+                    msg, product_name)
         self.changed_products.add(product_name)
 
     def add_funcionality_test(self, msg=""):
