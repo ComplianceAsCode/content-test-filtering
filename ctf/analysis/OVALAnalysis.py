@@ -143,7 +143,7 @@ class OVALAnalysis(AbstractAnalysis):
             self.update_text_change(change)
         # Looks like a new text after node (NOT in node) -> must be tested
         elif isinstance(change, actions.UpdateTextAfter):
-            self.add_rule_test("Text added outsite tags in OVAL check" % self.filepath)
+            self.add_rule_test("Text added outsite tags in OVAL check")
         # InsertAttrib and InsertComment changes are ignored
 
     def get_changes(self):
