@@ -55,13 +55,13 @@ class ProfileAnalysis(AbstractAnalysis):
         return items_list
 
     def item_added(self, items):
-        self.add_profile_test("Rule %s added to %s profile" % 
+        self.add_profile_test("Rule %s added to %s profile." % 
                               (", ".join(self.iterate_changed_rules(items)),
                                self.profile))
         self.added_rules.extend(self.iterate_changed_rules(items))
 
     def item_removed(self, items):
-        self.add_profile_test("Rule %s removed from  %s profile" %
+        self.add_profile_test("Rule %s removed from  %s profile." %
                               (", ".join(self.iterate_changed_rules(items)),
                                self.profile))
         self.removed_rules.extend(self.iterate_changed_rules(items))
@@ -112,8 +112,8 @@ class ProfileAnalysis(AbstractAnalysis):
             rules = new_profile["selections"]
             self.added_rules = rules
         except KeyError:
-            logger.info("New profile %s doesn't contain any rule. No test for it will be selected",
-                        self.profile)
+            msg = "New profile %s doesn't contain any rule. No test for it will be selected" % self.profile
+            self.diff_struct.add_profile_log(self.profile, msg)
             return
         self.add_profile_test("Newly added profile")
 

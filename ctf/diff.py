@@ -79,7 +79,8 @@ class GitDiffWrapper(metaclass=Singleton):
         self.checkout_branch(self.diverge_commit)
         logger.debug("Building old content...")
         build_process = subprocess.run("cmake ../", shell=True, cwd=old_build,
-                                       stdout=subprocess.DEVNULL)
+                                       stdout=subprocess.DEVNULL,
+                                       stderr=subprocess.DEVNULL)
         if build_process.returncode:
             raise Exception
         logger.debug("Old content build finished.")
@@ -87,7 +88,8 @@ class GitDiffWrapper(metaclass=Singleton):
         self.checkout_branch(self.new_branch)
         logger.debug("Building new content...")
         build_process = subprocess.run("cmake ../", shell=True, cwd=new_build,
-                                       stdout=subprocess.DEVNULL)
+                                       stdout=subprocess.DEVNULL,
+                                       stderr=subprocess.DEVNULL)
         if build_process.returncode:
             raise Exception
         logger.debug("New content build finished.")
@@ -95,13 +97,15 @@ class GitDiffWrapper(metaclass=Singleton):
         for product in products:
             self.checkout_branch(self.diverge_commit)
             build_process = subprocess.run("make generate-internal-templated-content-"+product,
-                                           shell=True, cwd=old_build, stdout=subprocess.DEVNULL)
+                                           shell=True, cwd=old_build, stdout=subprocess.DEVNULL,
+                                           stderr=subprocess.DEVNULL)
             if build_process.returncode:
                 raise Exception
 
             self.checkout_branch(self.new_branch)
             build_process = subprocess.run("make generate-internal-templated-content-"+product,
-                                           shell=True, cwd=new_build, stdout=subprocess.DEVNULL)
+                                           shell=True, cwd=new_build, stdout=subprocess.DEVNULL,
+                                           stderr=subprocess.DEVNULL)
             if build_process.returncode:
                 raise Exception
 
@@ -121,7 +125,7 @@ class GitDiffWrapper(metaclass=Singleton):
         self.init_repository(self.repo_url, self.repo_path)
 
     def init_repository(self, url, path):
-        logger.info("Cloning repository to %s directory", path)
+        logger.debug("Cloning repository to %s directory", path)
         Repo.clone_from(url, path)
 
     def update_branch(self, branch):
@@ -166,8 +170,8 @@ class GitDiffWrapper(metaclass=Singleton):
         else:  # The branch was not merged - common commit
             compare_commit = common_commit
 
-        logger.info("Comparing commit " + compare_commit + " with "
-                    "HEAD of " + new_branch)
+        logger.debug("Comparing commit " + compare_commit + " with "
+                     "HEAD of " + new_branch)
         return compare_commit
 
     def create_file_record(self, flag, filepath, file_before, file_after):

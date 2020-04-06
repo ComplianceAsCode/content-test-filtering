@@ -86,11 +86,11 @@ class OVALAnalysis(AbstractAnalysis):
 
     def insert_node_change(self, change):
         if "/metadata/" not in change.target:
-            self.add_rule_test("New node inserted to OVAL check")
+            self.add_rule_test("New node inserted to OVAL check.")
 
     def delete_node_change(self, change):
         if "/metadata/" not in change.node:
-            self.add_rule_test("Node deleted from OVAL check")
+            self.add_rule_test("Node deleted from OVAL check.")
 
     def move_node_change(self, change):
         # Node moved within same node should not change behavior of the rule
@@ -104,26 +104,26 @@ class OVALAnalysis(AbstractAnalysis):
             "textfilecontent54_state/" in change.target):
             return
         else:
-            self.add_rule_test("Node moved within OVAL check")
+            self.add_rule_test("Node moved within OVAL check.")
 
     def delete_attr_change(self, change):
         if change.name != "comment" and change.name != "version":
-            self.add_rule_test("Deleted attribute from OVAL check")
+            self.add_rule_test("Deleted attribute from OVAL check.")
 
     def rename_attr_change(self, change):
         if change.oldname != "comment" and change.oldname != "version":
-            self.add_rule_test("Attribute renamed in OVAL check")
+            self.add_rule_test("Attribute renamed in OVAL check.")
         # Probably should perform product build for sanity?
 
     def update_attr_change(self, change):
         if change.name != "comment" and change.name != "version":
-            self.add_rule_test("Attribute value changed in OVAL check")
+            self.add_rule_test("Attribute value changed in OVAL check.")
 
     def update_text_change(self, change):
         if ("/title" not in change.node and
             "/description" not in change.node and
             "platform" not in change.node):
-            self.add_rule_test("Text changed in OVAL check")
+            self.add_rule_test("Text changed in OVAL check.")
 
     def analyse_oval_change(self, change):
         # TODO: Should it be analysed separately each change?
@@ -143,7 +143,7 @@ class OVALAnalysis(AbstractAnalysis):
             self.update_text_change(change)
         # Looks like a new text after node (NOT in node) -> must be tested
         elif isinstance(change, actions.UpdateTextAfter):
-            self.add_rule_test("Text added outsite tags in OVAL check")
+            self.add_rule_test("Text added outsite tags in OVAL check.")
         # InsertAttrib and InsertComment changes are ignored
 
     def get_changes(self):
@@ -159,7 +159,7 @@ class OVALAnalysis(AbstractAnalysis):
                 continue
             if re.match(r"^(\+|-)\s*#.*$", line):
                 continue
-            self.add_rule_test("Template usage changed in OVAL check")
+            self.add_rule_test("Template usage changed in OVAL check.")
 
     def get_ssg_constants_module(self):
         git_diff = importlib.import_module("ctf.diff")
@@ -209,8 +209,8 @@ class OVALAnalysis(AbstractAnalysis):
             self.diff_struct.add_changed_rule(self.rule_name, msg=msg)
             return self.diff_struct
         elif self.is_removed():
-            logger.info("OVAL check for %s was deleted. No test for it will be selected.",
-                        self.rule_name)
+            msg = "OVAL check for %s was deleted. No test for it will be selected." % self.rule_name
+            self.diff_struct.add_rule_log(self.rule_name, msg)
             return self.diff_struct
 
         was_templated = self.is_templated(self.content_before)
@@ -219,7 +219,7 @@ class OVALAnalysis(AbstractAnalysis):
         if was_templated and is_templated:
             self.analyse_template()
         elif any([was_templated, is_templated]):
-            msg = "Templatization usage changed in %s" % self.filepath
+            msg = "Templatization usage changed in %s." % self.filepath
             self.diff_struct.add_changed_product_by_rule(self.rule_name, msg=msg)
             self.diff_struct.add_changed_rule(self.rule_name, msg=msg)
         else:

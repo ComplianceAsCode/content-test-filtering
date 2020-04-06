@@ -38,17 +38,18 @@ class PythonAnalysis(AbstractAnalysis):
         logger.debug("Analyzing python file %s", self.filepath)
 
         if self.is_added():
-            self.diff_struct.add_funcionality_test(msg="Python file %s is newly added"
-                                                   % self.filepath)
+            self.diff_struct.add_functionality_test(msg="Python file %s is newly added"
+                                                    % self.filepath)
             return self.diff_struct
         elif self.is_removed():
-            self.diff_struct.add_funcionality_test(msg="Python file %s was deleted"
-                                                   % self.filepath)
+            self.diff_struct.add_functionality_test(msg="Python file %s was deleted"
+                                                    % self.filepath)
             return self.diff_struct
 
         ast_before = ast.parse(self.content_before)
         ast_after = ast.parse(self.content_after)
         if not self.are_ast_same(ast_before, ast_after):
-            self.diff_struct.add_funcionality_test(msg="Change in Python abstract syntax tree found")
+            self.diff_struct.add_functionality_test(
+                msg="Python abstract syntax tree change found in %s" % self.filepath)
 
         return self.diff_struct

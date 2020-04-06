@@ -1,14 +1,13 @@
 #!/usr/bin/python3
 import logging
 from sys import stdout
-from ctf import cli, diff_analysis, connect_to_labels, ContentTests
+from ctf import cli, diff_analysis, connect_to_labels, ContentTests, DiffLogging
 from ctf.diff import git_wrapper
 
 logger = logging.getLogger("content-test-filtering")
 logger.setLevel(logging.INFO)
 console_handler = logging.StreamHandler(stdout)
-console_formatter = logging.Formatter("%(levelname)-7s %(module)-22s - %(message)s",
-                                      "%H:%M:%S")
+console_formatter = logging.Formatter("%(levelname)-7s %(module)-22s - %(message)s")
 console_handler.setFormatter(console_formatter)
 logger.addHandler(console_handler)
 
@@ -18,6 +17,7 @@ if __name__ == '__main__':
     already_analysed = []
     list_of_tests = []
     tests = ContentTests.ContentTests()
+    logs = DiffLogging.DiffLogging()
 
     if options.output_tests:
         logging.disable(logging.CRITICAL)
@@ -43,6 +43,7 @@ if __name__ == '__main__':
         try:
             diff_structure = diff_analysis.analyse_file(file_record)
             tests.fill_tests(diff_structure)
+            logs.fill_logging(diff_structure)
         except diff_analysis.UnknownAnalysisFileType:
             logger.debug("Unknown type of file %s. Analysis has not been "
                          "performed for it.", file_record["filepath"])
@@ -53,6 +54,7 @@ if __name__ == '__main__':
         changed_files.extend(diff_structure.affected_files)
 
     list_of_tests = connect_to_labels.get_labels(tests)
+    logs.print_all_logs()
 
     if list_of_tests:
         logger.info("List of tests to run:")

@@ -15,7 +15,11 @@ class DiffStruct:
         self.changed_products = set()
         self.funcionality_changed = False
         self.affected_files = []
-        self.test_selection_reasons = []
+        self.rules_logging = {}
+        self.profiles_logging = {}
+        self.products_logging = {}
+        self.macros_logging = {}
+        self.functionality_logging = set()
 
     def get_changed_rules_with_products(self):
         for product in self.changed_rules:
@@ -77,39 +81,65 @@ class DiffStruct:
             if product_name:
                 product_name = product_name[0]
             else:
-                logger.warning("%s rule doesn't occur in any profile nor "
-                               "product. It won't be tested.", rule_name)
+                msg = "The rule doesn't occur in any profile nor product. It won't be tested."
+                self.add_rule_log(rule_name, msg)
                 return
-        logger.info("%s - test for the %s rule will be selected.",
-                    msg, rule_name)
+        #msg = "%s - test for the rule will be selected." % msg
+        self.add_rule_log(rule_name, msg)
+        msg = "Datastream %s will be used for testing it." % product_name
+        self.add_rule_log(rule_name, msg)
         if product_name in self.changed_rules:
             self.changed_rules[product_name].add(rule_name)
         else:
             self.changed_rules[product_name] = set([rule_name])
 
     def add_changed_profile(self, profile_name, product_name, msg=""):
-        logger.info("%s - test for the %s profile will be selected.",
-                    msg, profile_name.upper())
+        #msg = "%s - test for the profile will be selected." % msg
+        self.add_profile_log(profile_name, msg)
+        msg = "Datastream %s will be used for testing it." % product_name
+        self.add_profile_log(profile_name, msg)
         if product_name in self.changed_profiles:
             self.changed_profiles[product_name].add(profile_name)
         else:
             self.changed_profiles[product_name] = set([profile_name])
-
-    def add_changed_product(self, product_name, msg=""):
-        self.changed_products.add(product_name)
 
     def add_changed_product_by_rule(self, rule_name, msg=""):
         product_name = self.get_rule_products(rule_name)
         if product_name:
             product_name = product_name[0]
         else:
-            logger.warning("Changed %s rule doesn't occur in any profile nor "
-                           "product. It won't be tested.", rule_name)
+            msg = "The rule doesn't occur in any profile nor product. It won't be tested."
+            self.add_rule_log(rule_name, msg)
             return
-        logger.info("%s - test for the %s product will be selected.",
-                    msg, product_name)
+        msg = "Datastream %s will be used for testing it." % product_name
+        self.add_rule_log(rule_name, msg)
         self.changed_products.add(product_name)
 
-    def add_funcionality_test(self, msg=""):
-        logger.info("%s - ctest will be selected.", msg)
+    def add_functionality_test(self, msg=""):
+        msg = "%s - ctest will be selected." % msg
+        self.add_functionality_log(msg)
         self.funcionality_changed = True
+
+    def add_rule_log(self, rule, msg):
+        if rule in self.rules_logging:
+            self.rules_logging[rule].add(msg)
+        else:
+            self.rules_logging[rule] = set([msg])
+
+    def add_profile_log(self, profile, msg):
+        if profile in self.profiles_logging:
+            self.profiles_logging[profile].add(msg)
+        else:
+            self.profiles_logging[profile] = set([msg])
+
+    def add_functionality_log(self, msg):
+        if self.functionality_logging:
+            self.functionality_logging.add(msg)
+        else:
+            self.functionality_logging = set([msg])
+
+    def add_macro_log(self, macro, msg):
+        if macro in self.macros_logging:
+            self.macros_logging[macro].add(msg)
+        else:
+            self.macros_logging[macro] = set([msg])

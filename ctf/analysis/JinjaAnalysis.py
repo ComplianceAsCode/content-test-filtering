@@ -156,9 +156,9 @@ class JinjaAnalysis(AbstractAnalysis):
                 if macro_name in f.read():
                     rule_name = re.search(r".+\/(\w+)\/\w+\.\w+$", content_file).group(1)
                     try:
-                        self.used_within_rules[macro_name].append(rule_name)
+                        self.used_within_templates[macro_name].append(content_file)
                     except KeyError:
-                        self.used_within_rules[macro_name] = [rule_name]
+                        self.used_within_templates[macro_name] = [content_file]
                     logger.debug("%s template - used in %s rule.", macro_name, rule_name)
                     rule_name = rule_name + get_suffix(file_type)
                     in_rules.append(rule_name)
@@ -253,10 +253,10 @@ class JinjaAnalysis(AbstractAnalysis):
         logger.debug("Analyzing Jinja macro file %s", self.filepath)
 
         if self.is_added():
-            logger.info("Jinja macro file %s is newly added. This change won't select any changes.", self.filepath)
+            msg = "Jinja macro file %s is newly added. This change won't select any changes." % self.filepath
             return self.diff_struct
         elif self.is_removed():
-            self.diff_struct.add_funcionality_test(
+            self.diff_struct.add_functionality_test(
                 msg="Jinja macro file %s was deleted" % self.filepath)
             return self.diff_struct
 
@@ -272,10 +272,12 @@ class JinjaAnalysis(AbstractAnalysis):
         self.analyse_macros(changed_macros)
 
         for macro_name in self.used_within_rules:
-            logger.info("%s macro is used in these files: %s", macro_name,
-                        ", ".join(self.used_within_rules[macro_name]))
+            msg = "%s macro is used in these files: %s" % \
+                   (macro_name, ", ".join(self.used_within_rules[macro_name]))
+            self.diff_struct.add_macro_log(macro_name, msg)
         for macro_name in self.used_within_templates:
-            logger.info("%s macro is used in these template files: %s", macro_name,
-                        ", ".join(self.used_within_templates[macro_name]))
+            msg = "%s template is used in these files: %s" % \
+                  (macro_name, ", ".join(self.used_within_templates[macro_name]))
+            self.diff_struct.add_macro_log(macro_name, msg)
 
         return self.diff_struct

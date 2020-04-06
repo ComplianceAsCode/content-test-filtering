@@ -61,13 +61,13 @@ class AnsibleAnalysis(AbstractAnalysis):
             # Important comment
             if re.match(r"^(\+|-)\s*#\s*(platform|reboot|strategy|complexity|disruption)\s*=\s*.*$", line):
                 self.diff_struct.add_changed_product_by_rule(
-                    self.rule_name, msg="Metadata changed in ansible remediation")
+                    self.rule_name, msg="Metadata changed in ansible remediation.")
                 continue
             # Not important comment
             if re.match(r"^(\+|-)\s*#.*$", line):
                 continue
             self.diff_struct.add_changed_rule(
-                self.rule_name, msg="Template usage changed in ansible remediation")
+                self.rule_name, msg="Template usage changed in ansible remediation.")
 
     def analyse_ansible(self):
         changes = self.get_changes()
@@ -77,14 +77,14 @@ class AnsibleAnalysis(AbstractAnalysis):
                 continue
             if re.match(r"^(\+|-)\s*#\s*(platform|reboot|strategy|complexity|disruption)\s*=\s*.*$", line):
                 self.diff_struct.add_changed_product_by_rule(
-                    self.rule_name, msg="Metadata changed in ansible remediation")
+                    self.rule_name, msg="Metadata changed in ansible remediation.")
                 continue
             if re.match(r"^(\+|-)\s*#.*$", line):
                 continue
             if re.match(r"^(\+|-)\s*-?\s*name\s*:\s*\S+.*$", line):
                 continue
             self.diff_struct.add_changed_rule(
-                self.rule_name, msg="Ansible remediation changed")
+                self.rule_name, msg="Ansible remediation changed.")
 
     def process_analysis(self):
         logger.debug("Analyzing ansible file %s", self.filepath)
@@ -96,8 +96,8 @@ class AnsibleAnalysis(AbstractAnalysis):
             self.diff_struct.add_changed_rule(self.rule_name, msg=msg)
             return self.diff_struct
         elif self.is_removed():
-            logger.info("Ansible remediation for %s was deleted. No test for it will be selected",
-                        self.rule_name)
+            msg = "Ansible remediation for %s was deleted. No test for it will be selected" % self.rule_name
+            self.diff_struct.add_rule_log(self.rule_name, msg)
             return self.diff_struct
 
         was_templated = self.is_templated(self.content_before)
@@ -106,7 +106,7 @@ class AnsibleAnalysis(AbstractAnalysis):
         if was_templated and is_templated:  # Was and is templated
             self.analyse_template()
         elif any([was_templated, is_templated]):  # Templatization changed
-            msg = "Templatazation usage changed in %s" % self.filepath
+            msg = "Templatazation usage changed in %s." % self.filepath
             self.diff_struct.add_changed_product_by_rule(self.rule_name, msg=msg)
             self.diff_struct.add_changed_rule(self.rule_name, msg=msg)
         else:  # Not templated
