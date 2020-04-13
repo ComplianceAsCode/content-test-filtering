@@ -42,7 +42,7 @@ class ProfileAnalysis(AbstractAnalysis):
     def is_rule(self, value):
         if "=" in value:
             logger.debug("Value of %s variable in %s profile for %s changed.",
-                        value.split("=")[0], self.profile, self.product)
+                         value.split("=")[0], self.profile, self.product)
             return False
         return True
 
@@ -55,7 +55,7 @@ class ProfileAnalysis(AbstractAnalysis):
         return items_list
 
     def item_added(self, items):
-        self.add_profile_test("Rule %s added to %s profile." % 
+        self.add_profile_test("Rule %s added to %s profile." %
                               (", ".join(self.iterate_changed_rules(items)),
                                self.profile))
         self.added_rules.extend(self.iterate_changed_rules(items))
@@ -152,9 +152,11 @@ class ProfileAnalysis(AbstractAnalysis):
         for f in extended_profiles:
             path = f.split("/")[-1]
             profile_name = path.split(".")[0]
-            self.diff_struct.add_changed_profile(profile_name, self.product,
-                                                 msg="%s profile extends changed %s profile"
-                                                 % (profile_name.upper(), profile.upper()))
+            self.diff_struct.add_changed_profile(
+                profile_name, self.product,
+                msg="%s profile extends changed %s profile"
+                % (profile_name.upper(), profile.upper())
+            )
             self.find_dependent_profiles(f, profile_name)
 
     def process_analysis(self):
@@ -170,9 +172,9 @@ class ProfileAnalysis(AbstractAnalysis):
 
         if self.added_rules:
             logger.debug("Added rules to %s profile: %s",
-                        self.profile, ", ".join(self.added_rules))
+                         self.profile, ", ".join(self.added_rules))
         if self.removed_rules:
             logger.debug("Removed rules from %s profile: %s",
-                        self.profile, ", ".join(self.removed_rules))
+                         self.profile, ", ".join(self.removed_rules))
 
         return self.diff_struct

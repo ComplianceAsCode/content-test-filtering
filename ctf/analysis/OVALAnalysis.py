@@ -97,11 +97,11 @@ class OVALAnalysis(AbstractAnalysis):
         if ("/metadata/" in change.node and "/metadata/" in change.target) or\
            ("/criteria/" in change.node and "/criteria/" in change.target) or\
            ("textfilecontent54_test/" in change.node and
-            "textfilecontent54_test/" in change.target) or\
+                "textfilecontent54_test/" in change.target) or\
            ("textfilecontent54_object/" in change.node and
-            "textfilecontent54_object/" in change.target) or\
+                "textfilecontent54_object/" in change.target) or\
            ("textfilecontent54_state/" in change.node and
-            "textfilecontent54_state/" in change.target):
+                "textfilecontent54_state/" in change.target):
             return
         else:
             self.add_rule_test("Node moved within OVAL check.")
@@ -120,9 +120,9 @@ class OVALAnalysis(AbstractAnalysis):
             self.add_rule_test("Attribute value changed in OVAL check.")
 
     def update_text_change(self, change):
-        if ("/title" not in change.node and
-            "/description" not in change.node and
-            "platform" not in change.node):
+        if "/title" not in change.node and \
+           "/description" not in change.node and \
+           "platform" not in change.node:
             self.add_rule_test("Text changed in OVAL check.")
 
     def analyse_oval_change(self, change):

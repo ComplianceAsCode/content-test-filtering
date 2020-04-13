@@ -3,7 +3,7 @@ import re
 import subprocess
 import logging
 import shutil
-from git import Repo, GitCommandError
+from git import Repo
 from tempfile import mkdtemp
 
 logger = logging.getLogger("content-test-filtering.diff")
@@ -96,16 +96,18 @@ class GitDiffWrapper(metaclass=Singleton):
 
         for product in products:
             self.checkout_branch(self.diverge_commit)
-            build_process = subprocess.run("make generate-internal-templated-content-"+product,
-                                           shell=True, cwd=old_build, stdout=subprocess.DEVNULL,
-                                           stderr=subprocess.DEVNULL)
+            build_process = subprocess.run(
+                "make generate-internal-templated-content-"+product, shell=True,
+                cwd=old_build, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+            )
             if build_process.returncode:
                 raise Exception
 
             self.checkout_branch(self.new_branch)
-            build_process = subprocess.run("make generate-internal-templated-content-"+product,
-                                           shell=True, cwd=new_build, stdout=subprocess.DEVNULL,
-                                           stderr=subprocess.DEVNULL)
+            build_process = subprocess.run(
+                "make generate-internal-templated-content-"+product, shell=True,
+                cwd=new_build, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+            )
             if build_process.returncode:
                 raise Exception
 

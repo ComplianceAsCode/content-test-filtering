@@ -2,6 +2,7 @@ import logging
 
 logger = logging.getLogger("content-test-filtering.logging")
 
+
 class DiffLogging:
     def __init__(self):
         self.rules = {}
@@ -43,21 +44,21 @@ class DiffLogging:
             if rule in self.rules:
                 self.rules[rule].add(msg)
             else:
-                self.rules[rule] = set([msg])
+                self.rules[rule] = {msg}
 
     def add_profile_log(self, profile, msgs):
         for msg in msgs:
             if profile in self.profiles:
                 self.profiles[profile].add(msg)
             else:
-                self.profiles[profile] = set([msg])
+                self.profiles[profile] = {msg}
 
     def add_macro_log(self, macro, msgs):
         for msg in msgs:
             if macro in self.macros:
                 self.macros[macro].add(msg)
             else:
-                self.macros[macro] = set([msg])
+                self.macros[macro] = {msg}
 
     def add_functionality_log(self, msg):
         self.functionality.append(msg)

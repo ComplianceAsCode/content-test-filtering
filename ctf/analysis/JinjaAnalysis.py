@@ -125,7 +125,8 @@ class JinjaAnalysis(AbstractAnalysis):
                     self.used_within_rules[macro.name].append(file_record["filepath"])
                 except KeyError:
                     self.used_within_rules[macro.name] = [file_record["filepath"]]
-                logger.debug("%s macro - used in %s rule.", macro.name, file_record["filepath"])
+                logger.debug("%s macro - used in %s rule.",
+                             macro.name, file_record["filepath"])
 
     def analyse_macros_in_templates(self, macros):
         nonempty_macros = [macro for macro in macros if macro.in_templates]
@@ -154,12 +155,14 @@ class JinjaAnalysis(AbstractAnalysis):
                              errors='ignore') as f:
                 f.seek(0)
                 if macro_name in f.read():
-                    rule_name = re.search(r".+\/(\w+)\/\w+\.\w+$", content_file).group(1)
+                    rule_name = re.search(r".+\/(\w+)\/\w+\.\w+$",
+                                          content_file).group(1)
                     try:
                         self.used_within_templates[macro_name].append(content_file)
                     except KeyError:
                         self.used_within_templates[macro_name] = [content_file]
-                    logger.debug("%s template - used in %s rule.", macro_name, rule_name)
+                    logger.debug("%s template - used in %s rule.",
+                                 macro_name, rule_name)
                     rule_name = rule_name + get_suffix(file_type)
                     in_rules.append(rule_name)
         return in_rules

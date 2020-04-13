@@ -84,24 +84,22 @@ class DiffStruct:
                 msg = "The rule doesn't occur in any profile nor product. It won't be tested."
                 self.add_rule_log(rule_name, msg)
                 return
-        #msg = "%s - test for the rule will be selected." % msg
         self.add_rule_log(rule_name, msg)
         msg = "Datastream %s will be used for testing it." % product_name
         self.add_rule_log(rule_name, msg)
         if product_name in self.changed_rules:
             self.changed_rules[product_name].add(rule_name)
         else:
-            self.changed_rules[product_name] = set([rule_name])
+            self.changed_rules[product_name] = {rule_name}
 
     def add_changed_profile(self, profile_name, product_name, msg=""):
-        #msg = "%s - test for the profile will be selected." % msg
         self.add_profile_log(profile_name, msg)
         msg = "Datastream %s will be used for testing it." % product_name
         self.add_profile_log(profile_name, msg)
         if product_name in self.changed_profiles:
             self.changed_profiles[product_name].add(profile_name)
         else:
-            self.changed_profiles[product_name] = set([profile_name])
+            self.changed_profiles[product_name] = {profile_name}
 
     def add_changed_product_by_rule(self, rule_name, msg=""):
         product_name = self.get_rule_products(rule_name)
@@ -124,22 +122,22 @@ class DiffStruct:
         if rule in self.rules_logging:
             self.rules_logging[rule].add(msg)
         else:
-            self.rules_logging[rule] = set([msg])
+            self.rules_logging[rule] = {msg}
 
     def add_profile_log(self, profile, msg):
         if profile in self.profiles_logging:
             self.profiles_logging[profile].add(msg)
         else:
-            self.profiles_logging[profile] = set([msg])
+            self.profiles_logging[profile] = {msg}
 
     def add_functionality_log(self, msg):
         if self.functionality_logging:
             self.functionality_logging.add(msg)
         else:
-            self.functionality_logging = set([msg])
+            self.functionality_logging = {msg}
 
     def add_macro_log(self, macro, msg):
         if macro in self.macros_logging:
             self.macros_logging[macro].add(msg)
         else:
-            self.macros_logging[macro] = set([msg])
+            self.macros_logging[macro] = {msg}
