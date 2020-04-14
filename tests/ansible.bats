@@ -14,7 +14,7 @@ prepare_repository
 
     [ "$?" -eq 0 ]
 
-    if ! grep -q "$no_test_regex" "$tmp_file"; then
+    if grep -q "$no_test_regex" "$tmp_file"; then
         echo "$no_test_regex not found in:" && cat "$tmp_file"
         return 1
     fi
@@ -47,8 +47,8 @@ prepare_repository
 
     [ "$?" -eq 0 ]
 
-    if ! grep -q "$no_test_regex" "$tmp_file"; then
-        echo "$regex_check not found in:" && cat "$tmp_file"
+    if grep -q "$no_test_regex" "$tmp_file"; then
+        echo "$no_test_regex not found in:" && cat "$tmp_file"
         return 1
     fi
 }
@@ -65,8 +65,12 @@ prepare_repository
 
     [ "$?" -eq 0 ]
 
-    if ! grep -q "$regex_check_1" "$tmp_file" || ! grep -q "$regex_check_2" "$tmp_file"; then
-        echo "$regex_check not found in:" && cat "$tmp_file"
+    if ! grep -q "$regex_check_1" "$tmp_file"; then
+        echo "$regex_check_1 not found in:" && cat "$tmp_file"
+        return 1
+    fi
+    if ! grep -q "$regex_check_2" "$tmp_file"; then
+        echo "$regex_check_2 not found in:" && cat "$tmp_file"
         return 1
     fi
 }
@@ -83,8 +87,12 @@ prepare_repository
 
     [ "$?" -eq 0 ]
 
-    if ! grep -q "$regex_check_1" "$tmp_file" || ! grep -q "$regex_check_2" "$tmp_file"; then
-        echo "$regex_check not found in:" && cat "$tmp_file"
+    if ! grep -q "$regex_check_1" "$tmp_file"; then
+        echo "$regex_check_1 not found in:" && cat "$tmp_file"
+        return 1
+    fi
+    if ! grep -q "$regex_check_2" "$tmp_file"; then
+        echo "$regex_check_2 not found in:" && cat "$tmp_file"
         return 1
     fi
 }
@@ -99,8 +107,8 @@ prepare_repository
 
     [ "$?" -eq 0 ]
 
-    if ! grep -q "$no_test_regex" "$tmp_file"; then
-        echo "$regex_check not found in:" && cat "$tmp_file"
+    if grep -q "$no_test_regex" "$tmp_file"; then
+        echo "$no_test_regex not found in:" && cat "$tmp_file"
         return 1
     fi
 }
@@ -118,8 +126,12 @@ prepare_repository
 
     [ "$?" -eq 0 ]
 
-    if ! grep -q "$regex_check_1" "$tmp_file" || ! grep -q "$regex_check_2" "$tmp_file"; then
-        echo "$regex_check not found in:" && cat "$tmp_file"
+    if ! grep -q "$regex_check_1" "$tmp_file"; then
+        echo "$regex_check_1 not found in:" && cat "$tmp_file"
+        return 1
+    fi
+    if ! grep -q "$regex_check_2" "$tmp_file"; then
+        echo "$regex_check_2 not found in:" && cat "$tmp_file"
         return 1
     fi
 }

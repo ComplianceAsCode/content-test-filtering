@@ -14,7 +14,7 @@ prepare_repository
 
     [ "$?" -eq 0 ]
 
-    if ! grep -q "$no_test_regex" "$tmp_file"; then
+    if grep -q "$no_test_regex" "$tmp_file"; then
         echo "$no_test_regex not found in:" && cat "$tmp_file"
         return 1
     fi
@@ -74,7 +74,7 @@ prepare_repository
 
     [ "$?" -eq 0 ]
 
-    if ! grep -q "$no_test_regex" "$tmp_file"; then
+    if grep -q "$no_test_regex" "$tmp_file"; then
         echo "$no_test_regex not found in:" && cat "$tmp_file"
         return 1
     fi
