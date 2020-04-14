@@ -22,7 +22,9 @@ class DiffLogging:
             self.add_functionality_log(functionality)
 
     def print_all_logs(self, tests=None):
-        print("Findings:")
+        if self.rules or self.profiles or self.macros or self.functionality:
+            print("Findings:")
+
         for rule in self.rules:
             print("  Rule %s:" % rule)
             for msg in self.rules[rule]:
