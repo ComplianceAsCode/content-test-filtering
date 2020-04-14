@@ -21,23 +21,29 @@ class DiffLogging:
         for functionality in diff_struct.functionality_logging:
             self.add_functionality_log(functionality)
 
-    def print_all_logs(self):
+    def print_all_logs(self, tests=None):
+        print("Findings:")
         for rule in self.rules:
-            logger.info("Rule %s:", rule)
+            print("  Rule %s:" % rule)
             for msg in self.rules[rule]:
-                logger.info("    %s", msg)
+                print("    %s" % msg)
         for profile in self.profiles:
-            logger.info("Profile %s:", profile)
+            print("  Profile %s:" % profile)
             for msg in self.profiles[profile]:
-                logger.info("    %s", msg)
+                print("    %s" % msg)
         for macro in self.macros:
-            logger.info("Macro %s:", macro)
+            print("  Macro %s:" % macro)
             for msg in self.macros[macro]:
-                logger.info("    %s", msg)
+                print("    %s" % msg)
         if self.functionality:
-            logger.info("Others:")
+            print("  Others:")
             for msg in self.functionality:
-                logger.info("    %s", msg)
+                print("    %s" % msg)
+
+        if tests:
+            print("Recommended tests to execute:")
+            for test in tests:
+                print("  %s" % test)
 
     def add_rule_log(self, rule, msgs):
         for msg in msgs:

@@ -10,6 +10,15 @@ logger = logging.getLogger("content-test-filtering.diff")
 URL = "https://github.com/ComplianceAsCode/content"
 
 
+class BuildFailed(Exception):
+    def __init__(self, message):
+        super().__init__(message)
+        self.message = message
+
+    def __str__(self):
+        return self.message
+
+
 class RemoteNotFound(Exception):
     def __init__(self, message):
         super().__init__(message)
@@ -52,12 +61,27 @@ class GitDiffWrapper(metaclass=Singleton):
         self.repository.git.checkout(branch)
         self.current_branch = branch
 
+    def cmake_project(self, folder):
+        build_process = subprocess.run("cmake ../", shell=True, cwd=folder,
+                                       stdout=subprocess.DEVNULL,
+                                       stderr=subprocess.DEVNULL)
+        return build_process.returncode
+
+    def generate_templated_content(self, product, folder):
+        build_process = subprocess.run(
+            "make generate-internal-templated-content-"+product, shell=True,
+            cwd=folder, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+        )
+        return build_process.returncode
+
+
     def build_project(self, old_build_path, new_build_path,
                       products=["rhel7", "rhel8"]):
 
         old_build = self.repo_path + old_build_path
         new_build = self.repo_path + new_build_path
 
+        # Delete old build directories - they can contain cached build
         try:
             shutil.rmtree(old_build)
         except FileNotFoundError:
@@ -67,6 +91,7 @@ class GitDiffWrapper(metaclass=Singleton):
         except FileNotFoundError:
             pass
 
+        # Ensure build directories exist
         try:
             os.mkdir(old_build)
         except FileExistsError:
@@ -78,38 +103,29 @@ class GitDiffWrapper(metaclass=Singleton):
 
         self.checkout_branch(self.diverge_commit)
         logger.debug("Building old content...")
-        build_process = subprocess.run("cmake ../", shell=True, cwd=old_build,
-                                       stdout=subprocess.DEVNULL,
-                                       stderr=subprocess.DEVNULL)
-        if build_process.returncode:
-            raise Exception
+        return_code = self.cmake_project(old_build)
+        if return_code:
+            raise BuildFailed("Error in building old content.")
         logger.debug("Old content build finished.")
 
         self.checkout_branch(self.new_branch)
         logger.debug("Building new content...")
-        build_process = subprocess.run("cmake ../", shell=True, cwd=new_build,
-                                       stdout=subprocess.DEVNULL,
-                                       stderr=subprocess.DEVNULL)
-        if build_process.returncode:
-            raise Exception
+        return_code = self.cmake_project(new_build)
+        if return_code:
+            raise BuildFailed("Error in building new content.")
         logger.debug("New content build finished.")
 
+        # Create templated content for selected products
         for product in products:
             self.checkout_branch(self.diverge_commit)
-            build_process = subprocess.run(
-                "make generate-internal-templated-content-"+product, shell=True,
-                cwd=old_build, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
-            )
-            if build_process.returncode:
-                raise Exception
+            return_code = self.generate_templated_content(product, old_build)
+            if return_code:
+                raise BuildFailed("Error in generating old templated content.")
 
             self.checkout_branch(self.new_branch)
-            build_process = subprocess.run(
-                "make generate-internal-templated-content-"+product, shell=True,
-                cwd=new_build, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
-            )
-            if build_process.returncode:
-                raise Exception
+            return_code = self.generate_templated_content(product, new_build)
+            if return_code:
+                raise BuildFailed("Error in generating new templated content.")
 
     def is_dir(self, directory):
         is_directory = True
@@ -205,6 +221,7 @@ class GitDiffWrapper(metaclass=Singleton):
         git_diff = self.repository.git.diff("--name-status",
                                             compare_commit + "..HEAD")
 
+        # For each changed file create record that contains all information
         for line in git_diff.splitlines():
             git_diff_output = line.split("\t")
             if git_diff_output[0].startswith("R"):

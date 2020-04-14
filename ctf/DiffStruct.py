@@ -81,11 +81,11 @@ class DiffStruct:
             if product_name:
                 product_name = product_name[0]
             else:
-                msg = "The rule doesn't occur in any profile nor product. It won't be tested."
+                msg = "The rule doesn't occur in any profile nor product. No test will be selected."
                 self.add_rule_log(rule_name, msg)
                 return
         self.add_rule_log(rule_name, msg)
-        msg = "Datastream %s will be used for testing it." % product_name
+        msg = "Part of %s datastream." % product_name
         self.add_rule_log(rule_name, msg)
         if product_name in self.changed_rules:
             self.changed_rules[product_name].add(rule_name)
@@ -94,7 +94,7 @@ class DiffStruct:
 
     def add_changed_profile(self, profile_name, product_name, msg=""):
         self.add_profile_log(profile_name, msg)
-        msg = "Datastream %s will be used for testing it." % product_name
+        msg = "Part of %s datastream." % product_name
         self.add_profile_log(profile_name, msg)
         if product_name in self.changed_profiles:
             self.changed_profiles[product_name].add(profile_name)
@@ -106,10 +106,10 @@ class DiffStruct:
         if product_name:
             product_name = product_name[0]
         else:
-            msg = "The rule doesn't occur in any profile nor product. It won't be tested."
+            msg = "The rule doesn't occur in any profile nor product. No test will be selected."
             self.add_rule_log(rule_name, msg)
             return
-        msg = "Datastream %s will be used for testing it." % product_name
+        msg = "Part of %s datastream." % product_name
         self.add_rule_log(rule_name, msg)
         self.changed_products.add(product_name)
 

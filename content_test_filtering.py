@@ -42,23 +42,18 @@ if __name__ == '__main__':
 
         try:
             diff_structure = diff_analysis.analyse_file(file_record)
-            tests.fill_tests(diff_structure)
-            logs.fill_logging(diff_structure)
         except diff_analysis.UnknownAnalysisFileType:
             logger.debug("Unknown type of file %s. Analysis has not been "
                          "performed for it.", file_record["filepath"])
             continue
 
+        tests.fill_tests(diff_structure)
+        logs.fill_logging(diff_structure)
         already_analysed.append(file_record["filepath"])
         # If change affected any other file -> analyse it
         changed_files.extend(diff_structure.affected_files)
 
     list_of_tests = connect_to_labels.get_labels(tests)
-    logs.print_all_logs()
+    logs.print_all_logs(list_of_tests)
 
-    if list_of_tests:
-        logger.info("List of tests to run:")
-        print("\n".join(list_of_tests))
-    else:
-        logger.info("No test to run.")
     logger.debug("Finished")
