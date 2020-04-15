@@ -91,7 +91,7 @@ class AnsibleAnalysis(AbstractAnalysis):
         logger.debug("Rule name: %s", self.rule_name)
 
         if self.is_added():
-            msg = "Ansible remediation newly added"
+            msg = "Ansible remediation newly added."
             self.diff_struct.add_changed_product_by_rule(self.rule_name, msg=msg)
             self.diff_struct.add_changed_rule(self.rule_name, msg=msg)
             return self.diff_struct

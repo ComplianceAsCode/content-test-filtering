@@ -203,7 +203,7 @@ class OVALAnalysis(AbstractAnalysis):
         logger.debug("Rule name: %s", self.rule_name)
 
         if self.is_added():
-            msg = "OVAL check is newly added"
+            msg = "OVAL check is newly added."
             self.diff_struct.add_changed_product_by_rule(self.rule_name, msg=msg)
             # Don't search for rule references if newly added.
             self.diff_struct.add_changed_rule(self.rule_name, msg=msg)
