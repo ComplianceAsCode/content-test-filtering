@@ -7,7 +7,6 @@ from git import Repo
 from tempfile import mkdtemp
 
 logger = logging.getLogger("content-test-filtering.diff")
-URL = "https://github.com/ComplianceAsCode/content"
 
 
 class BuildFailed(Exception):
