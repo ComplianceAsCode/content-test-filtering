@@ -96,7 +96,7 @@ class AnsibleAnalysis(AbstractAnalysis):
             self.diff_struct.add_changed_rule(self.rule_name, msg=msg)
             return self.diff_struct
         elif self.is_removed():
-            msg = "Ansible remediation for %s was deleted. No test for it will be selected" % self.rule_name
+            msg = "Ansible remediation for %s was deleted. No test for it will be selected." % self.rule_name
             self.diff_struct.add_rule_log(self.rule_name, msg)
             return self.diff_struct
 

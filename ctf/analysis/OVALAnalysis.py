@@ -67,7 +67,7 @@ class OVALAnalysis(AbstractAnalysis):
         affected_rules = self.find_affected_rules()
         for affected_rule in affected_rules:
             self.diff_struct.add_changed_rule(affected_rule,
-                                              msg="%s is affected by %s change" %
+                                              msg="%s is affected by %s change." %
                                               (affected_rule, self.rule_name))
 
     def load_diff(self):

@@ -260,7 +260,7 @@ class JinjaAnalysis(AbstractAnalysis):
             return self.diff_struct
         elif self.is_removed():
             self.diff_struct.add_functionality_test(
-                msg="Jinja macro file %s was deleted" % self.filepath)
+                msg="Jinja macro file %s was deleted." % self.filepath)
             return self.diff_struct
 
         diff = self.load_diff()
@@ -275,11 +275,11 @@ class JinjaAnalysis(AbstractAnalysis):
         self.analyse_macros(changed_macros)
 
         for macro_name in self.used_within_rules:
-            msg = "%s macro is used in these files: %s" % \
+            msg = "%s macro is used in these files: %s." % \
                    (macro_name, ", ".join(self.used_within_rules[macro_name]))
             self.diff_struct.add_macro_log(macro_name, msg)
         for macro_name in self.used_within_templates:
-            msg = "%s template is used in these files: %s" % \
+            msg = "%s template is used in these files: %s." % \
                   (macro_name, ", ".join(self.used_within_templates[macro_name]))
             self.diff_struct.add_macro_log(macro_name, msg)
 

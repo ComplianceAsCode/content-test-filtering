@@ -28,13 +28,13 @@ class AbstractAnalysis(metaclass=ABCMeta):
 
     def is_added(self):
         if self.file_flag == "A":
-            logger.info("File %s has been added.", self.filepath)
+            logger.debug("File %s has been added.", self.filepath)
             return True
         return False
 
     def is_removed(self):
         if self.file_flag == "D":
-            logger.info("File %s has been removed.", self.filepath)
+            logger.debug("File %s has been removed.", self.filepath)
             return True
         return False
 

@@ -61,7 +61,7 @@ class ProfileAnalysis(AbstractAnalysis):
         self.added_rules.extend(self.iterate_changed_rules(items))
 
     def item_removed(self, items):
-        self.add_profile_test("Rule %s removed from  %s profile." %
+        self.add_profile_test("Rule %s removed from %s profile." %
                               (", ".join(self.iterate_changed_rules(items)),
                                self.profile))
         self.removed_rules.extend(self.iterate_changed_rules(items))
@@ -69,18 +69,18 @@ class ProfileAnalysis(AbstractAnalysis):
     def check_changed_values(self, items):
         for key in items:
             if "root['selections']" in key:
-                self.add_profile_test("Selection of rules changed in profile")
+                self.add_profile_test("Selection of rules changed in profile.")
 
     def dict_added(self, items):
         if len(items) != len(set(items) & set(FILTER_LIST)):
-            self.add_profile_test("Key deleted from profile")
+            self.add_profile_test("Key deleted from profile.")
 
     def dict_removed(self, items):
         if len(items) != len(set(items) & set(FILTER_LIST)):
-            self.add_profile_test("New key in profile")
+            self.add_profile_test("New key in profile.")
 
     def type_changed(self):
-        self.add_profile_test("Type of key in profile changed")
+        self.add_profile_test("Type of key in profile changed.")
 
     def analyse_changes(self):
         # Load previous and new profile
@@ -112,10 +112,10 @@ class ProfileAnalysis(AbstractAnalysis):
             rules = new_profile["selections"]
             self.added_rules = rules
         except KeyError:
-            msg = "New profile %s doesn't contain any rule. No test for it will be selected" % self.profile
+            msg = "New profile %s doesn't contain any rule. No test for it will be selected." % self.profile
             self.diff_struct.add_profile_log(self.profile, msg)
             return
-        self.add_profile_test("Newly added profile")
+        self.add_profile_test("Newly added profile.")
 
     def find_dependent_profiles(self, absolute_path, profile):
         # No profile - no dependencies
@@ -154,7 +154,7 @@ class ProfileAnalysis(AbstractAnalysis):
             profile_name = path.split(".")[0]
             self.diff_struct.add_changed_profile(
                 profile_name, self.product,
-                msg="%s profile extends changed %s profile"
+                msg="%s profile extends changed %s profile."
                 % (profile_name.upper(), profile.upper())
             )
             self.find_dependent_profiles(f, profile_name)
