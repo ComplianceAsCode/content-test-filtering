@@ -27,6 +27,9 @@ def parse_args():
     common_parser.add_argument("--output-tests", dest="output_tests", default=False,
                                action="store_true", help="Output only list of tests. "
                                "Completely turns off all other outputs.")
+    common_parser.add_argument("--output-format", dest="output_format", default="raw",
+                               action="store", choices=["raw", "markdown"],
+                               help="Output format.")
 
     parser.set_defaults(pr_number=None, branch=None)
 

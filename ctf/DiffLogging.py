@@ -2,6 +2,22 @@ import logging
 
 logger = logging.getLogger("content-test-filtering.logging")
 
+RAW_FORMAT = {
+    "findings": "Findings:",
+    "type_prefix": "  ",
+    "list_prefix": "    ",
+    "tests": "Recommended tests to execute:",
+    "end_line": "\n"
+}
+
+MARKDOWN_FORMAT = {
+    "findings": "**Findings:**",
+    "type_prefix": "",
+    "list_prefix": " ",
+    "tests": "**Recommended tests to execute:**",
+    "end_line": "\\n"
+}
+
 
 class DiffLogging:
     def __init__(self):
@@ -21,31 +37,37 @@ class DiffLogging:
         for functionality in diff_struct.functionality_logging:
             self.add_functionality_log(functionality)
 
-    def print_all_logs(self, tests=None):
+    def print_all_logs(self, tests=None, format="raw"):
+        if format == "raw":
+            format_style = RAW_FORMAT
+        elif format == "markdown":
+            format_style = MARKDOWN_FORMAT
+
         if self.rules or self.profiles or self.macros or self.functionality:
-            print("Findings:")
+            print(format_style["findings"], end=format_style["end_line"])
 
         for rule in self.rules:
-            print("  Rule %s:" % rule)
+            print("%sRule %s:" % (format_style["type_prefix"], rule), end=format_style["end_line"])
             for msg in self.rules[rule]:
-                print("    %s" % msg)
+                print("%s%s" % (format_style["list_prefix"], msg), end=format_style["end_line"])
         for profile in self.profiles:
-            print("  Profile %s:" % profile)
+            print("%sProfile %s:" % (format_style["type_prefix"], profile), end=format_style["end_line"])
             for msg in self.profiles[profile]:
-                print("    %s" % msg)
+                print("%s%s" % (format_style["list_prefix"], msg), end=format_style["end_line"])
         for macro in self.macros:
-            print("  Macro %s:" % macro)
+            print("%sMacro %s:" % (format_style["type_prefix"], macro), end=format_style["end_line"])
             for msg in self.macros[macro]:
-                print("    %s" % msg)
+                print("%s%s" % (format_style["list_prefix"], msg), end=format_style["end_line"])
         if self.functionality:
-            print("  Others:")
+            print("%sOthers:" % format_style["type_prefix"], end=format_style["end_line"])
             for msg in self.functionality:
-                print("    %s" % msg)
+                print("%s%s" % (format_style["list_prefix"], msg), end=format_style["end_line"])
 
+        print(end=format_style["end_line"])
         if tests:
-            print("Recommended tests to execute:")
+            print(format_style["tests"], end=format_style["end_line"])
             for test in tests:
-                print("  %s" % test)
+                print("%s%s" % (format_style["list_prefix"], test), end=format_style["end_line"])
 
     def add_rule_log(self, rule, msgs):
         for msg in msgs:

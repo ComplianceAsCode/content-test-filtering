@@ -54,6 +54,6 @@ if __name__ == '__main__':
         changed_files.extend(diff_structure.affected_files)
 
     list_of_tests = connect_to_labels.get_labels(tests)
-    logs.print_all_logs(list_of_tests)
+    logs.print_all_logs(list_of_tests, format=options.output_format)
 
     logger.debug("Finished")
