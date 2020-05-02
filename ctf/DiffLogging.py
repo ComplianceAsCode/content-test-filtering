@@ -63,8 +63,8 @@ class DiffLogging:
             for msg in self.functionality:
                 print("%s%s" % (format_style["list_prefix"], msg), end=format_style["end_line"])
 
-        print(end=format_style["end_line"])
         if tests:
+            print(end=format_style["end_line"])
             print(format_style["tests"], end=format_style["end_line"])
             for test in tests:
                 print("%s%s" % (format_style["list_prefix"], test), end=format_style["end_line"])

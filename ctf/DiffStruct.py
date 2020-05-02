@@ -2,6 +2,7 @@ import os
 import re
 import logging
 from ctf.diff import git_wrapper
+from ctf.utils import file_path_to_log
 
 logger = logging.getLogger("content-test-filtering.diff")
 
@@ -76,6 +77,7 @@ class DiffStruct:
         return products
 
     def add_changed_rule(self, rule_name, product_name=None, msg=""):
+        self.add_rule_log(rule_name, msg)
         if not product_name:
             product_name = self.get_rule_products(rule_name)
             if product_name:
@@ -84,18 +86,15 @@ class DiffStruct:
                 msg = "The rule doesn't occur in any profile nor product. No test will be selected."
                 self.add_rule_log(rule_name, msg)
                 return
-        self.add_rule_log(rule_name, msg)
-        msg = "Part of %s datastream." % product_name
-        self.add_rule_log(rule_name, msg)
+        logger.debug("Rule %s is part of %s datastream." % (rule_name, product_name))
         if product_name in self.changed_rules:
             self.changed_rules[product_name].add(rule_name)
         else:
             self.changed_rules[product_name] = {rule_name}
 
     def add_changed_profile(self, profile_name, product_name, msg=""):
-        self.add_profile_log(profile_name, msg)
-        msg = "Part of %s datastream." % product_name
-        self.add_profile_log(profile_name, msg)
+        profile_product = "%s on %s" % (profile_name, product_name)
+        self.add_profile_log(profile_product, msg)
         if product_name in self.changed_profiles:
             self.changed_profiles[product_name].add(profile_name)
         else:
@@ -109,8 +108,7 @@ class DiffStruct:
             msg = "The rule doesn't occur in any profile nor product. No test will be selected."
             self.add_rule_log(rule_name, msg)
             return
-        msg = "Part of %s datastream." % product_name
-        self.add_rule_log(rule_name, msg)
+        logger.debug("Rule %s is part of %s datastream." % (rule_name, product_name))
         self.changed_products.add(product_name)
 
     def add_functionality_test(self, msg=""):
@@ -141,3 +139,14 @@ class DiffStruct:
             self.macros_logging[macro].add(msg)
         else:
             self.macros_logging[macro] = {msg}
+
+    def add_macro_rule_log(self, macro, usage_list):
+        for usage in usage_list:
+            msg = file_path_to_log(usage)
+            if macro in self.macros_logging:
+                self.macros_logging[macro].add(msg)
+            else:
+                self.macros_logging[macro] = {msg}
+
+    def add_macro_template_log(self, macro, msg):
+        pass

@@ -1,4 +1,5 @@
 import os
+import re
 from ctf.diff import git_wrapper
 
 
@@ -28,3 +29,26 @@ def get_suffix(filetype):
     else:
         raise TypeError
     return suffix
+
+
+def file_path_to_log(filepath):
+    log = ""
+    if re.search(r"/build.*/bash/.*\.sh", filepath):
+        m = re.match(r".*/([^/]+)\.sh", filepath)
+        log = "In Bash remediation for %s." % m.group(1)
+    elif re.search(r"/build.*/ansible/.*\.yml", filepath):
+        m = re.match(r".*/([^/]+)\.yml", filepath)
+        log = "In Ansible remediation for %s." % m.group(1)
+    elif re.search(r"/build.*/oval/.*\.yml", filepath):
+        m = re.match(r".*/([^/]+)\.xml", filepath)
+        log = "In OVAL check for %s." % m.group(1)
+    elif re.search(r"/bash/.*\.sh$", filepath):
+        m = re.match(r".*/([^/]+)/bash/.*", filepath)
+        log = "In Bash remediation for %s." % m.group(1)
+    elif re.search(r"/ansible/.*\.yml$", filepath):
+        m = re.match(r".*/([^/]+)/ansible/.*", filepath)
+        log = "In Ansible remediation for %s." % m.group(1)
+    elif re.search(r"/oval/.*\.xml$", filepath):
+        m = re.match(r".*/([^/]+)/oval/.*", filepath)
+        log = "In OVAL check for %s." % m.group(1)
+    return log

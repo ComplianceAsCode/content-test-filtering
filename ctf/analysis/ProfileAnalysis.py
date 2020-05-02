@@ -22,7 +22,6 @@ class ProfileAnalysis(AbstractAnalysis):
         self.profile = path[-1].split(".")[0]
         self.added_rules = []
         self.removed_rules = []
-        self.test_already_added = False
 
     @staticmethod
     def can_analyse(filepath):
@@ -31,9 +30,6 @@ class ProfileAnalysis(AbstractAnalysis):
         return False
 
     def add_profile_test(self, msg):
-        if self.test_already_added:
-            return
-        self.test_already_added = True
         self.diff_struct.add_changed_profile(
             self.profile, self.product, msg=msg)
         self.find_dependent_profiles(self.diff_struct.absolute_path,

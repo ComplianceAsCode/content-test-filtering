@@ -136,8 +136,9 @@ class JinjaAnalysis(AbstractAnalysis):
         git_wrapper.build_project("/build_old/", "/build_new/")
         for macro in macros:
             for template in macro.in_templates:
-                logger.debug("%s macro - used in %s template.", macro.name, template)
-                self.analyse_template(template)
+                msg = "Used in %s template." % template.split("/")[-1]
+                self.diff_struct.add_macro_log(macro.name, msg)
+                self.analyse_template(template, macro.name)
 
     def analyse_macros(self, macros):
         self.analyse_macros_in_rules(macros)
@@ -157,17 +158,13 @@ class JinjaAnalysis(AbstractAnalysis):
                 if macro_name in f.read():
                     rule_name = re.search(r".+\/(\w+)\/\w+\.\w+$",
                                           content_file).group(1)
-                    try:
-                        self.used_within_templates[macro_name].append(content_file)
-                    except KeyError:
-                        self.used_within_templates[macro_name] = [content_file]
                     logger.debug("%s template - used in %s rule.",
                                  macro_name, rule_name)
                     rule_name = rule_name + get_suffix(file_type)
                     in_rules.append(rule_name)
         return in_rules
 
-    def analyse_template(self, template):
+    def analyse_template(self, template, macro_name):
         in_rules = self.find_template_usage(template)
         if not in_rules:
             return
@@ -180,6 +177,10 @@ class JinjaAnalysis(AbstractAnalysis):
                 new_processed = f.read()
             with open(build_file.replace("/build_new/", "/build_old/")) as f:
                 old_processed = f.read()
+            try:
+                self.used_within_templates[macro_name].append(build_file)
+            except KeyError:
+                self.used_within_templates[macro_name] = [build_file]
             file_record = mock_record(build_file, old_processed, new_processed)
             self.diff_struct.affected_files.append(file_record)
 
@@ -275,12 +276,15 @@ class JinjaAnalysis(AbstractAnalysis):
         self.analyse_macros(changed_macros)
 
         for macro_name in self.used_within_rules:
-            msg = "%s macro is used in these files: %s." % \
-                   (macro_name, ", ".join(self.used_within_rules[macro_name]))
-            self.diff_struct.add_macro_log(macro_name, msg)
+            self.diff_struct.add_macro_rule_log(macro_name, self.used_within_rules[macro_name])
+            #msg = "Macro is used in these files: %s." % \
+            #       (macro_name, ", ".join(self.used_within_rules[macro_name]))
+            #self.diff_struct.add_macro_log(macro_name, msg)
+        if self.used_within_templates:
+            msg = ""
         for macro_name in self.used_within_templates:
-            msg = "%s template is used in these files: %s." % \
-                  (macro_name, ", ".join(self.used_within_templates[macro_name]))
-            self.diff_struct.add_macro_log(macro_name, msg)
+            #msg = "%s template is used in these files: %s." % \
+            #      (macro_name, ", ".join(self.used_within_templates[macro_name]))
+            self.diff_struct.add_macro_rule_log(macro_name, self.used_within_templates[macro_name])
 
         return self.diff_struct
