@@ -15,7 +15,7 @@ MARKDOWN_FORMAT = {
     "type_prefix": "",
     "list_prefix": " ",
     "tests": "**Recommended tests to execute:**",
-    "end_line": "\\n"
+    "end_line": "\n"
 }
 
 
