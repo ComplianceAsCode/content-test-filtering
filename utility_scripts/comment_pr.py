@@ -4,7 +4,7 @@ import requests
 import json
 import sys
 
-REPO_URL = "https://api.github.com/repos/mildas/content-test-filtering/issues/"
+REPO_URL = "https://api.github.com/repos/ComplianceAsCode/content/issues/"
 USER = "mildas"
 COMMENT_STRING = "Findings:"
 
