@@ -6,7 +6,8 @@ import sys
 
 REPO_URL = "https://api.github.com/repos/ComplianceAsCode/content/issues/"
 USER = "mildas"
-COMMENT_STRING = "Changes identified:"
+COMMENT_STRING_1 = "Changes identified:"
+COMMENT_STRING_2 = "Recommended tests to execute:"
 
 
 def parse_args():
@@ -36,7 +37,8 @@ if __name__ == '__main__':
     parsed_comments = json.loads(response.content)
     # Delete comments with specific comment string
     for comment in parsed_comments:
-        if comment["user"]["login"] == USER and COMMENT_STRING in comment["body"]:
+        if comment["user"]["login"] == USER and \
+            (COMMENT_STRING_1 in comment["body"] or COMMENT_STRING_2 in comment["body"]):
             remove_comment_url = REPO_URL + "comments/" + str(comment["id"])
             response = requests.delete(remove_comment_url, headers=headers)
     # Send the comment
