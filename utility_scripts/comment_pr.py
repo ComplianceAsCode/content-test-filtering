@@ -6,7 +6,7 @@ import sys
 
 REPO_URL = "https://api.github.com/repos/ComplianceAsCode/content/issues/"
 USER = "mildas"
-COMMENT_STRING = "Findings:"
+COMMENT_STRING = "Changes identified:"
 
 
 def parse_args():

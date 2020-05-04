@@ -3,7 +3,7 @@ import logging
 logger = logging.getLogger("content-test-filtering.logging")
 
 RAW_FORMAT = {
-    "findings": "Findings:",
+    "findings": "Changes identified:",
     "type_prefix": "  ",
     "list_prefix": "    ",
     "tests": "Recommended tests to execute:",
@@ -11,7 +11,7 @@ RAW_FORMAT = {
 }
 
 MARKDOWN_FORMAT = {
-    "findings": "**Findings:**",
+    "findings": "**Changes identified:**",
     "type_prefix": "",
     "list_prefix": " ",
     "tests": "**Recommended tests to execute:**",
