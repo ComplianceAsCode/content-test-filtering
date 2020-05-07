@@ -27,6 +27,8 @@ def get_labels(content_tests):
         for test in content_tests.test_classes:
             if test.product == product:
                 test_scenarios = test.get_tests(yaml_content)
+                test_scenarios = [scenario for scenario in test_scenarios
+                                  if scenario not in tests]
                 tests.extend(test_scenarios)
 
     return tests
