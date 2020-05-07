@@ -72,7 +72,11 @@ class OVALAnalysis(AbstractAnalysis):
 
     def load_diff(self):
         diff = DeepDiff(self.content_before, self.content_after)
-        diff = diff["values_changed"]["root"]["diff"]
+        diff_root = diff["values_changed"]["root"]
+        if "diff" in diff_root:
+            diff = diff_root["diff"]
+        else: # Cases when the template is oneliner that completely changes
+            diff = "+ " + diff_root["new_value"]
         return diff
 
     def get_unidiff_changes(self, diff):
@@ -159,7 +163,8 @@ class OVALAnalysis(AbstractAnalysis):
                 continue
             if re.match(r"^(\+|-)\s*#.*$", line):
                 continue
-            self.add_rule_test("Template usage changed in OVAL check.")
+            self.diff_struct.add_changed_rule(self.rule_name,
+                                              msg="Template usage changed in OVAL check.")
 
     def get_ssg_constants_module(self):
         git_diff = importlib.import_module("ctf.diff")
