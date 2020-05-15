@@ -257,7 +257,7 @@ class JinjaAnalysis(AbstractAnalysis):
         logger.debug("Analyzing Jinja macro file %s", self.filepath)
 
         if self.is_added():
-            msg = "Jinja macro file %s is newly added. This change won't select any changes." % self.filepath
+            msg = "Jinja macro file %s is newly added." % self.filepath
             return self.diff_struct
         elif self.is_removed():
             self.diff_struct.add_functionality_test(
