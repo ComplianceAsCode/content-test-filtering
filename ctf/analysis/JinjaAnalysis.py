@@ -164,12 +164,12 @@ class JinjaAnalysis(AbstractAnalysis):
         in_rules = []
 
         for content_file in get_repository_files():
-            # The folder may contain any unexpected files - TODO: investigate which
-            with codecs.open(content_file, 'r', encoding='utf-8',
-                             errors='ignore') as f:
+            if not content_file.endswith("rule.yml"):
+                continue
+            with open(content_file) as f:
                 f.seek(0)
                 if macro_name in f.read():
-                    rule_name = re.search(r".+\/(\w+)\/\w+\.\w+$",
+                    rule_name = re.search(r".+\/((?:\w|-)+)\/\w+\.\w+$",
                                           content_file).group(1)
                     logger.debug("%s template - used in %s rule.",
                                  macro_name, rule_name)
