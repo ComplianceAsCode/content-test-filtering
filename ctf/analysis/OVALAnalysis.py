@@ -75,8 +75,10 @@ class OVALAnalysis(AbstractAnalysis):
         diff_root = diff["values_changed"]["root"]
         if "diff" in diff_root:
             diff = diff_root["diff"]
-        else: # Cases when the template is oneliner that completely changes
+        elif "new_value" in diff_root: # Cases when the template is changed oneliner
             diff = "+ " + diff_root["new_value"]
+        else: # File just moved without changes
+            diff = ""
         return diff
 
     def get_unidiff_changes(self, diff):
