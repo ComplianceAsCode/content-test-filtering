@@ -181,8 +181,13 @@ class GitDiffWrapper(metaclass=Singleton):
             git_log = self.repository.git.log(old_branch, "^" + new_branch,
                                               "--ancestry-path", "--format=%P",
                                               "--reverse")
-            merge_commits = git_log.partition("\n")[0]
-            merge_commits = merge_commits.split(" ")
+            git_log = git_log.split("\n")
+            # Find merged commits
+            for i in range(len(git_log)):
+                merge_commits = git_log[i]
+                merge_commits = merge_commits.split(" ")
+                if len(merge_commits) == 2:
+                    break
             compare_commit = self.repository.git.merge_base("--all", merge_commits)
         else:  # The branch was not merged - common commit
             compare_commit = common_commit
