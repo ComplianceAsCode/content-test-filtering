@@ -60,6 +60,12 @@ class GitDiffWrapper(metaclass=Singleton):
         self.repository.git.checkout(branch)
         self.current_branch = branch
 
+    def checkout_to_old_state(self):
+        self.checkout_branch(self.old_branch)
+
+    def checkout_to_new_state(self):
+        self.checkout_branch(self.new_branch)
+
     def cmake_project(self, folder):
         build_process = subprocess.run("cmake ../", shell=True, cwd=folder,
                                        stdout=subprocess.DEVNULL,
