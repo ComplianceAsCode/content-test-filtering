@@ -10,6 +10,8 @@ logger = logging.getLogger("content-test-filtering.diff")
 class DiffStruct:
     def __init__(self, filepath):
         self.absolute_path = git_wrapper.repo_path + "/" + filepath
+        # Remove duplicite slashes in filepath (e.g. from parameter)
+        self.absolute_path = self.absolute_path.replace("//", "/")
         self.file_type = None
         self.changed_rules = {}  # {"product": {"rule_1", "rule_2"}, ...}
         self.changed_profiles = {}  # {"product": {"profile_1", "profile_2"}, ...}
