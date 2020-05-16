@@ -257,7 +257,8 @@ class JinjaAnalysis(AbstractAnalysis):
         logger.debug("Analyzing Jinja macro file %s", self.filepath)
 
         if self.is_added():
-            msg = "Jinja macro file %s is newly added." % self.filepath
+            self.diff_struct.add_macro_log("file", "Jinja macro file %s is newly added."
+                                           % self.filepath)
             return self.diff_struct
         elif self.is_removed():
             self.diff_struct.add_functionality_test(
@@ -280,8 +281,6 @@ class JinjaAnalysis(AbstractAnalysis):
             #msg = "Macro is used in these files: %s." % \
             #       (macro_name, ", ".join(self.used_within_rules[macro_name]))
             #self.diff_struct.add_macro_log(macro_name, msg)
-        if self.used_within_templates:
-            msg = ""
         for macro_name in self.used_within_templates:
             #msg = "%s template is used in these files: %s." % \
             #      (macro_name, ", ".join(self.used_within_templates[macro_name]))
