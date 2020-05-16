@@ -4,6 +4,7 @@ import codecs
 import importlib
 import sys
 from deepdiff import DeepDiff
+from jinja2.exceptions import UndefinedError
 from ctf.analysis.AbstractAnalysis import AbstractAnalysis
 from ctf.constants import FileType
 from ctf.utils import get_repository_files, get_suffix
@@ -117,8 +118,16 @@ class JinjaAnalysis(AbstractAnalysis):
                 default_macros[name] = symbol
             # Build each rule with old and new macro and add to diff_struct
             for rule in macro.in_rules:
-                old_processed = ssg_jinja.process_file(rule, default_macros)
-                new_processed = ssg_jinja.process_file(rule, updated_macros)
+                try:
+                    old_processed = ssg_jinja.process_file(rule, default_macros)
+                # The macro usage in files changed or was added
+                except (TypeError, UndefinedError):
+                    old_processed = ""
+                try:
+                    new_processed = ssg_jinja.process_file(rule, updated_macros)
+                # The macro usage in files changed or was removed
+                except (TypeError, UndefinedError):
+                    new_processed = ""
                 file_record = mock_record(rule, old_processed, new_processed)
                 self.diff_struct.affected_files.append(file_record)
                 try:
@@ -204,9 +213,12 @@ class JinjaAnalysis(AbstractAnalysis):
                 else:
                     change["number_of_lines"] = 1
                 changes.append(change)
+                continue
             m = re.match(r"^(?:\+|-)(.*)$", line)
             if m:
                 change["changed_lines"].append(m.group(1))
+            elif not change["changed_lines"]: # First lines at unidiff are not changed
+                change["starting_line"] = change["starting_line"] + 1
         return changes
 
     def mark_changes_in_content(self, changes, content):
@@ -270,7 +282,6 @@ class JinjaAnalysis(AbstractAnalysis):
 
         changed_old_macros = self.find_changed_macros(changes, self.content_before)
         changed_new_macros = self.find_changed_macros(changes, self.content_after)
-
         changed_macros = changed_new_macros if changed_new_macros\
                                             else changed_old_macros
 
