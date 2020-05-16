@@ -127,6 +127,11 @@ class JinjaAnalysis(AbstractAnalysis):
                 # The macro usage in files changed or was removed
                 except (TypeError, UndefinedError):
                     new_processed = ""
+                # Both renders failed, write file without rendered macro only to new
+                # thus analyser will select all available test scenarios for it
+                if not old_processed and not new_processed:
+                    with open(rule) as f:
+                        new_processed = f.read()
                 file_record = mock_record(rule, old_processed, new_processed)
                 self.diff_struct.affected_files.append(file_record)
                 try:
