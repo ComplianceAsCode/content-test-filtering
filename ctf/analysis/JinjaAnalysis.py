@@ -52,12 +52,11 @@ class JinjaMacroChange:
         self.update_all_usages()
 
     def parse_macro_usage(self, filepath):
-        if re.search(r"/(\w+)/(?:bash/|ansible/|oval/|rule\.yml)", filepath):
+        if re.search(r"/((?:\w|-)+)/(?:bash/|ansible/|oval/|rule\.yml)", filepath):
             self.in_rules.add(filepath)
         elif re.search(r"\/template_\w+?_((?:\w|_|-)+)$", filepath):
             self.in_templates.add(filepath)
-        else:
-            raise TypeError
+        # Skip other files (macro name can be used in utility scripts, comments etc.)
 
     def update_all_usages(self):
         # Find all usages in higher macros and update with usages lower macros
