@@ -15,7 +15,7 @@ BUILD_TIME = 94
 RULE_TIME = 315
 PROFILE_TIME = 678
 CTEST_TIME = 1881
-ALL_TESTS_COMPLETE_TIME = CTEST_TIME + 203 * PROFILE_TIME + 250 * RULE_TIME
+ALL_TESTS_COMPLETE_TIME = CTEST_TIME + 132 * PROFILE_TIME + 248 * RULE_TIME
 ALL_TESTS_SELECTION_TIME = CTEST_TIME + 25 * PROFILE_TIME + 94 * RULE_TIME
 
 def parse_args():
@@ -39,7 +39,7 @@ def running_filtering_case(repo_path, pr_number):
     profile_test_count = output.count("test_suite.py profile")
     ctest_test_count = output.count("ctest")
     build_count = output.count("build_product")
-    
+
     build_time = BUILD_TIME * build_count
     #print("build: %s" % build_time)
     rule_test_time = RULE_TIME * rule_test_count
@@ -64,7 +64,7 @@ if __name__ == '__main__':
             if pr["number"] in list_of_pr:
                 continue
             list_of_pr.append(str(pr["number"]))
-    
+
     time_filtering_complete = 0
     time_all_complete = 0
     time_specific_complete = 0
