@@ -25,9 +25,9 @@ def parse_args():
     return parser.parse_args()
 
 def running_filtering_case(repo_path, pr_number):
-    result = subprocess.run("python3 content_test_filtering.py pr --repository " + 
-                            repo_path + " " + pr_number, shell=True, cwd=PARENT_DIR,
-                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    result = subprocess.run("python3 content_test_filtering.py pr --verbose " +
+                            "--repository " + repo_path + " " + pr_number, shell=True,
+                            cwd=PARENT_DIR, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     if result.returncode != 0:
         print("Pull Request %s filtering failed." % pr_number)
         print(result.stdout)
@@ -35,9 +35,10 @@ def running_filtering_case(repo_path, pr_number):
         return 0
     output = result.stdout.decode("utf-8")
     #print(output)
+    analysed_count = output.count("Analyzing ")
     rule_test_count = output.count("test_suite.py rule")
     profile_test_count = output.count("test_suite.py profile")
-    ctest_test_count = output.count("ctest")
+    ctest_test_count = output.count("ctest -j4")
     build_count = output.count("build_product")
 
     build_time = BUILD_TIME * build_count
@@ -49,7 +50,9 @@ def running_filtering_case(repo_path, pr_number):
     ctest_test_time = CTEST_TIME * ctest_test_count
     #print("ctest: %s" % ctest_test_time)
     total_time = build_time + rule_test_time + profile_test_time + ctest_test_time
-    #print(total_time)
+    # When it couldn't analyse any file from the PR
+    if total_time == 0 and analysed_count == 0:
+        return -1
     return total_time
 
 if __name__ == '__main__':
@@ -71,7 +74,8 @@ if __name__ == '__main__':
     for i, pr in enumerate(list_of_pr):
         print("%s - PR %s" % (i, pr))
         time_filtering = running_filtering_case(options.repo, pr)
-        if time_filtering == 0:
+        print(time_filtering)
+        if time_filtering == -1:
             time_filtering = ALL_TESTS_SELECTION_TIME
         time_all = ALL_TESTS_COMPLETE_TIME
         time_specific = ALL_TESTS_SELECTION_TIME
