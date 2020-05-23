@@ -4,6 +4,7 @@ import codecs
 import importlib
 import sys
 from deepdiff import DeepDiff
+from os import path
 from jinja2.exceptions import UndefinedError
 from ctf.analysis.AbstractAnalysis import AbstractAnalysis
 from ctf.constants import FileType
@@ -103,8 +104,8 @@ class JinjaAnalysis(AbstractAnalysis):
     def analyse_macros_in_rules(self, macros):
         ssg_jinja = self.get_ssg_jinja_module()
         # Load macros from current project state
-        default_macros = ssg_jinja.load_macros()
-        updated_macros = ssg_jinja.load_macros()
+        default_macros = ssg_jinja.load_macros(None)
+        updated_macros = ssg_jinja.load_macros(None)
         # Get symbols from old project state
         template_before = ssg_jinja._get_jinja_environment(default_macros).from_string(
             self.content_before)
@@ -188,8 +189,13 @@ class JinjaAnalysis(AbstractAnalysis):
                 continue
             with open(build_file) as f:
                 new_processed = f.read()
-            with open(build_file.replace("/build_new/", "/build_old/")) as f:
-                old_processed = f.read()
+            build_file = build_file.replace("/build_new/", "/build_old/")
+            if path.isfile(build_file):
+                with open(build_file.replace("/build_new/", "/build_old/")) as f:
+                    old_processed = f.read()
+            else:
+                old_processed = ""
+
             try:
                 self.used_within_templates[macro_name].append(build_file)
             except KeyError:
@@ -292,13 +298,10 @@ class JinjaAnalysis(AbstractAnalysis):
         self.analyse_macros(changed_macros)
 
         for macro_name in self.used_within_rules:
-            self.diff_struct.add_macro_rule_log(macro_name, self.used_within_rules[macro_name])
-            #msg = "Macro is used in these files: %s." % \
-            #       (macro_name, ", ".join(self.used_within_rules[macro_name]))
-            #self.diff_struct.add_macro_log(macro_name, msg)
+            self.diff_struct.add_macro_rule_log(macro_name,
+                                                self.used_within_rules[macro_name])
         for macro_name in self.used_within_templates:
-            #msg = "%s template is used in these files: %s." % \
-            #      (macro_name, ", ".join(self.used_within_templates[macro_name]))
-            self.diff_struct.add_macro_rule_log(macro_name, self.used_within_templates[macro_name])
+            self.diff_struct.add_macro_rule_log(macro_name,
+                                                self.used_within_templates[macro_name])
 
         return self.diff_struct

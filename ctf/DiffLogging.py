@@ -47,27 +47,36 @@ class DiffLogging:
             print(format_style["findings"], end=format_style["end_line"])
 
         for rule in self.rules:
-            print("%sRule %s:" % (format_style["type_prefix"], rule), end=format_style["end_line"])
+            print("%sRule %s:" % (format_style["type_prefix"], rule),
+                  end=format_style["end_line"])
             for msg in self.rules[rule]:
-                print("%s%s" % (format_style["list_prefix"], msg), end=format_style["end_line"])
+                print("%s%s" % (format_style["list_prefix"], msg),
+                      end=format_style["end_line"])
         for profile in self.profiles:
-            print("%sProfile %s:" % (format_style["type_prefix"], profile), end=format_style["end_line"])
+            print("%sProfile %s:" % (format_style["type_prefix"], profile),
+                  end=format_style["end_line"])
             for msg in self.profiles[profile]:
-                print("%s%s" % (format_style["list_prefix"], msg), end=format_style["end_line"])
+                print("%s%s" % (format_style["list_prefix"], msg),
+                      end=format_style["end_line"])
         for macro in self.macros:
-            print("%sMacro %s:" % (format_style["type_prefix"], macro), end=format_style["end_line"])
+            print("%sMacro %s:" % (format_style["type_prefix"], macro),
+                  end=format_style["end_line"])
             for msg in self.macros[macro]:
-                print("%s%s" % (format_style["list_prefix"], msg), end=format_style["end_line"])
+                print("%s%s" % (format_style["list_prefix"], msg),
+                      end=format_style["end_line"])
         if self.functionality:
-            print("%sOthers:" % format_style["type_prefix"], end=format_style["end_line"])
+            print("%sOthers:" % format_style["type_prefix"],
+                  end=format_style["end_line"])
             for msg in self.functionality:
-                print("%s%s" % (format_style["list_prefix"], msg), end=format_style["end_line"])
+                print("%s%s" % (format_style["list_prefix"], msg),
+                      end=format_style["end_line"])
 
         if tests:
             print(end=format_style["end_line"])
             print(format_style["tests"], end=format_style["end_line"])
             for test in tests:
-                print("%s%s" % (format_style["list_prefix"], test), end=format_style["end_line"])
+                print("%s%s" % (format_style["list_prefix"], test),
+                      end=format_style["end_line"])
 
     def add_rule_log(self, rule, msgs):
         for msg in msgs:

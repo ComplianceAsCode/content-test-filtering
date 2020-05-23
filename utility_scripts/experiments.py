@@ -60,8 +60,8 @@ if __name__ == '__main__':
     list_of_pr = []
     for i in range(1,6):
         params = {"state": "closed", "per_page": "100", "page" : i}
-        response = requests.get("https://api.github.com/repos/ComplianceAsCode/content/pulls",
-                                params=params)
+        response = requests.get(
+            "https://api.github.com/repos/ComplianceAsCode/content/pulls", params=params)
         parsed_response = json.loads(response.content)
         for pr in parsed_response:
             if pr["number"] in list_of_pr:

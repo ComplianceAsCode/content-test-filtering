@@ -108,7 +108,7 @@ class ProfileAnalysis(AbstractAnalysis):
             rules = new_profile["selections"]
             self.added_rules = rules
         except KeyError:
-            msg = "New profile %s doesn't contain any rule. No test for it will be selected." % self.profile
+            msg = "New profile %s doesn't contain any rule." % self.profile
             self.diff_struct.add_profile_log(self.profile, msg)
             return
         self.add_profile_test("Newly added profile.")

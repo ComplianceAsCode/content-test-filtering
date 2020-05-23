@@ -85,7 +85,7 @@ class DiffStruct:
             if product_name:
                 product_name = product_name[0]
             else:
-                msg = "The rule doesn't occur in any profile nor product. No test will be selected."
+                msg = "The rule doesn't occur in any profile nor product."
                 self.add_rule_log(rule_name, msg)
                 return
         logger.debug("Rule %s is part of %s datastream." % (rule_name, product_name))
@@ -107,7 +107,7 @@ class DiffStruct:
         if product_name:
             product_name = product_name[0]
         else:
-            msg = "The rule doesn't occur in any profile nor product. No test will be selected."
+            msg = "The rule doesn't occur in any profile nor product."
             self.add_rule_log(rule_name, msg)
             return
         logger.debug("Rule %s is part of %s datastream." % (rule_name, product_name))

@@ -75,8 +75,9 @@ class GitDiffWrapper(metaclass=Singleton):
     def generate_templated_content(self, product, folder):
         build_process = subprocess.run(
             "make generate-internal-templated-content-"+product, shell=True,
-            cwd=folder, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+            cwd=folder, stdout=subprocess.PIPE, stderr=subprocess.PIPE
         )
+        print(build_process.stderr)
         return build_process.returncode
 
 

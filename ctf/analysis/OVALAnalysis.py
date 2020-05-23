@@ -42,6 +42,7 @@ class OVALAnalysis(AbstractAnalysis):
         all_ids = set()
         affected_rules = []
 
+        # Get all id values from the check
         for node_id in chain(self.tree_before.findall(".//*[@id]"),
                              self.tree_after.findall(".//*[@id]")):
             all_ids.add(node_id.attrib["id"])
@@ -52,6 +53,7 @@ class OVALAnalysis(AbstractAnalysis):
             with open(content_file) as f:
                 f.seek(0)
                 file_content = f.read()
+                # Find other checks that use any id value from the check
                 for one_id in all_ids:
                     if 'definition_ref="' + one_id not in file_content:
                         continue
@@ -119,7 +121,6 @@ class OVALAnalysis(AbstractAnalysis):
     def rename_attr_change(self, change):
         if change.oldname != "comment" and change.oldname != "version":
             self.add_rule_test("Attribute renamed in OVAL check.")
-        # Probably should perform product build for sanity?
 
     def update_attr_change(self, change):
         if change.name != "comment" and change.name != "version":
@@ -132,7 +133,6 @@ class OVALAnalysis(AbstractAnalysis):
             self.add_rule_test("Text changed in OVAL check.")
 
     def analyse_oval_change(self, change):
-        # TODO: Should it be analysed separately each change?
         if isinstance(change, actions.InsertNode):
             self.insert_node_change(change)
         elif isinstance(change, actions.DeleteNode):
@@ -166,7 +166,8 @@ class OVALAnalysis(AbstractAnalysis):
             if re.match(r"^(\+|-)\s*#.*$", line):
                 continue
             self.diff_struct.add_changed_rule(self.rule_name,
-                                              msg="Template usage changed in OVAL check.")
+                                              msg="Template usage changed " + 
+                                              "in OVAL check.")
 
     def get_ssg_constants_module(self):
         git_diff = importlib.import_module("ctf.diff")
@@ -216,7 +217,7 @@ class OVALAnalysis(AbstractAnalysis):
             self.diff_struct.add_changed_rule(self.rule_name, msg=msg)
             return self.diff_struct
         elif self.is_removed():
-            msg = "OVAL check for %s was deleted. No test for it will be selected." % self.rule_name
+            msg = "OVAL check for %s was deleted." % self.rule_name
             self.diff_struct.add_rule_log(self.rule_name, msg)
             return self.diff_struct
 

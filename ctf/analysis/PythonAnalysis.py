@@ -17,7 +17,6 @@ class PythonAnalysis(AbstractAnalysis):
             return True
         return False
 
-    # Source: https://stackoverflow.com/a/19598419/11067001 by Yorik.sar
     def are_ast_same(self, node1, node2):
         if type(node1) is not type(node2):
             return False

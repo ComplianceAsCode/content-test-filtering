@@ -15,6 +15,7 @@ def get_labels(content_tests):
     template_env = jinja2.Environment(loader=template_loader, autoescape=True)
     tests = []
 
+    # For each product render the file with commands, find tests for the products
     for product in content_tests.products_affected:
         yaml_content = yaml.safe_load(template_env.get_template(TEST_LABELS).render(
             product=product
