@@ -6,7 +6,7 @@
 
 prepare_product: build_product {{ product }}
 
-ctest_build: (cd build && ctest -j4)
+ctest_build: (cd build && cmake ../ && ctest -j4)
 
 yaml: /usr/bin/YAMLlint
 python: Pylint
@@ -14,6 +14,6 @@ bash: ShellCheck
 xml: xmllint
 jinja: jinjalint
 
-profile: test_suite.py profile {{ target }} --datastream {{ datastream_file }} %profile_name%
-rule_ansible: test_suite.py rule {{ target }} --remediate ansible --datastream {{ datastream_file }} %rule_name%
-rule_bash: test_suite.py rule {{ target }} --remediate bash --datastream {{ datastream_file }} %rule_name%
+profile: tests/test_suite.py profile {{ target }} --datastream {{ datastream_file }} %profile_name%
+rule_ansible: tests/test_suite.py rule {{ target }} --remediate-using ansible --datastream {{ datastream_file }} %rule_name%
+rule_bash: tests/test_suite.py rule {{ target }} --remediate-using bash --datastream {{ datastream_file }} %rule_name%
