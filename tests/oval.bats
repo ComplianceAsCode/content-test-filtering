@@ -23,7 +23,7 @@ prepare_repository
 @test "Change filepath in OVAL" {
     file="./linux_os/guide/system/software/integrity/disable_prelink/oval/shared.xml"
     sed -i 's/PRELINKING=no/PRELINKING=yes/' "$file"
-    regex_check_1="build_product"
+    regex_check_1="build_product "
     regex_check_2="test_suite.py rule.*disable_prelink"
 
     git add "$file" && git commit -m "test commit" &>/dev/null
@@ -45,7 +45,7 @@ prepare_repository
 @test "Change node in OVAL" {
     file="./linux_os/guide/system/software/integrity/disable_prelink/oval/shared.xml"
     sed -i '/PRELINKING=/d' "$file"
-    regex_check_1="build_product"
+    regex_check_1="build_product "
     regex_check_2="test_suite.py rule.*disable_prelink"
 
     git add "$file" && git commit -m "test commit" &>/dev/null
@@ -84,7 +84,7 @@ prepare_repository
     file="./linux_os/guide/services/ssh/ssh_server/sshd_disable_rhosts/oval/shared.xml"
     mkdir -p "./linux_os/guide/services/ssh/ssh_server/sshd_disable_rhosts/oval/"
     cat "./linux_os/guide/system/software/integrity/disable_prelink/oval/shared.xml" > "$file"
-    regex_check_1="build_product"
+    regex_check_1="build_product "
     regex_check_2="test_suite\.py rule.*sshd_disable_rhosts"
 
     git add "$file" && git commit -m "test commit" &>/dev/null

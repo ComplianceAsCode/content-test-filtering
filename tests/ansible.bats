@@ -23,7 +23,7 @@ prepare_repository
 @test "Change metadata" {
     file="./linux_os/guide/system/software/integrity/disable_prelink/ansible/shared.yml"
     sed -i 's/# reboot = false/# reboot = true/' "$file"
-    regex_check="build_product rhv4"
+    regex_check="build_product "
 
     git add "$file" && git commit -m "test commit" &>/dev/null
 
@@ -56,7 +56,7 @@ prepare_repository
 @test "Change remediation part" {
     file="./linux_os/guide/system/software/integrity/disable_prelink/ansible/shared.yml"
     sed -i 's;path: .*;path: /some/path/;' "$file"
-    regex_check_1="build_product rhv4"
+    regex_check_1="build_product "
     regex_check_2=".*test_suite\.py rule.*disable_prelink"
 
     git add "$file" && git commit -m "test commit" &>/dev/null
@@ -78,7 +78,7 @@ prepare_repository
 @test "Change templated remediation" {
     file="./linux_os/guide/services/ssh/ssh_server/sshd_use_approved_macs/ansible/shared.yml"
     sed -i 's/ansible_sshd_set/ansible_some_template/' "$file"
-    regex_check_1="build_product.*"
+    regex_check_1="build_product "
     regex_check_2="test_suite\.py rule.*sshd_use_approved_macs"
 
     git add "$file" && git commit -m "test commit" &>/dev/null
@@ -117,7 +117,7 @@ prepare_repository
     file="./linux_os/guide/services/ssh/ssh_server/sshd_disable_rhosts/ansible/shared.yml"
     mkdir -p "./linux_os/guide/services/ssh/ssh_server/sshd_disable_rhosts/ansible/"
     echo "echo \"IgnoreRhosts yes\" > /tmp/ssh_tmp_file" > "$file"
-    regex_check_1="build_product.*"
+    regex_check_1="build_product "
     regex_check_2="test_suite\.py rule.*ansible.*sshd_disable_rhosts"
 
     git add "$file" && git commit -m "test commit" &>/dev/null

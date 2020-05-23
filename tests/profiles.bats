@@ -40,7 +40,7 @@ prepare_repository
     file="rhel8/profiles/ospp.profile"
     echo >> "$file"
     sed -i "\$asome_category: 'with_string'" "$file"
-    regex_check="build_product rhel8"
+    regex_check="build_product "
 
     git add "$file" && git commit -m "test commit" &>/dev/null
 
@@ -58,7 +58,7 @@ prepare_repository
 @test "Change rule (= adding new rule and removing old one)" {
     file="rhel8/profiles/ospp.profile"
     sed -i 's/disable_host_auth/enable_host_auth/' "$file"
-    regex_check_1="build_product rhel8"
+    regex_check_1="build_product "
     regex_check_2="test_suite\.py profile.*ospp"
 
     git add "$file" && git commit -m "test commit" &>/dev/null
@@ -97,7 +97,7 @@ prepare_repository
 @test "Add new profile" {
     file="rhel8/profiles/some_profile.profile"
     cat "rhel8/profiles/ospp.profile" > "$file"
-    regex_check_1="build_product rhel8"
+    regex_check_1="build_product "
     regex_check_2="test_suite\.py profile.*some_profile"
 
     git add "$file" && git commit -m "test commit" &>/dev/null

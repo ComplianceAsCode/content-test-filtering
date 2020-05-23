@@ -39,7 +39,7 @@ prepare_repository
 @test "Change remediation" {
     file="./linux_os/guide/services/sssd/sssd_run_as_sssd_user/bash/shared.sh"
     sed -i "s/chmod 600/chmod 744/" "$file"
-    regex_check_1="build_product.*"
+    regex_check_1="build_product "
     regex_check_2="test_suite\.py rule.*sssd_run_as_sssd_user"
 
     git add "$file" && git commit -m "test commit" &>/dev/null
@@ -61,7 +61,7 @@ prepare_repository
 @test "Change templated remediation" {
     file="./linux_os/guide/services/ssh/ssh_server/sshd_use_strong_ciphers/bash/shared.sh"
     sed -i "s/bash_sshd_config_set/bash_some_template/" "$file"
-    regex_check_1="build_product.*"
+    regex_check_1="build_product "
     regex_check_2="test_suite\.py rule.*sshd_use_strong_ciphers"
 
     git add "$file" && git commit -m "test commit" &>/dev/null
@@ -101,7 +101,7 @@ prepare_repository
     file="./linux_os/guide/services/ssh/ssh_server/sshd_disable_rhosts/bash/shared.sh"
     mkdir -p "./linux_os/guide/services/ssh/ssh_server/sshd_disable_rhosts/bash/"
     echo "echo \"IgnoreRhosts yes\" > /tmp/ssh_tmp_file" > "$file"
-    regex_check_1="build_product"
+    regex_check_1="build_product "
     regex_check_2="test_suite\.py rule.*bash.*sshd_disable_rhosts"
 
     git add "$file" && git commit -m "test commit" &>/dev/null
