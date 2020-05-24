@@ -33,7 +33,7 @@ class AnsibleAnalysis(AbstractAnalysis):
 
     def load_diff(self):
         diff = DeepDiff(self.content_before, self.content_after)
-        if not diff: # Nothing changed (just moved without changes)
+        if not diff:  # Nothing changed (just moved without changes)
             return ""
         diff = diff["values_changed"]["root"]["diff"]
         return diff

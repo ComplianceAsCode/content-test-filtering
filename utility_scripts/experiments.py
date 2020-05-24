@@ -3,10 +3,8 @@ import argparse
 import requests
 import json
 import os
-import sys
 import inspect
 import subprocess
-import datetime
 
 current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 PARENT_DIR = os.path.dirname(current_dir)
@@ -18,23 +16,26 @@ CTEST_TIME = 1881
 ALL_TESTS_COMPLETE_TIME = CTEST_TIME + 132 * PROFILE_TIME + 248 * RULE_TIME
 ALL_TESTS_SELECTION_TIME = CTEST_TIME + 25 * PROFILE_TIME + 94 * RULE_TIME
 
+
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo", dest="repo", required=True,
                         help=("Path to CaC repository."))
     return parser.parse_args()
 
+
 def running_filtering_case(repo_path, pr_number):
     result = subprocess.run("python3 content_test_filtering.py pr --verbose " +
                             "--repository " + repo_path + " " + pr_number, shell=True,
-                            cwd=PARENT_DIR, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                            cwd=PARENT_DIR, stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE)
     if result.returncode != 0:
         print("Pull Request %s filtering failed." % pr_number)
         print(result.stdout)
         print(result.stderr)
         return 0
     output = result.stdout.decode("utf-8")
-    #print(output)
+    # print(output)
     analysed_count = output.count("Analyzing ")
     rule_test_count = output.count("test_suite.py rule")
     profile_test_count = output.count("test_suite.py profile")
@@ -42,26 +43,29 @@ def running_filtering_case(repo_path, pr_number):
     build_count = output.count("build_product")
 
     build_time = BUILD_TIME * build_count
-    #print("build: %s" % build_time)
+    # print("build: %s" % build_time)
     rule_test_time = RULE_TIME * rule_test_count
-    #print("rules: %s" % rule_test_time)
+    # print("rules: %s" % rule_test_time)
     profile_test_time = PROFILE_TIME * profile_test_count
-    #print("profile: %s" % profile_test_time)
+    # print("profile: %s" % profile_test_time)
     ctest_test_time = CTEST_TIME * ctest_test_count
-    #print("ctest: %s" % ctest_test_time)
+    # print("ctest: %s" % ctest_test_time)
     total_time = build_time + rule_test_time + profile_test_time + ctest_test_time
     # When it couldn't analyse any file from the PR
     if total_time == 0 and analysed_count == 0:
         return -1
     return total_time
 
+
 if __name__ == '__main__':
     options = parse_args()
     list_of_pr = []
-    for i in range(1,6):
-        params = {"state": "closed", "per_page": "100", "page" : i}
+    for i in range(1, 6):
+        params = {"state": "closed", "per_page": "100", "page": i}
         response = requests.get(
-            "https://api.github.com/repos/ComplianceAsCode/content/pulls", params=params)
+            "https://api.github.com/repos/ComplianceAsCode/content/pulls",
+            params=params
+        )
         parsed_response = json.loads(response.content)
         for pr in parsed_response:
             if pr["number"] in list_of_pr:

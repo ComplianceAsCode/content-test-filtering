@@ -88,7 +88,7 @@ class DiffStruct:
                 msg = "The rule doesn't occur in any profile nor product."
                 self.add_rule_log(rule_name, msg)
                 return
-        logger.debug("Rule %s is part of %s datastream." % (rule_name, product_name))
+        logger.debug("Rule %s is part of %s datastream.", rule_name, product_name)
         if product_name in self.changed_rules:
             self.changed_rules[product_name].add(rule_name)
         else:
@@ -110,7 +110,7 @@ class DiffStruct:
             msg = "The rule doesn't occur in any profile nor product."
             self.add_rule_log(rule_name, msg)
             return
-        logger.debug("Rule %s is part of %s datastream." % (rule_name, product_name))
+        logger.debug("Rule %s is part of %s datastream.", rule_name, product_name)
         self.changed_products.add(product_name)
 
     def add_functionality_test(self, msg=""):

@@ -227,7 +227,7 @@ class JinjaAnalysis(AbstractAnalysis):
             m = re.match(r"^(?:\+|-)(.*)$", line)
             if m:
                 change["changed_lines"].append(m.group(1))
-            elif not change["changed_lines"]: # First lines at unidiff are not changed
+            elif not change["changed_lines"]:  # First lines at unidiff are not changed
                 change["starting_line"] = change["starting_line"] + 1
         return changes
 

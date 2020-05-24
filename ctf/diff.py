@@ -80,7 +80,6 @@ class GitDiffWrapper(metaclass=Singleton):
         print(build_process.stderr)
         return build_process.returncode
 
-
     def build_project(self, old_build_path, new_build_path,
                       products=["rhel7", "rhel8"]):
 

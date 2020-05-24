@@ -77,9 +77,9 @@ class OVALAnalysis(AbstractAnalysis):
         diff_root = diff["values_changed"]["root"]
         if "diff" in diff_root:
             diff = diff_root["diff"]
-        elif "new_value" in diff_root: # Cases when the template is changed oneliner
+        elif "new_value" in diff_root:  # Cases when the template is changed oneliner
             diff = "+ " + diff_root["new_value"]
-        else: # File just moved without changes
+        else:  # File just moved without changes
             diff = ""
         return diff
 
@@ -166,7 +166,7 @@ class OVALAnalysis(AbstractAnalysis):
             if re.match(r"^(\+|-)\s*#.*$", line):
                 continue
             self.diff_struct.add_changed_rule(self.rule_name,
-                                              msg="Template usage changed " + 
+                                              msg="Template usage changed " +
                                               "in OVAL check.")
 
     def get_ssg_constants_module(self):

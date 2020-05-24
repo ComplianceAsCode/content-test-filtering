@@ -37,10 +37,10 @@ class DiffLogging:
         for functionality in diff_struct.functionality_logging:
             self.add_functionality_log(functionality)
 
-    def print_all_logs(self, tests=None, format="raw"):
-        if format == "raw":
+    def print_all_logs(self, tests=None, output_format="raw"):
+        if output_format == "raw":
             format_style = RAW_FORMAT
-        elif format == "markdown":
+        elif output_format == "markdown":
             format_style = MARKDOWN_FORMAT
 
         if self.rules or self.profiles or self.macros or self.functionality:

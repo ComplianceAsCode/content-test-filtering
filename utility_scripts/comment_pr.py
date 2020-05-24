@@ -17,7 +17,8 @@ def parse_args():
     parser.add_argument("--pr", dest="pr", required=True,
                         help=("Pull Request number where to send the comment."))
     parser.add_argument("--comment", dest="comment_file", required=True,
-                        help=("File with content that will be send as comment to the Pull Request."))
+                        help=("File with content that will be send as comment to " +
+                              "the Pull Request."))
     return parser.parse_args()
 
 
@@ -28,7 +29,7 @@ if __name__ == '__main__':
     data = {}
     with open(options.comment_file) as comment:
         data["body"] = comment.read()
-    if not data["body"]: # If the comment is empty -> don't delete/send anything
+    if not data["body"]:  # If the comment is empty -> don't delete/send anything
         sys.exit()
     data = json.dumps(data)
     add_comment_url = REPO_URL + options.pr + "/comments"
@@ -38,7 +39,8 @@ if __name__ == '__main__':
     # Delete comments with specific comment string
     for comment in parsed_comments:
         if comment["user"]["login"] == USER and \
-            (COMMENT_STRING_1 in comment["body"] or COMMENT_STRING_2 in comment["body"]):
+            (COMMENT_STRING_1 in comment["body"] or \
+                COMMENT_STRING_2 in comment["body"]):
             remove_comment_url = REPO_URL + "comments/" + str(comment["id"])
             response = requests.delete(remove_comment_url, headers=headers)
     # Send the comment
