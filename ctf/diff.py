@@ -189,9 +189,8 @@ class GitDiffWrapper(metaclass=Singleton):
                                               "--reverse")
             git_log = git_log.split("\n")
             # Find merged commits
-            for i in range(len(git_log)):
-                merge_commits = git_log[i]
-                merge_commits = merge_commits.split(" ")
+            for _, commit in enumerate(git_log):
+                merge_commits = commit.split(" ")
                 if len(merge_commits) == 2:
                     break
             compare_commit = self.repository.git.merge_base("--all", merge_commits)
