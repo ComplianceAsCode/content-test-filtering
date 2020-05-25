@@ -17,7 +17,7 @@ This project filters tests based on static analysis of changed files. Changed fi
 Fedora/RHEL:
 ```
 yum install python3 git
-pip install gitpython PyYAML deepdiff Jinja2 xmldiff
+pip install gitpython PyYAML deepdiff Jinja2 xmldiff requests
 git clone https://github.com/mildas/content-test-filtering
 ```
 
