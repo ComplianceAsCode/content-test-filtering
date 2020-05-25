@@ -5,6 +5,7 @@ import importlib
 import sys
 from deepdiff import DeepDiff
 from os import path
+from collections import defaultdict
 from jinja2.exceptions import UndefinedError
 from ctf.analysis.AbstractAnalysis import AbstractAnalysis
 from ctf.constants import FileType
@@ -83,8 +84,8 @@ class JinjaAnalysis(AbstractAnalysis):
     def __init__(self, file_record):
         super().__init__(file_record)
         self.diff_struct.file_type = FileType.JINJA
-        self.used_within_rules = {}
-        self.used_within_templates = {}
+        self.used_within_rules = defaultdict(set)
+        self.used_within_templates = defaultdict(set)
 
     @staticmethod
     def can_analyse(filepath):
@@ -135,10 +136,7 @@ class JinjaAnalysis(AbstractAnalysis):
                         new_processed = f.read()
                 file_record = mock_record(rule, old_processed, new_processed)
                 self.diff_struct.affected_files.append(file_record)
-                try:
-                    self.used_within_rules[macro.name].append(file_record["filepath"])
-                except KeyError:
-                    self.used_within_rules[macro.name] = [file_record["filepath"]]
+                self.used_within_rules[macro.name].add(file_record["filepath"])
                 logger.debug("%s macro - used in %s rule.",
                              macro.name, file_record["filepath"])
 
@@ -196,10 +194,7 @@ class JinjaAnalysis(AbstractAnalysis):
             else:
                 old_processed = ""
 
-            try:
-                self.used_within_templates[macro_name].append(build_file)
-            except KeyError:
-                self.used_within_templates[macro_name] = [build_file]
+            self.used_within_templates[macro_name].add(build_file)
             file_record = mock_record(build_file, old_processed, new_processed)
             self.diff_struct.affected_files.append(file_record)
 

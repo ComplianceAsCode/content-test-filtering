@@ -1,6 +1,7 @@
 import os
 import re
 import logging
+from collections import defaultdict
 from ctf.diff import git_wrapper
 from ctf.utils import file_path_to_log
 
@@ -13,15 +14,15 @@ class DiffStruct:
         # Remove duplicite slashes in filepath (e.g. from parameter)
         self.absolute_path = self.absolute_path.replace("//", "/")
         self.file_type = None
-        self.changed_rules = {}  # {"product": {"rule_1", "rule_2"}, ...}
-        self.changed_profiles = {}  # {"product": {"profile_1", "profile_2"}, ...}
+        self.changed_rules = defaultdict(set)  # {"product": {"rule1", ...}, ...}
+        self.changed_profiles = defaultdict(set)  # {"product": {"profile1", ...}}
         self.changed_products = set()
         self.funcionality_changed = False
         self.affected_files = []
-        self.rules_logging = {}
-        self.profiles_logging = {}
-        self.products_logging = {}
-        self.macros_logging = {}
+        self.rules_logging = defaultdict(set)
+        self.profiles_logging = defaultdict(set)
+        self.products_logging = defaultdict(set)
+        self.macros_logging = defaultdict(set)
         self.functionality_logging = set()
 
     def get_changed_rules_with_products(self):
@@ -89,18 +90,12 @@ class DiffStruct:
                 self.add_rule_log(rule_name, msg)
                 return
         logger.debug("Rule %s is part of %s datastream.", rule_name, product_name)
-        if product_name in self.changed_rules:
-            self.changed_rules[product_name].add(rule_name)
-        else:
-            self.changed_rules[product_name] = {rule_name}
+        self.changed_rules[product_name].add(rule_name)
 
     def add_changed_profile(self, profile_name, product_name, msg=""):
         profile_product = "%s on %s" % (profile_name, product_name)
         self.add_profile_log(profile_product, msg)
-        if product_name in self.changed_profiles:
-            self.changed_profiles[product_name].add(profile_name)
-        else:
-            self.changed_profiles[product_name] = {profile_name}
+        self.changed_profiles[product_name].add(profile_name)
 
     def add_changed_product_by_rule(self, rule_name, msg=""):
         product_name = self.get_rule_products(rule_name)
@@ -118,36 +113,21 @@ class DiffStruct:
         self.funcionality_changed = True
 
     def add_rule_log(self, rule, msg):
-        if rule in self.rules_logging:
-            self.rules_logging[rule].add(msg)
-        else:
-            self.rules_logging[rule] = {msg}
+        self.rules_logging[rule].add(msg)
 
     def add_profile_log(self, profile, msg):
-        if profile in self.profiles_logging:
-            self.profiles_logging[profile].add(msg)
-        else:
-            self.profiles_logging[profile] = {msg}
+        self.profiles_logging[profile].add(msg)
 
     def add_functionality_log(self, msg):
-        if self.functionality_logging:
-            self.functionality_logging.add(msg)
-        else:
-            self.functionality_logging = {msg}
+        self.functionality_logging.add(msg)
 
     def add_macro_log(self, macro, msg):
-        if macro in self.macros_logging:
-            self.macros_logging[macro].add(msg)
-        else:
-            self.macros_logging[macro] = {msg}
+        self.macros_logging[macro].add(msg)
 
     def add_macro_rule_log(self, macro, usage_list):
         for usage in usage_list:
             msg = file_path_to_log(usage)
-            if macro in self.macros_logging:
-                self.macros_logging[macro].add(msg)
-            else:
-                self.macros_logging[macro] = {msg}
+            self.macros_logging[macro].add(msg)
 
     def add_macro_template_log(self, macro, msg):
         pass
