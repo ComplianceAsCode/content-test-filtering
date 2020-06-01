@@ -108,7 +108,7 @@ class AnsibleAnalysis(AbstractAnalysis):
         if was_templated and is_templated:  # Was and is templated
             self.analyse_template()
         elif any([was_templated, is_templated]):  # Templatization changed
-            msg = "Templatazation usage changed."
+            msg = "Templatization usage changed."
             self.diff_struct.add_changed_product_by_rule(self.rule_name, msg=msg)
             self.diff_struct.add_changed_rule(self.rule_name, msg=msg)
         else:  # Not templated
