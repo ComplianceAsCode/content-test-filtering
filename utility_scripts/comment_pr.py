@@ -5,7 +5,7 @@ import json
 import sys
 
 REPO_URL = "https://api.github.com/repos/ComplianceAsCode/content/issues/"
-USER = "mildas"
+USER = "openscap-ci"
 COMMENT_STRING_1 = "Changes identified:"
 COMMENT_STRING_2 = "Recommended tests to execute:"
 
@@ -27,6 +27,7 @@ if __name__ == '__main__':
     # Prepare method's specifications
     headers = {"Authorization": "token %s" % options.gh_auth}
     data = {}
+    comment_id = ""
     with open(options.comment_file) as comment:
         data["body"] = comment.read()
     if not data["body"]:  # If the comment is empty -> don't delete/send anything
@@ -41,7 +42,10 @@ if __name__ == '__main__':
         if comment["user"]["login"] == USER and \
             (COMMENT_STRING_1 in comment["body"] or \
                 COMMENT_STRING_2 in comment["body"]):
-            remove_comment_url = REPO_URL + "comments/" + str(comment["id"])
-            response = requests.delete(remove_comment_url, headers=headers)
-    # Send the comment
-    response = requests.post(add_comment_url, data=data, headers=headers)
+            comment_id = str(comment["id"])
+
+    if comment_id: # Comment already exists - update it
+        comment_url = REPO_URL + "comments/" + comment_id
+        response = requests.patch(comment_url, data=data, headers=headers)
+    else: # Comment does not exist - create a new one
+        response = requests.post(add_comment_url, data=data, headers=headers)
