@@ -50,16 +50,34 @@ class ProfileAnalysis(AbstractAnalysis):
                     items_list.append(value)
         return items_list
 
+    def iterate_changed_values(self, items):
+        items_list = []
+        for key, value in items:
+            if "root['selections']" in key:
+                if not self.is_rule(value):
+                    items_list.append(value)
+        return items_list
+
     def item_added(self, items):
-        self.add_profile_test("Rule %s added to %s profile." %
-                              (", ".join(self.iterate_changed_rules(items)),
-                               self.profile))
+        added_rules = self.iterate_changed_rules(items)
+        added_values = self.iterate_changed_values(items)
+        if added_rules:
+            self.add_profile_test("Rule %s added to %s profile." %
+                                  (", ".join(added_rules), self.profile))
+        if added_values:
+            self.add_profile_test("Variable %s added to %s profile." %
+                                  (", ".join(added_values), self.profile))
         self.added_rules.extend(self.iterate_changed_rules(items))
 
     def item_removed(self, items):
-        self.add_profile_test("Rule %s removed from %s profile." %
-                              (", ".join(self.iterate_changed_rules(items)),
-                               self.profile))
+        removed_rules = self.iterate_changed_rules(items)
+        removed_values = self.iterate_changed_values(items)
+        if removed_rules:
+            self.add_profile_test("Rule %s removed from %s profile." %
+                                  (", ".join(removed_rules), self.profile))
+        if removed_values:
+            self.add_profile_test("Variable %s removed from %s profile." %
+                                  (", ".join(removed_values), self.profile))
         self.removed_rules.extend(self.iterate_changed_rules(items))
 
     def check_changed_values(self, items):
