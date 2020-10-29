@@ -76,7 +76,7 @@ class DiffStruct:
             parse_file = re.match(r".+/((?:\w|-)+)/profiles/(?:\w|-)+\.profile",
                                   profile_path)
             products.append(parse_file.group(1))
-
+        products = sorted(products, key=lambda k: (k!="rhel8", k!="rhel7", k))
         return products
 
     def add_changed_rule(self, rule_name, product_name=None, msg=""):
