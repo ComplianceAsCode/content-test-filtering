@@ -51,4 +51,7 @@ def file_path_to_log(filepath):
     elif re.search(r"/oval/.*\.xml$", filepath):
         m = re.match(r".*/([^/]+)/oval/.*", filepath)
         log = "In OVAL check for %s." % m.group(1)
+    elif re.search(r"/rule.yml$", filepath):
+        m = re.match(r".*/([^/]+)/rule.yml$", filepath)
+        log = "In rule description for %s." % m.group(1)
     return log

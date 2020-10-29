@@ -6,6 +6,8 @@ RAW_FORMAT = {
     "findings": "Changes identified:",
     "type_prefix": "  ",
     "list_prefix": "    ",
+    "description_start": "",
+    "description_end": "",
     "tests": "Recommended tests to execute:",
     "end_line": "\n"
 }
@@ -14,6 +16,8 @@ MARKDOWN_FORMAT = {
     "findings": "**Changes identified:**",
     "type_prefix": "",
     "list_prefix": " ",
+    "description_start": "\n<details>\n<summary>Show details</summary>\n",
+    "description_end": "</details>\n",
     "tests": "**Recommended tests to execute:**",
     "end_line": "\n"
 }
@@ -46,6 +50,31 @@ class DiffLogging:
         if self.rules or self.profiles or self.macros or self.functionality:
             print(format_style["findings"], end=format_style["end_line"])
 
+        if self.rules:
+            print("%sRules:" % format_style["type_prefix"],
+                  end=format_style["end_line"])
+            for rule in self.rules:
+                print("%s%s" % (format_style["list_prefix"], rule),
+                      end=format_style["end_line"])
+        if self.profiles:
+            print("%sProfiles:" % format_style["type_prefix"],
+                  end=format_style["end_line"])
+            for profile in self.profiles:
+                print("%s%s" % (format_style["list_prefix"], profile),
+                      end=format_style["end_line"])
+        if self.macros:
+            print("%sMacros:" % format_style["type_prefix"],
+                   end=format_style["end_line"])
+            for macro in self.macros:
+                print("%s%s" % (format_style["list_prefix"], macro),
+                      end=format_style["end_line"])
+        if self.functionality:
+            print("%sOthers:" % format_style["type_prefix"],
+                  end=format_style["end_line"])
+            print("%sChanges in Python files." % format_style["list_prefix"],
+                  end=format_style["end_line"])
+
+        print(format_style["description_start"])
         for rule in self.rules:
             print("%sRule %s:" % (format_style["type_prefix"], rule),
                   end=format_style["end_line"])
@@ -70,6 +99,7 @@ class DiffLogging:
             for msg in self.functionality:
                 print("%s%s" % (format_style["list_prefix"], msg),
                       end=format_style["end_line"])
+        print(format_style["description_end"])
 
         if tests:
             print(end=format_style["end_line"])
