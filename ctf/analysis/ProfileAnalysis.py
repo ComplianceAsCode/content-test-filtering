@@ -174,6 +174,10 @@ class ProfileAnalysis(AbstractAnalysis):
             self.find_dependent_profiles(f, profile_name)
 
     def process_analysis(self):
+        if self.product == "tests":
+            logger.debug("Skipping %s testing profile.", self.profile.upper())
+            return self.diff_struct
+
         logger.debug("Analyzing profile %s for %s", self.profile.upper(), self.product)
 
         if self.is_added():
