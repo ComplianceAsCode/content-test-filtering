@@ -74,7 +74,8 @@ class DiffLogging:
             print("%sChanges in Python files." % format_style["list_prefix"],
                   end=format_style["end_line"])
 
-        print(format_style["description_start"])
+        if self.rules or self.profiles or self.macros or self.functionality:
+            print(format_style["description_start"])
         for rule in self.rules:
             print("%sRule %s:" % (format_style["type_prefix"], rule),
                   end=format_style["end_line"])
@@ -99,7 +100,8 @@ class DiffLogging:
             for msg in self.functionality:
                 print("%s%s" % (format_style["list_prefix"], msg),
                       end=format_style["end_line"])
-        print(format_style["description_end"])
+        if self.rules or self.profiles or self.macros or self.functionality:
+            print(format_style["description_end"])
 
         if tests:
             print(end=format_style["end_line"])
