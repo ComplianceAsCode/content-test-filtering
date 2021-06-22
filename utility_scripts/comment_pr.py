@@ -49,3 +49,8 @@ if __name__ == '__main__':
         response = requests.patch(comment_url, data=data, headers=headers)
     else: # Comment does not exist - create a new one
         response = requests.post(add_comment_url, data=data, headers=headers)
+    try:
+        response.raise_for_status()
+    except requests.exceptions.HTTPError as err:
+        print(err)
+        sys.exit(1)
