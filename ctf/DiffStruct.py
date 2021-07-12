@@ -38,16 +38,18 @@ class DiffStruct:
     def find_rule_profiles(self, rule):
         product_folders = []
 
-        # Walk through project folder and
-        # find all folders with subfolder "profiles" (=product folder)
-        for content_file in os.listdir(git_wrapper.repo_path):
-            subfolder = git_wrapper.repo_path + "/" + content_file
-            if not os.path.isdir(subfolder):
+        # We know that products are in products/ folder
+        # We want all products' paths
+        products_folder = git_wrapper.repo_path + "/" + "products"
+        for product_name in os.listdir(products_folder):
+            product_path = products_folder + "/" + product_name
+            if not os.path.isdir(product_path):
                 continue
 
-            for subfile in os.listdir(subfolder):
+            for subfile in os.listdir(product_path):
                 if subfile == "profiles":
-                    product_folders.append(subfolder)
+                    product_folders.append(product_path)
+                    continue
 
         find_rule = re.compile(r"^\s*-\s*" + rule + r"\s*$")
         # Create list of all profiles that contain the rule
