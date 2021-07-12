@@ -46,6 +46,14 @@ class DiffLogging:
             format_style = RAW_FORMAT
         elif output_format == "markdown":
             format_style = MARKDOWN_FORMAT
+        elif output_format == "json":
+            import json
+            output = {
+                "rules": list(self.rules.keys()),
+                # "product": self.products,
+            }
+            print(json.dumps(output))
+            return
 
         if self.rules or self.profiles or self.macros or self.functionality:
             print(format_style["findings"], end=format_style["end_line"])
