@@ -17,15 +17,15 @@ class ProfileAnalysis(AbstractAnalysis):
         super().__init__(file_record)
         self.diff_struct.file_type = FileType.PROFILE
         path = self.filepath.split("/")
-        # format: PRODUCT/profiles/PROFILE.profile
-        self.product = path[0]
+        # format: products/PRODUCT/profiles/PROFILE.profile
+        self.product = path[1]
         self.profile = path[-1].split(".")[0]
         self.added_rules = []
         self.removed_rules = []
 
     @staticmethod
     def can_analyse(filepath):
-        if filepath.endswith(".profile"):
+        if filepath.endswith(".profile") and not filepath.startswith("tests/"):
             return True
         return False
 
