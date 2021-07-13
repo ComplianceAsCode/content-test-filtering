@@ -50,7 +50,9 @@ class DiffLogging:
             import json
             output = {
                 "rules": list(self.rules.keys()),
-                # "product": self.products,
+                "product": "rhel8",
+                "bash": "true",
+                "ansible": "false",
             }
             print(json.dumps(output))
             return
