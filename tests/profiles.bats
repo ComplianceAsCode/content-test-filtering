@@ -5,7 +5,7 @@ prepare_repository
 
 
 @test "Change documentation_complete" {
-    file="rhel8/profiles/ospp.profile"
+    file="products/rhel8/profiles/ospp.profile"
     sed -i 's/documentation_complete: true/documentation_complete: false/' "$file"
 
     git add "$file" && git commit -m "test commit" &>/dev/null
@@ -21,7 +21,7 @@ prepare_repository
 }
 
 @test "Change title" {
-    file="rhel8/profiles/ospp.profile"
+    file="products/rhel8/profiles/ospp.profile"
     sed -i "s/title: .*/title: 'Some title'/" "$file"
 
     git add "$file" && git commit -m "test commit" &>/dev/null
@@ -37,7 +37,7 @@ prepare_repository
 }
 
 @test "Add new category" {
-    file="rhel8/profiles/ospp.profile"
+    file="products/rhel8/profiles/ospp.profile"
     echo >> "$file"
     sed -i "\$asome_category: 'with_string'" "$file"
     regex_check="build_product "
@@ -56,7 +56,7 @@ prepare_repository
 }
 
 @test "Change rule (= adding new rule and removing old one)" {
-    file="rhel8/profiles/ospp.profile"
+    file="products/rhel8/profiles/ospp.profile"
     sed -i 's/disable_host_auth/enable_host_auth/' "$file"
     regex_check_1="build_product "
     regex_check_2="test_suite\.py profile.*ospp"
@@ -79,7 +79,7 @@ prepare_repository
 }
 
 @test "Remove profile" {
-    file="rhel8/profiles/ospp.profile"
+    file="products/rhel8/profiles/ospp.profile"
     rm -f "$file"
 
     git add "$file" && git commit -m "test commit" &>/dev/null
@@ -95,8 +95,8 @@ prepare_repository
 }
 
 @test "Add new profile" {
-    file="rhel8/profiles/some_profile.profile"
-    cat "rhel8/profiles/ospp.profile" > "$file"
+    file="products/rhel8/profiles/some_profile.profile"
+    cat "products/rhel8/profiles/ospp.profile" > "$file"
     regex_check_1="build_product "
     regex_check_2="test_suite\.py profile.*some_profile"
 
