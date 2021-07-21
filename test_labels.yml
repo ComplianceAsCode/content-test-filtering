@@ -17,3 +17,17 @@ jinja: jinjalint
 profile: tests/test_suite.py profile {{ target }} --datastream {{ datastream_file }} %profile_name%
 rule_ansible: tests/test_suite.py rule {{ target }} --remediate-using ansible --datastream {{ datastream_file }} %rule_name%
 rule_bash: tests/test_suite.py rule {{ target }} --remediate-using bash --datastream {{ datastream_file }} %rule_name%
+
+json_rule: |
+  {
+    "rules": [ %rule_name% ],
+     "product": "{{ product }}",
+     "bash": "False",
+     "ansible": "False"
+  }
+
+json_profile: |
+  {
+    "profiles": [ %profile_name% ],
+    "product": "{{ product }}"
+  }
