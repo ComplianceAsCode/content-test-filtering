@@ -139,7 +139,8 @@ class LintTest(AbstractTest):
 
 
 class ContentTests:
-    def __init__(self):
+    def __init__(self, output="commands"):
+        self.output = output
         self.products_affected = set()
         self.test_classes = []
 
@@ -159,10 +160,16 @@ class ContentTests:
 
         for product, rule in diff_struct.get_changed_rules_with_products():
             self.add_rule_test(diff_struct.absolute_path, product, rule,
-                               remediation_type)
+                               remediation_types)
 
         for product, profile in diff_struct.get_changed_profiles_with_products():
             self.add_profile_test(diff_struct.absolute_path, product, profile)
+
+        if self.output == "json":
+            return
+
+        for product in diff_struct.changed_products:
+            self.add_product_build(diff_struct.absolute_path, product)
 
         if diff_struct.funcionality_changed:
             self.add_python_test(diff_struct.absolute_path)
