@@ -110,11 +110,14 @@ class ContentTests:
         self.profiles = []
 
     def fill_tests(self, diff_struct):
-        remediation_type = "ansible" if diff_struct.file_type == FileType.YAML\
-                                     else "bash"
-
-        for product in diff_struct.changed_products:
-            self.add_product_build(diff_struct.absolute_path, product)
+        remediation_types = set()
+        if diff_struct.file_type == FileType.YAML:
+            remediation_types.add("ansible")
+        elif diff_struct.file_type == FileType.OVAL or diff_struct.file_type == FileType.JINJA:
+            remediation_types.add("ansible")
+            remediation_types.add("bash")
+        else:
+            remediation_types.add("bash")
 
         for product, rule in diff_struct.get_changed_rules_with_products():
             self.add_rule_test(diff_struct.absolute_path, product, rule,
