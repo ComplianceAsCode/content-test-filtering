@@ -77,17 +77,36 @@ class RulesTest(AbstractTest):
         return tests
 
 class ProfileTest(AbstractTest):
-    def __init__(self, path, profile, product):
+    def __init__(self, path, profile, product, output):
         super().__init__(path, product)
-        self.profile = profile
+        self.output = output
+        self.profiles_list = [profile]
 
     def get_tests(self, yaml_content):
         tests = []
+        if self.output == "json":
+            tests = self.test_json(yaml_content)
+        else:
+            tests = self.test_command(yaml_content)
+        return tests
 
-        profile = yaml_content["profile"]
-        profile = self.translate_variable(profile, "%profile_name%", self.profile)
-        tests.append(profile)
+    def test_command(self, yaml_content):
+        tests = []
+        for profile_name in self.profiles_list:
+            profile_test = yaml_content["profile"]
+            profile = self.translate_variable(profile_test, "%profile_name%",
+                                              profile_name)
+            tests.append(profile)
+        return tests
 
+    def test_json(self, yaml_content):
+        profiles_tests = yaml_content["json_profile"]
+        profiles = ", ".join('"' + profile + '"' for profile in self.profiles_list)
+        profiles_tests = self.translate_variable(profiles_tests,
+                                                 "%profile_name%", profiles)
+        import json
+        profiles = json.loads(profiles_tests)
+        tests = [profiles]
         return tests
 
 
