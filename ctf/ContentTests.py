@@ -180,12 +180,25 @@ class ContentTests:
         self.test_classes.append(product_build)
 
     def add_profile_test(self, path, product, profile):
-        profile_test = ProfileTest(path, profile, product)
+        for test_class in self.test_classes:
+            if not isinstance(test_class, ProfileTest):
+                continue
+            if test_class.product == product:
+                test_class.profiles_list.append(profile)
+                return
+        profile_test = ProfileTest(path, profile, product, self.output)
         self.products_affected.add(product)
         self.test_classes.append(profile_test)
 
-    def add_rule_test(self, path, product, rule, remediation="bash"):
-        rule_test = RulesTest(path, product, [rule], remediation)
+    def add_rule_test(self, path, product, rule, remediation={"bash"}):
+        for test_class in self.test_classes:
+            if not isinstance(test_class, RulesTest):
+                continue
+            if test_class.product == product and \
+                    remediation.issubset(test_class.remediations):
+                test_class.rules_list.append(rule)
+                return
+        rule_test = RulesTest(path, product, [rule], self.output, remediation)
         self.products_affected.add(product)
         self.test_classes.append(rule_test)
 
