@@ -30,6 +30,9 @@ def parse_args():
     common_parser.add_argument("--output-format", dest="output_format", default="raw",
                                action="store", choices=["raw", "markdown"],
                                help="Output format.")
+    common_parser.add_argument("--output", dest="output", default="commands",
+                               action="store", choices=["commands", "json"],
+                               help="Output from the tool.")
 
     parser.set_defaults(pr_number=None, branch=None)
 
