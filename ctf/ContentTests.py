@@ -59,7 +59,7 @@ class RulesTest(AbstractTest):
         for rule in self.rules_list:
             for remediation_type in self.remediations:
                 rule_test = yaml_content["rule_" + remediation_type]
-                rule_test = self.translate_variable(rule, "%rule_name%", rule_test)
+                rule_test = self.translate_variable(rule_test, "%rule_name%", rule)
                 tests.append(rule_test)
         return tests
 
