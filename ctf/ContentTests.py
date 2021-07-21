@@ -41,21 +41,40 @@ class ProductTest(AbstractTest):
 
 
 class RulesTest(AbstractTest):
-    def __init__(self, path, product, rules_list, remediation="bash"):
+    def __init__(self, path, product, rules_list, output, remediations=["bash"]):
         super().__init__(path, product)
+        self.output = output
         self.rules_list = rules_list
-        self.remediation = remediation
+        self.remediations = remediations
 
     def get_tests(self, yaml_content):
-        tests = []
-
-        rule = yaml_content["rule_" + self.remediation]
-        for r in self.rules_list:
-            rule = self.translate_variable(rule, "%rule_name%", r)
-            tests.append(rule)
-
+        if self.output == "json":
+            tests = self.test_json(yaml_content)
+        else:
+            tests = self.test_command(yaml_content)
         return tests
 
+    def test_command(self, yaml_content):
+        tests = []
+        for rule in self.rules_list:
+            for remediation_type in self.remediations:
+                rule_test = yaml_content["rule_" + remediation_type]
+                rule_test = self.translate_variable(rule, "%rule_name%", rule_test)
+                tests.append(rule_test)
+        return tests
+
+    def test_json(self, yaml_content):
+        rules_tests = yaml_content["json_rule"]
+        rules = ", ".join('"' + rule + '"' for rule in self.rules_list)
+        rules_tests = self.translate_variable(rules_tests, "%rule_name%", rules)
+        for remediation_type in self.remediations:
+            default_setting = '"{}": "False"'.format(remediation_type)
+            new_setting = '"{}": "True"'.format(remediation_type)
+            rules_tests = rules_tests.replace(default_setting, new_setting)
+        import json
+        rules = json.loads(rules_tests)
+        tests = [rules]
+        return tests
 
 class ProfileTest(AbstractTest):
     def __init__(self, path, profile, product):
