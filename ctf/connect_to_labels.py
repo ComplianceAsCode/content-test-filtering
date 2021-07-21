@@ -9,7 +9,7 @@ logger = logging.getLogger("content-test-filtering.connect_to_labels")
 TEST_LABELS = "test_labels.yml"
 
 
-def get_labels(content_tests):
+def get_labels(content_tests, output="commands"):
     template_loader = jinja2.FileSystemLoader(
                         searchpath=str(Path(__file__).parent / ".."))
     template_env = jinja2.Environment(loader=template_loader, autoescape=True)
@@ -21,7 +21,7 @@ def get_labels(content_tests):
             product=product
         ))
 
-        if product != "no_product":
+        if product != "no_product" and output == "commands":
             product_build = yaml_content["prepare_product"]
             tests.append(product_build)
 
