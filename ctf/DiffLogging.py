@@ -111,8 +111,9 @@ class DiffLogging:
                       end=format_style["end_line"])
 
     def print_json(self, tests=None):
+        import json
         for test in tests:
-            print(test)
+            print(json.dumps(test))
 
     def add_rule_log(self, rule, msgs):
         for msg in msgs:
