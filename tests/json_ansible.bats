@@ -56,7 +56,7 @@ prepare_repository
 @test "Change remediation part" {
     file="./linux_os/guide/system/software/integrity/disable_prelink/ansible/shared.yml"
     sed -i 's;path: .*;path: /some/path/;' "$file"
-    regex_check="{.*'rules': \['disable_prelink'\].*'bash': 'False'.*'ansible': 'True'}"
+    regex_check='{.*"rules": \["disable_prelink"\].*"bash": "False".*"ansible": "True"}'
 
     git add "$file" && git commit -m "test commit" &>/dev/null
 
@@ -73,7 +73,7 @@ prepare_repository
 @test "Change templated remediation" {
     file="./linux_os/guide/services/ssh/ssh_server/sshd_use_approved_macs/ansible/shared.yml"
     sed -i 's/ansible_sshd_set/ansible_some_template/' "$file"
-    regex_check="{.*'rules': \['sshd_use_approved_macs'\].*'bash': 'False'.*'ansible': 'True'}"
+    regex_check='{.*"rules": \["sshd_use_approved_macs"\].*"bash": "False".*"ansible": "True"}'
 
     git add "$file" && git commit -m "test commit" &>/dev/null
 
@@ -107,7 +107,7 @@ prepare_repository
     file="./linux_os/guide/services/ssh/ssh_server/sshd_disable_rhosts/ansible/shared.yml"
     mkdir -p "./linux_os/guide/services/ssh/ssh_server/sshd_disable_rhosts/ansible/"
     echo "echo \"IgnoreRhosts yes\" > /tmp/ssh_tmp_file" > "$file"
-    regex_check="{.*'rules': \['sshd_disable_rhosts'\].*'bash': 'False'.*'ansible': 'True'}"
+    regex_check='{.*"rules": \["sshd_disable_rhosts"\].*"bash": "False".*"ansible": "True"}'
 
     git add "$file" && git commit -m "test commit" &>/dev/null
 

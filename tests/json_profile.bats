@@ -40,7 +40,7 @@ prepare_repository
     file="products/rhel8/profiles/ospp.profile"
     echo >> "$file"
     sed -i "\$asome_category: 'with_string'" "$file"
-    regex_check="{.*'profiles': \[.*'ospp'.*\], 'product': 'rhel8'.*}"
+    regex_check='{.*"profiles": \[.*"ospp".*\], "product": "rhel8".*}'
 
     git add "$file" && git commit -m "test commit" &>/dev/null
 
@@ -57,7 +57,7 @@ prepare_repository
 @test "Change rule (= adding new rule and removing old one)" {
     file="products/rhel8/profiles/ospp.profile"
     sed -i 's/disable_host_auth/enable_host_auth/' "$file"
-    regex_check="{.*'profiles': \[.*'ospp'.*\], 'product': 'rhel8'.*}"
+    regex_check='{.*"profiles": \[.*"ospp".*\], "product": "rhel8".*}'
 
     git add "$file" && git commit -m "test commit" &>/dev/null
 
@@ -90,7 +90,7 @@ prepare_repository
 @test "Add new profile" {
     file="products/rhel8/profiles/some_profile.profile"
     cat "products/rhel8/profiles/ospp.profile" > "$file"
-    regex_check="{.*'profiles': \[.*'some_profile'.*\], 'product': 'rhel8'.*}"
+    regex_check='{.*"profiles": \[.*"some_profile".*\], "product": "rhel8".*}'
 
     git add "$file" && git commit -m "test commit" &>/dev/null
 
