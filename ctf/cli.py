@@ -33,6 +33,10 @@ def parse_args():
     common_parser.add_argument("--output", dest="output", default="commands",
                                action="store", choices=["commands", "json"],
                                help="Output from the tool.")
+    common_parser.add_argument("--profile", dest="profile_output", default=False,
+                               action="store_true", help="Print only profile tests.")
+    common_parser.add_argument("--rule", dest="rule_output", default=False,
+                               action="store_true", help="Print only rule tests.")
 
     parser.set_defaults(pr_number=None, branch=None)
 

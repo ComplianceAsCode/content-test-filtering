@@ -47,7 +47,7 @@ if __name__ == '__main__':
                          "performed for it.", file_record["filepath"])
             continue
 
-        tests.fill_tests(diff_structure)
+        tests.fill_tests(diff_structure, options.profile_output, options.rule_output)
         logs.fill_logging(diff_structure)
         already_analysed.append(file_record["filepath"])
         # If change affected any other file -> analyse it

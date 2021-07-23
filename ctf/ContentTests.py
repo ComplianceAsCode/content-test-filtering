@@ -41,11 +41,12 @@ class ProductTest(AbstractTest):
 
 
 class RulesTest(AbstractTest):
-    def __init__(self, path, product, rules_list, output, remediations=["bash"]):
+    def __init__(self, path, product, rules_list, output, remediations={"bash"}):
         super().__init__(path, product)
         self.output = output
         self.rules_list = rules_list
         self.remediations = remediations
+        self.tests = None
 
     def get_tests(self, yaml_content):
         if self.output == "json":
@@ -60,8 +61,8 @@ class RulesTest(AbstractTest):
             for remediation_type in self.remediations:
                 rule_test = yaml_content["rule_" + remediation_type]
                 rule_test = self.translate_variable(rule_test, "%rule_name%", rule)
-                tests.append(rule_test)
-        return tests
+                self.tests.append(rule_test)
+        return self.tests
 
     def test_json(self, yaml_content):
         rules_tests = yaml_content["json_rule"]
@@ -73,8 +74,8 @@ class RulesTest(AbstractTest):
             rules_tests = rules_tests.replace(default_setting, new_setting)
         import json
         rules = json.loads(rules_tests)
-        tests = [rules]
-        return tests
+        self.tests = [rules]
+        return self.tests
 
 class ProfileTest(AbstractTest):
     def __init__(self, path, profile, product, output):
@@ -148,7 +149,7 @@ class ContentTests:
         self.rules = []
         self.profiles = []
 
-    def fill_tests(self, diff_struct):
+    def fill_tests(self, diff_struct, only_profile=False, only_rule=False):
         remediation_types = set()
         if diff_struct.file_type == FileType.YAML:
             remediation_types.add("ansible")
@@ -157,6 +158,16 @@ class ContentTests:
             remediation_types.add("bash")
         else:
             remediation_types.add("bash")
+
+        if only_rule:
+            for product, rule in diff_struct.get_changed_rules_with_products():
+                self.add_rule_test(diff_struct.absolute_path, product, rule,
+                                   remediation_types)
+        if only_profile:
+            for product, profile in diff_struct.get_changed_profiles_with_products():
+                self.add_profile_test(diff_struct.absolute_path, product, profile)
+        if only_rule or only_profile:
+            return
 
         for product, rule in diff_struct.get_changed_rules_with_products():
             self.add_rule_test(diff_struct.absolute_path, product, rule,
@@ -194,10 +205,14 @@ class ContentTests:
         for test_class in self.test_classes:
             if not isinstance(test_class, RulesTest):
                 continue
-            if test_class.product == product and \
-                    remediation.issubset(test_class.remediations):
-                test_class.rules_list.append(rule)
-                return
+            # Workaround to create only one JSON - use rhelX product if possible
+            if test_class.product not in ["rhel9", "rhel8", "rhel7"] and \
+                    product in ["rhel9", "rhel8", "rhel7"]:
+                test_class.product = product
+                self.products_affected.add(product)
+            test_class.rules_list.append(rule)
+            test_class.remediations.update(remediation)
+            return
         rule_test = RulesTest(path, product, [rule], self.output, remediation)
         self.products_affected.add(product)
         self.test_classes.append(rule_test)
