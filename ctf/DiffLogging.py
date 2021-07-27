@@ -110,6 +110,11 @@ class DiffLogging:
                 print("%s%s" % (format_style["list_prefix"], test),
                       end=format_style["end_line"])
 
+    def print_json(self, tests=None):
+        import json
+        for test in tests:
+            print(json.dumps(test))
+
     def add_rule_log(self, rule, msgs):
         for msg in msgs:
             if rule in self.rules:

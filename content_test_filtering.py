@@ -16,7 +16,7 @@ if __name__ == '__main__':
     options = cli.parse_args()
     already_analysed = []
     list_of_tests = []
-    tests = ContentTests.ContentTests()
+    tests = ContentTests.ContentTests(options.output)
     logs = DiffLogging.DiffLogging()
 
     if options.output_tests:
@@ -47,13 +47,16 @@ if __name__ == '__main__':
                          "performed for it.", file_record["filepath"])
             continue
 
-        tests.fill_tests(diff_structure)
+        tests.fill_tests(diff_structure, options.profile_output, options.rule_output)
         logs.fill_logging(diff_structure)
         already_analysed.append(file_record["filepath"])
         # If change affected any other file -> analyse it
         changed_files.extend(diff_structure.affected_files)
 
-    list_of_tests = connect_to_labels.get_labels(tests)
-    logs.print_all_logs(list_of_tests, output_format=options.output_format)
+    list_of_tests = connect_to_labels.get_labels(tests, options.output)
+    if options.output == "json":
+        logs.print_json(list_of_tests)
+    else:
+        logs.print_all_logs(list_of_tests, output_format=options.output_format)
 
     logger.debug("Finished")
