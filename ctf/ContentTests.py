@@ -56,7 +56,8 @@ class RulesTest(AbstractTest):
         return tests
 
     def test_command(self, yaml_content):
-        tests = []
+        if self.tests is None:
+            self.tests = []
         for rule in self.rules_list:
             for remediation_type in self.remediations:
                 rule_test = yaml_content["rule_" + remediation_type]
