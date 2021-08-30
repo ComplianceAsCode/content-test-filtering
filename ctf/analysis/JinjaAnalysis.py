@@ -112,9 +112,14 @@ class JinjaAnalysis(AbstractAnalysis):
             self.content_before)
         symbols = template_before.make_module(default_macros).__dict__
 
+
         for macro in macros:
             # Remove new macro and replace it with old macro
-            del default_macros[macro.name]
+            # Exception for macros that start with _, because those are not loaded
+            try:
+                del default_macros[macro.name]
+            except KeyError:
+                pass
             for name, symbol in symbols.items():
                 default_macros[name] = symbol
             # Build each rule with old and new macro and add to diff_struct
