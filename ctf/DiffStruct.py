@@ -87,11 +87,11 @@ class DiffStruct:
             product_name = self.get_rule_products(rule_name)
             if product_name:
                 product_name = product_name[0]
+                logger.debug("Rule %s is part of %s datastream.", rule_name, product_name)
             else:
-                msg = "The rule doesn't occur in any profile nor product."
-                self.add_rule_log(rule_name, msg)
-                return
-        logger.debug("Rule %s is part of %s datastream.", rule_name, product_name)
+                product_name = "rhel8"
+                logger.debug("Rule %s is not part of any datastream. Added default rhel8 value",
+                             rule_name, product_name)
         self.changed_rules[product_name].add(rule_name)
 
     def add_changed_profile(self, profile_name, product_name, msg=""):
