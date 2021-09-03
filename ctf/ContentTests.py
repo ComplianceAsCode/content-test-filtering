@@ -154,10 +154,10 @@ class ContentTests:
         remediation_types = set()
         if diff_struct.file_type == FileType.YAML:
             remediation_types.add("ansible")
-        elif diff_struct.file_type == FileType.OVAL or diff_struct.file_type == FileType.JINJA:
-            remediation_types.add("ansible")
+        elif diff_struct.file_type == FileType.BASH:
             remediation_types.add("bash")
         else:
+            remediation_types.add("ansible")
             remediation_types.add("bash")
 
         if only_rule:
