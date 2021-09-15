@@ -6,3 +6,4 @@ class FileType:
     BASH = 4
     OVAL = 5
     JINJA = 6
+    RULEYML = 7
