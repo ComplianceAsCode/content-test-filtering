@@ -7,3 +7,4 @@ class FileType:
     OVAL = 5
     JINJA = 6
     RULEYML = 7
+    TEST_SCENARIO = 8
