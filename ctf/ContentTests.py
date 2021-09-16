@@ -41,10 +41,10 @@ class ProductTest(AbstractTest):
 
 
 class RulesTest(AbstractTest):
-    def __init__(self, path, product, rules_list, output, remediations={"bash"}):
+    def __init__(self, path, product, rules_set, output, remediations={"bash"}):
         super().__init__(path, product)
         self.output = output
-        self.rules_list = rules_list
+        self.rules_set = rules_set
         self.remediations = remediations
         self.tests = None
 
@@ -58,7 +58,7 @@ class RulesTest(AbstractTest):
     def test_command(self, yaml_content):
         if self.tests is None:
             self.tests = []
-        for rule in self.rules_list:
+        for rule in self.rules_set:
             for remediation_type in self.remediations:
                 rule_test = yaml_content["rule_" + remediation_type]
                 rule_test = self.translate_variable(rule_test, "%rule_name%", rule)
@@ -67,7 +67,7 @@ class RulesTest(AbstractTest):
 
     def test_json(self, yaml_content):
         rules_tests = yaml_content["json_rule"]
-        rules = ", ".join('"' + rule + '"' for rule in self.rules_list)
+        rules = ", ".join('"' + rule + '"' for rule in self.rules_set)
         rules_tests = self.translate_variable(rules_tests, "%rule_name%", rules)
         for remediation_type in self.remediations:
             default_setting = '"{}": "False"'.format(remediation_type)
@@ -211,15 +211,15 @@ class ContentTests:
                     product in ["rhel9", "rhel8", "rhel7"]:
                 test_class.product = product
                 self.products_affected.add(product)
-            test_class.rules_list.append(rule)
+            test_class.rules_set.add(rule)
             test_class.remediations.update(remediation)
             return
-        rule_test = RulesTest(path, product, [rule], self.output, remediation)
+        rule_test = RulesTest(path, product, {rule}, self.output, remediation)
         self.products_affected.add(product)
         self.test_classes.append(rule_test)
 
-    def add_rules_test(self, path, product, rules_list, remediation="bash"):
-        rules_test = RulesTest(path, product, rules_list, remediation)
+    def add_rules_test(self, path, product, rules_set, remediation="bash"):
+        rules_test = RulesTest(path, product, rules_set, remediation)
         self.products_affected.add(product)
         self.test_classes.append(rules_test)
 
