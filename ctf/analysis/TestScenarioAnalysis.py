@@ -16,6 +16,8 @@ class TestScenarioAnalysis(BashAnalysis):
 
     @staticmethod
     def can_analyse(filepath):
+        if re.match(r"shared/templates/.+/tests/.*", filepath):
+            return False
         if re.match(r".*/tests/[\w|-]+\.(?:pass|fail)\.sh", filepath):
             return True
         return False
