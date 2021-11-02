@@ -1,12 +1,12 @@
 #!/usr/bin/python3
 import logging
-from sys import stdout
+from sys import stderr
 from ctf import cli, diff_analysis, connect_to_labels, ContentTests, DiffLogging
 from ctf.diff import git_wrapper
 
 logger = logging.getLogger("content-test-filtering")
 logger.setLevel(logging.INFO)
-console_handler = logging.StreamHandler(stdout)
+console_handler = logging.StreamHandler(stderr)
 console_formatter = logging.Formatter("%(levelname)-7s %(module)-22s - %(message)s")
 console_handler.setFormatter(console_formatter)
 logger.addHandler(console_handler)
