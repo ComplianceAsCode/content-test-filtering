@@ -61,6 +61,17 @@ class DiffStruct:
                         if find_rule.search(line):
                             yield profile_file
 
+    def get_rule_ruleyml(self, rule):
+        # Find a directory with a rule name and check if it has rule.yml file
+        for root, dirs, files in os.walk(git_wrapper.repo_path):
+            if root.endswith("/" + rule) and "rule.yml" in files:
+                ruleyml_path = root + "/rule.yml"
+                logger.debug("rule.yml path - %s", ruleyml_path)
+                return ruleyml_path
+
+        logger.debug("rule.yml was not found for %s", rule)
+        return None
+
     def get_rule_profiles(self, rule):
         profiles = []
         # Parse from matched profiles profile names
@@ -72,12 +83,20 @@ class DiffStruct:
         return profiles
 
     def get_rule_products(self, rule):
-        products = []
         # Parse from matched profiles product names
-        for profile_path in self.find_rule_profiles(rule):
-            parse_file = re.match(r".+/((?:\w|-)+)/profiles/(?:\w|-)+\.profile",
-                                  profile_path)
-            products.append(parse_file.group(1))
+        ruleyml_path = self.get_rule_ruleyml(rule)
+        prodtype_line = None
+        with open(ruleyml_path) as f:
+            for line in f.readlines():
+                if "prodtype:" in line:
+                    prodtype_line = line
+                    break
+        # rule.yml does not have prodtype
+        if not prodtype_line:
+            return None
+
+        prodtypes = re.match(r"\s*prodtype:\s*([\w|,]+)\s*", prodtype_line).group(1)
+        products = prodtypes.split(",")
         products = sorted(products, key=lambda k: (k!="rhel8", k!="rhel7", k))
         return products
 
@@ -90,8 +109,8 @@ class DiffStruct:
                 logger.debug("Rule %s is part of %s datastream.", rule_name, product_name)
             else:
                 product_name = "rhel8"
-                logger.debug("Rule %s is not part of any datastream. Added default rhel8 value",
-                             rule_name, product_name)
+                logger.debug("Rule %s is not part of any datastream. "
+                             "Added default rhel8 value",  rule_name)
         self.changed_rules[product_name].add(rule_name)
 
     def add_changed_profile(self, profile_name, product_name, msg=""):
