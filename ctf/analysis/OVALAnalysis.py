@@ -17,8 +17,12 @@ class OVALAnalysis(AbstractAnalysis):
     def __init__(self, file_record):
         super().__init__(file_record)
         self.diff_struct.file_type = FileType.OVAL
-        self.rule_name = re.match(r".+/((?:\w|-)+)/oval/\w+\.xml$",
-                                  self.diff_struct.absolute_path).group(1)
+        rule_name_match = re.match(r".+/((?:\w|-)+)/oval/((?:\w|-)+)\.xml$",
+                                   self.filepath)
+        if rule_name_match.group(1) == "checks":
+            self.rule_name = rule_name_match.group(2)
+        else:
+            self.rule_name = rule_name_match.group(1)
         self.tree_before = None
         self.tree_after = None
 

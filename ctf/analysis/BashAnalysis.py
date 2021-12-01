@@ -14,10 +14,10 @@ class BashAnalysis(AbstractAnalysis):
         self.diff_struct.file_type = FileType.BASH
         rule_name_match = re.match(r".+/((?:\w|-)+)/bash/((?:\w|-)+)\.sh$",
                                    self.filepath)
-        if rule_name_match.group(2) == "shared":
-            self.rule_name = rule_name_match.group(1)
-        else:
+        if rule_name_match.group(1) == "fixes":
             self.rule_name = rule_name_match.group(2)
+        else:
+            self.rule_name = rule_name_match.group(1)
 
     @staticmethod
     def can_analyse(filepath):
