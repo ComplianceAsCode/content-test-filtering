@@ -16,7 +16,7 @@ class AnsibleAnalysis(AbstractAnalysis):
 
     @staticmethod
     def can_analyse(filepath):
-        if re.match(r".+/ansible/\w+\.yml$", filepath):
+        if re.match(r"^(?!shared/).+/ansible/\w+\.yml$", filepath):
             return True
         return False
 
