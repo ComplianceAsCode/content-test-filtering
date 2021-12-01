@@ -11,8 +11,12 @@ class AnsibleAnalysis(AbstractAnalysis):
     def __init__(self, file_record):
         super().__init__(file_record)
         self.diff_struct.file_type = FileType.YAML
-        self.rule_name = re.match(r".+/((?:\w|-)+)/ansible/\w+\.yml$",
-                                  self.filepath).group(1)
+        rule_name_match = re.match(r".+/((?:\w|-)+)/ansible/((?:\w|-)+)\.yml$",
+                                   self.filepath)
+        if rule_name_match.group(1) == "fixes":
+            self.rule_name = rule_name_match.group(2)
+        else:
+            self.rule_name = rule_name_match.group(1)
 
     @staticmethod
     def can_analyse(filepath):
