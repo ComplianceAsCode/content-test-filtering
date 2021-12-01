@@ -24,7 +24,7 @@ class OVALAnalysis(AbstractAnalysis):
 
     @staticmethod
     def can_analyse(filepath):
-        if re.match(r".*/oval/\w+\.xml$", filepath):
+        if re.match(r"^(?!shared/).*/oval/\w+\.xml$", filepath):
             return True
         return False
 

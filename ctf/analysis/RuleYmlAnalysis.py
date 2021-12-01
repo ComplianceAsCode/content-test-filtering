@@ -16,7 +16,7 @@ class RuleYmlAnalysis(AbstractAnalysis):
 
     @staticmethod
     def can_analyse(filepath):
-        if re.match(".+/rule.yml$", filepath):
+        if re.match("^(?!shared/).+/rule.yml$", filepath):
             return True
         return False
 
