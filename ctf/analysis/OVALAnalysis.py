@@ -203,8 +203,14 @@ class OVALAnalysis(AbstractAnalysis):
         wrapped_oval_before = re.sub(r"{{%(.|\n)+?%}}", "", wrapped_oval_before)
         wrapped_oval_after = re.sub(r"{{%(.|\n)+?%}}", "", wrapped_oval_after)
         # Create ElementTrees
-        self.tree_before = ET.fromstring(wrapped_oval_before)
-        self.tree_after = ET.fromstring(wrapped_oval_after)
+        try:
+            self.tree_before = ET.fromstring(wrapped_oval_before)
+            self.tree_after = ET.fromstring(wrapped_oval_after)
+        except ET.ParseError:
+            msg = "Could not parse XML file. Processing it as new OVAL check"
+            self.diff_struct.add_changed_product_by_rule(self.rule_name, msg=msg)
+            self.diff_struct.add_changed_rule(self.rule_name, msg=msg)
+            return
         # Compare ElementTrees and analyse changes
         changes = main.diff_texts(wrapped_oval_before, wrapped_oval_after)
         for change in changes:
