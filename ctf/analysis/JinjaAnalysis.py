@@ -205,11 +205,15 @@ class JinjaAnalysis(AbstractAnalysis):
 
     def load_diff(self):
         diff = DeepDiff(self.content_before, self.content_after)
-        diff = diff["values_changed"]["root"]["diff"]
+        if diff:
+            diff = diff["values_changed"]["root"]["diff"]
         return diff
 
     def analyse_jinja_diff(self, diff):
         changes = []
+        if not diff:
+            return changes
+
         for line in diff.split("\n"):
             if re.match(r"^(\+{3}|-{3})\s", line):
                 continue
