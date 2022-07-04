@@ -59,6 +59,8 @@ class OVALAnalysis(AbstractAnalysis):
                 file_content = f.read()
                 # Find other checks that use any id value from the check
                 for one_id in all_ids:
+                    if one_id == "":
+                        continue
                     if 'definition_ref="' + one_id not in file_content:
                         continue
                     rule_match = re.search(r"/((?:\w|-)+)/oval", content_file)
