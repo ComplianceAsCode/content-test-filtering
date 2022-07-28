@@ -97,7 +97,7 @@ class DiffStruct:
 
         prodtypes = re.match(r"\s*prodtype:\s*([\w|,]+)\s*", prodtype_line).group(1)
         products = prodtypes.split(",")
-        products = sorted(products, key=lambda k: (k!="rhel8", k!="rhel7", k))
+        products = sorted(products, key=lambda k: (k!="rhel8", k!="rhel7", k!="ocp4", k))
         return products
 
     def add_changed_rule(self, rule_name, product_name=None, msg=""):
