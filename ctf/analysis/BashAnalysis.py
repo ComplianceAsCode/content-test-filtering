@@ -77,8 +77,8 @@ class BashAnalysis(AbstractAnalysis):
                 self.rule_name, msg="Template usage changed in ansible remediation.")
 
     def analyse_bash(self):
-        tokens_before = shlex.shlex(self.content_before)
-        tokens_after = shlex.shlex(self.content_after)
+        tokens_before = shlex.shlex(self.content_before, posix=True)
+        tokens_after = shlex.shlex(self.content_after, posix=True)
 
         # Read tokens from old and new bash file
         token_before = tokens_before.get_token()
