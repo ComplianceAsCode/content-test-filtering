@@ -37,7 +37,8 @@ class BashAnalysis(AbstractAnalysis):
 
     def load_diff(self):
         diff = DeepDiff(self.content_before, self.content_after)
-        if not diff:  # Nothing changed (just moved without changes)
+        if not diff or 'diff' not in diff["values_changed"]["root"]:
+            # Nothing changed (just moved without changes) or whitespace only changes
             return ""
         diff = diff["values_changed"]["root"]["diff"]
         return diff
