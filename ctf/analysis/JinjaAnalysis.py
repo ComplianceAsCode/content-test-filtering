@@ -205,7 +205,7 @@ class JinjaAnalysis(AbstractAnalysis):
 
     def load_diff(self):
         diff = DeepDiff(self.content_before, self.content_after)
-        if diff and diff in diff["values_changed"]["root"]:
+        if diff and "diff" in diff["values_changed"]["root"]:
             diff = diff["values_changed"]["root"]["diff"]
         return diff
 
