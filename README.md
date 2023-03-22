@@ -11,13 +11,12 @@ The project analyses changed files, then based on changes decides what has been 
 -  DeepDiff (Python package)
 -  Jinja2 (Python package)
 -  xmldiff (Python package)
--  requests (Python package, required for experiments and Github comments)
 
 ## Installation
 Fedora/RHEL:
 ```
 yum install python3 git
-pip install gitpython PyYAML deepdiff Jinja2 xmldiff requests
+pip3 install gitpython PyYAML deepdiff Jinja2 xmldiff
 git clone https://github.com/mildas/content-test-filtering
 ```
 
