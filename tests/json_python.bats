@@ -5,7 +5,7 @@ prepare_repository
 
 
 @test "Add comment" {
-    file="tests/test_suite.py"
+    file="tests/automatus.py"
     sed -i "1 i # some comment" "$file"
 
     git add "$file" && git commit -m "test commit" &>/dev/null
@@ -21,7 +21,7 @@ prepare_repository
 }
 
 @test "Delete comments" {
-    file="tests/test_suite.py"
+    file="tests/automatus.py"
     sed -i "/^\s*#.*/d" "$file"
 
     git add "$file" && git commit -m "test commit" &>/dev/null
@@ -37,7 +37,7 @@ prepare_repository
 }
 
 @test "Change code" {
-    file="tests/test_suite.py"
+    file="tests/automatus.py"
     sed -i "/^\s*subparsers\.required.*/d" "$file"
 
     git add "$file" && git commit -m "test commit" &>/dev/null
