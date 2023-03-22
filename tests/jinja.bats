@@ -5,7 +5,7 @@ prepare_repository
 
 
 @test "Change sshd macro" {
-    file="./shared/macros-bash.jinja"
+    file="./shared/macros/10-bash.jinja"
     sed -i "/macro bash_sshd_config_set/a echo 1" "$file"
     regex_check_1="build_product"
     regex_check_2="test_suite.py rule.*sshd_use_strong_macs"
