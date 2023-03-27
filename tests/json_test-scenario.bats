@@ -4,7 +4,7 @@ load test_utils
 prepare_repository
 
 @test "Add comment line" {
-    file="./linux_os/guide/system/auditing/policy_rules/audit_delete_failed/tests/correct_rules.pass.sh"
+    file="./linux_os/guide/system/software/integrity/software-integrity/rpm_verification/rpm_verify_permissions/tests/bad_permissions.fail.sh"
     sed -i "\$a#comment" "$file"
 
     git add "$file" && git commit -m "test commit" &>/dev/null
@@ -20,9 +20,9 @@ prepare_repository
 }
 
 @test "Update test scenario" {
-    file="./linux_os/guide/system/auditing/policy_rules/audit_delete_failed/tests/correct_rules.pass.sh"
+    file="./linux_os/guide/system/software/integrity/software-integrity/rpm_verification/rpm_verify_permissions/tests/bad_permissions.fail.sh"
     sed -i "\$a echo \$x" "$file"
-    regex_check='{.*"rules": \["audit_delete_failed"\].*"bash": "True".*"ansible": "True"}'
+    regex_check='{.*"rules": \["rpm_verify_permissions"\].*"bash": "True".*"ansible": "True"}'
 
     git add "$file" && git commit -m "test commit" &>/dev/null
 
@@ -37,9 +37,9 @@ prepare_repository
 }
 
 @test "Update test metadata" {
-    file="./linux_os/guide/services/ntp/chronyd_specify_remote_server/tests/line_missing.fail.sh"
-    sed -i "s/\(# platform = .*\)/\1, some_platform/g" "$file"
-    regex_check='{.*"rules": \["chronyd_specify_remote_server"\].*"bash": "True".*"ansible": "True"}'
+    file="./linux_os/guide/system/software/integrity/software-integrity/rpm_verification/rpm_verify_permissions/tests/bad_permissions.fail.sh"
+    sed -i "1i # platform = fedora" "$file"
+    regex_check='{.*"rules": \["rpm_verify_permissions"\].*"bash": "True".*"ansible": "True"}'
 
     git add "$file" && git commit -m "test commit" &>/dev/null
 
@@ -54,9 +54,9 @@ prepare_repository
 }
 
 @test "New test scenario" {
-    file="./linux_os/guide/services/ntp/chronyd_specify_remote_server/tests/new_test.pass.sh"
+    file="./linux_os/guide/system/software/integrity/software-integrity/rpm_verification/rpm_verify_permissions/tests/new_test.pass.sh"
     touch "$file"
-    regex_check='{.*"rules": \["chronyd_specify_remote_server"\].*"bash": "True".*"ansible": "True"}'
+    regex_check='{.*"rules": \["rpm_verify_permissions"\].*"bash": "True".*"ansible": "True"}'
 
     git add "$file" && git commit -m "test commit" &>/dev/null
 
@@ -71,7 +71,7 @@ prepare_repository
 }
 
 @test "Test removed" {
-    file="./linux_os/guide/services/ntp/chronyd_specify_remote_server/tests/line_missing.fail.sh"
+    file="./linux_os/guide/system/software/integrity/software-integrity/rpm_verification/rpm_verify_permissions/tests/bad_permissions.fail.sh"
     rm "$file"
 
     git add "$file" && git commit -m "test commit" &>/dev/null

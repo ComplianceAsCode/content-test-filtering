@@ -5,7 +5,7 @@ prepare_repository
 
 
 @test "Change sshd macro" {
-    file="./shared/macros-bash.jinja"
+    file="./shared/macros/10-bash.jinja"
     sed -i "/macro bash_sshd_config_set/a echo 1" "$file"
     regex_check_1='{.*"rules": \[.*"sshd_use_strong_ciphers".*\].*"bash": "True".*"ansible": "False".*}'
     regex_check_2='{.*"rules": \[.*"sshd_use_strong_macs".*\].*"bash": "True".*"ansible": "False".*}'

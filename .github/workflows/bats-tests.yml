@@ -1,0 +1,23 @@
+name: bats-tests
+run-name: Run BATS tests
+on: pull_request
+jobs:
+  run-bats-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Dependencies
+        run: sudo apt-get install -y git python3-git python3-yaml python3-jinja2 python3-deepdiff python3-pip xmldiff bats
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Checkout CaC/content
+        uses: actions/checkout@v3
+        with:
+          repository: ComplianceAsCode/content
+          path: content
+      # CTF BATS tests do commits which needs user and email defined
+      - name: Github config email
+        run: git config --global user.email "test@user.com"
+      - name: Github config user name
+        run: git config --global user.name "Test User"
+      - name: Run BATS tests
+        run: repo_dir="${GITHUB_WORKSPACE}/content/" bats tests
