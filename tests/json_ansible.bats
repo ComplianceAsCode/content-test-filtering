@@ -39,7 +39,7 @@ prepare_repository
 
 @test "Change name" {
     file="./linux_os/guide/system/software/integrity/disable_prelink/ansible/shared.yml"
-    sed -i 's/- name: disable.*/- name: some name/' "$file"
+    sed -i 's/- name: Disable.*/- name: some name/' "$file"
 
     git add "$file" && git commit -m "test commit" &>/dev/null
 
