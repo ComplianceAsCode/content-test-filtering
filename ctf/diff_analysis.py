@@ -37,8 +37,8 @@ def analyse_file(file_record):
     for importer, package_name, _ in pkgutil.iter_modules([path.dirname(__file__)
                                                            + "/analysis"]):
         full_package_name = "%s.%s" % ("ctf.analysis", package_name)
-        module = importer.find_module(full_package_name).load_module(
-            full_package_name)
+        spec = importer.find_spec(full_package_name)
+        module = spec.loader.load_module()
         analysis_modules.append(module)
 
     # Get all classes with "is_valid" method
