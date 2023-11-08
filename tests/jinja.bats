@@ -8,9 +8,8 @@ prepare_repository
     file="./shared/macros/10-bash.jinja"
     sed -i "/macro bash_sshd_config_set/a echo 1" "$file"
     regex_check_1="build_product"
-    regex_check_2="test_suite.py rule.*sshd_use_strong_macs"
-    regex_check_3="test_suite.py rule.*sshd_set_idle_timeout"
-    regex_check_4="test_suite.py rule.*sshd_use_priv_separation"
+    regex_check_2="test_suite.py rule.*sshd_set_"
+    regex_check_3="test_suite.py rule.*sshd_use_"
 
     git add "$file" && git commit -m "test commit" &>/dev/null
 

@@ -38,10 +38,10 @@ prepare_repository
 }
 
 @test "Change remediation" {
-    file="./linux_os/guide/services/sssd/sssd_run_as_sssd_user/bash/shared.sh"
-    sed -i "s/chmod 600/chmod 744/" "$file"
+    file="./linux_os/guide/system/software/integrity/software-integrity/rpm_verification/rpm_verify_permissions/bash/shared.sh"
+    sed -i "s/rpm//" "$file"
     regex_check_1="build_product "
-    regex_check_2="test_suite\.py rule.*sssd_run_as_sssd_user"
+    regex_check_2="test_suite\.py rule.*rpm_verify_permissions"
 
     git add "$file" && git commit -m "test commit" &>/dev/null
 

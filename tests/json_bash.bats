@@ -38,9 +38,9 @@ prepare_repository
 }
 
 @test "Change remediation" {
-    file="./linux_os/guide/services/sssd/sssd_run_as_sssd_user/bash/shared.sh"
-    sed -i "s/chmod 600/chmod 744/" "$file"
-    regex_check='{.*"rules": \["sssd_run_as_sssd_user"\].*"bash": "True".*"ansible": "False"}'
+    file="./linux_os/guide/system/software/integrity/software-integrity/rpm_verification/rpm_verify_permissions/bash/shared.sh"
+    sed -i "s/rpm//" "$file"
+    regex_check='{.*"rules": \["rpm_verify_permissions"\].*"bash": "True".*"ansible": "False"}'
 
     git add "$file" && git commit -m "test commit" &>/dev/null
 
