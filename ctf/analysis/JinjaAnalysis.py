@@ -16,8 +16,9 @@ logger = logging.getLogger("content-test-filtering.diff_analysis")
 
 
 class JinjaMacroChange:
-    def __init__(self, name):
+    def __init__(self, name, seen=None):
         self.name = name
+        self.seen = set() if seen is None else seen
         self.higher_macros = []
         self.in_rules = set()
         self.in_templates = set()
@@ -47,7 +48,12 @@ class JinjaMacroChange:
             if content_file.endswith(".jinja"):
                 higher_macros = self.find_where_macro_used(self.name, content_file)
                 for macro in higher_macros:
-                    higher_macro_class = JinjaMacroChange(macro)
+                    # Avoid recursion
+                    if macro in self.seen:
+                        continue
+                    new_seen = self.seen.copy()
+                    new_seen.add(macro)
+                    higher_macro_class = JinjaMacroChange(macro, new_seen)
                     self.higher_macros.append(higher_macro_class)
             else:
                 self.parse_macro_usage(content_file)
