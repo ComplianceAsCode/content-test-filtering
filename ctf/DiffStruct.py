@@ -61,6 +61,42 @@ class DiffStruct:
                         if find_rule.search(line):
                             yield profile_file
 
+    def find_rule_controls(self, rule):
+        controls = []
+        find_rule = re.compile(r"^\s*-\s*" + rule + r"\s*$", re.MULTILINE)
+        control_folder = git_wrapper.repo_path + "/" + "controls/"
+        # Check all yaml files in controls/
+        for control in os.listdir(control_folder):
+            if not control.endswith(".yml"):
+                continue
+            control_path = control_folder + control
+            with open(control_path) as f:
+                control_content = f.read()
+                # If controls in separate directory, merge them to one string
+                controls_dir = re.search(r"controls_dir:\s*(\w+)", control_content)
+                if controls_dir:
+                    controls_dir = controls_dir.group(1)
+                    for c in os.listdir(control_folder + controls_dir):
+                        with open(control_folder + controls_dir + "/" + c) as cf:
+                            control_content += cf.read()
+            # Search for rule in control content
+            if find_rule.search(control_content):
+                yield control.rstrip(".yml")
+
+    def find_control_products(self, control):
+        products_folder = git_wrapper.repo_path + "/" + "products"
+        find_control = re.compile(r"^\s*-\s*" + control + r":", re.MULTILINE)
+        # Find dirs with profile files
+        for dir_path, _, files in os.walk(products_folder):
+            for file in files:
+                if not file.endswith(".profile"):
+                    continue
+                # Search if desired control is used and if so, return product
+                with open(dir_path + "/" + file) as f:
+                    for line in f:
+                        if find_control.search(line):
+                            yield re.match(r".*/products/([^/]+)", dir_path).group(1)
+
     def get_rule_ruleyml(self, rule):
         # Find a directory with a rule name and check if it has rule.yml file
         for root, dirs, files in os.walk(git_wrapper.repo_path):
