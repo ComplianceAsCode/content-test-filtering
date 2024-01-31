@@ -119,20 +119,17 @@ class DiffStruct:
         return profiles
 
     def get_rule_products(self, rule):
+        products = []
         # Parse from matched profiles product names
-        ruleyml_path = self.get_rule_ruleyml(rule)
-        prodtype_line = None
-        with open(ruleyml_path) as f:
-            for line in f.readlines():
-                if "prodtype:" in line:
-                    prodtype_line = line
-                    break
-        # rule.yml does not have prodtype
-        if not prodtype_line:
-            return None
+        for profile_path in self.find_rule_profiles(rule):
+            parse_file = re.match(r".+/((?:\w|-)+)/profiles/(?:\w|-)+\.profile",
+                                  profile_path)
+            products.append(parse_file.group(1))
+        # Find in controls and from controls get product
+        for control in self.find_rule_controls(rule):
+            for product in self.find_control_products(control):
+                products.append(product)
 
-        prodtypes = re.match(r"\s*prodtype:\s*([\w|,]+)\s*", prodtype_line).group(1)
-        products = prodtypes.split(",")
         products = sorted(products, key=lambda k: (k!="rhel8", k!="rhel7", k!="ocp4", k))
         return products
 
