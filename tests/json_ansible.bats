@@ -5,7 +5,7 @@ prepare_repository
 
 
 @test "Add comment line" {
-    file="./linux_os/guide/system/software/integrity/disable_prelink/ansible/shared.yml"
+    file="./linux_os/guide/system/software/integrity/software-integrity/rpm_verification/rpm_verify_permissions/ansible/shared.yml"
     sed -i "\$a# comment" "$file"
 
     git add "$file" && git commit -m "test commit" &>/dev/null
@@ -21,7 +21,7 @@ prepare_repository
 }
 
 @test "Change metadata" {
-    file="./linux_os/guide/system/software/integrity/disable_prelink/ansible/shared.yml"
+    file="./linux_os/guide/system/software/integrity/software-integrity/rpm_verification/rpm_verify_permissions/ansible/shared.yml"
     sed -i 's/# reboot = false/# reboot = true/' "$file"
     regex_check="build_product "
 
@@ -38,8 +38,8 @@ prepare_repository
 }
 
 @test "Change name" {
-    file="./linux_os/guide/system/software/integrity/disable_prelink/ansible/shared.yml"
-    sed -i 's/- name: Disable.*/- name: some name/' "$file"
+    file="./linux_os/guide/system/software/integrity/software-integrity/rpm_verification/rpm_verify_permissions/ansible/shared.yml"
+    sed -i 's/- name: .*/- name: some name/' "$file"
 
     git add "$file" && git commit -m "test commit" &>/dev/null
 
@@ -54,9 +54,9 @@ prepare_repository
 }
 
 @test "Change remediation part" {
-    file="./linux_os/guide/system/software/integrity/disable_prelink/ansible/shared.yml"
-    sed -i 's;path: .*;path: /some/path/;' "$file"
-    regex_check='{.*"rules": \["disable_prelink"\].*"bash": "False".*"ansible": "True"}'
+    file="./linux_os/guide/system/software/integrity/software-integrity/rpm_verification/rpm_verify_permissions/ansible/shared.yml"
+    sed -i 's/command: .*/command: ls/' "$file"
+    regex_check='{.*"rules": \["rpm_verify_permissions"\].*"bash": "False".*"ansible": "True"}'
 
     git add "$file" && git commit -m "test commit" &>/dev/null
 
@@ -88,7 +88,7 @@ prepare_repository
 }
 
 @test "Remove ansible remediation" {
-    file="./linux_os/guide/services/ssh/ssh_server/sshd_use_approved_macs/ansible/shared.yml"
+    file="./linux_os/guide/system/software/integrity/software-integrity/rpm_verification/rpm_verify_permissions/ansible/shared.yml"
     rm -f "$file"
 
     git add "$file" && git commit -m "test commit" &>/dev/null
