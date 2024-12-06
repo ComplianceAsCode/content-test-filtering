@@ -40,6 +40,9 @@ if __name__ == '__main__':
         if file_record["filepath"] in already_analysed:  # Don't analyse files twice
             continue
 
+        if file_record["filepath"].startswith(".github"):
+            continue
+
         try:
             diff_structure = diff_analysis.analyse_file(file_record)
         except diff_analysis.UnknownAnalysisFileType:
