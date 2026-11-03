@@ -16,8 +16,9 @@ The project analyses changed files, then based on changes decides what has been 
 Fedora/RHEL:
 ```
 yum install python3 git
-pip3 install gitpython PyYAML deepdiff Jinja2 xmldiff
-git clone https://github.com/mildas/content-test-filtering
+git clone https://github.com/ComplianceAsCode/content-test-filtering.git
+cd content-test-filtering
+pip3 install -r requirements.txt
 ```
 
 **WARNING:** For analysis of Jinja files, ComplianceAsCode dependencies are required. See [ComplianceAsCode Developer Guide](https://github.com/ComplianceAsCode/content/blob/master/docs/manual/developer_guide.adoc)
