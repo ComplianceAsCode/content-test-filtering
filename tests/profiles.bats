@@ -57,7 +57,7 @@ prepare_repository
 
 @test "Change rule (= adding new rule and removing old one)" {
     file="products/rhel8/profiles/ospp.profile"
-    sed -i 's/disable_host_auth/enable_host_auth/' "$file"
+    sed -i 's/sshd_use_strong_rng/sshd_disable_empty_passwords/' "$file"
     regex_check_1="build_product "
     regex_check_2="test_suite\.py profile.*ospp"
 

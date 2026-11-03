@@ -61,7 +61,7 @@ prepare_repository
 
 @test "Change templated remediation" {
     file="./linux_os/guide/services/ssh/ssh_server/sshd_use_strong_ciphers/bash/shared.sh"
-    sed -i "s/bash_sshd_config_set/bash_some_template/" "$file"
+    sed -i "s/bash_sshd_remediation/bash_some_template/" "$file"
     regex_check_1="build_product "
     regex_check_2="test_suite\.py rule.*sshd_use_strong_ciphers"
 
@@ -120,4 +120,3 @@ prepare_repository
         return 1
     fi
 }
-
