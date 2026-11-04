@@ -1,0 +1,5 @@
+gitpython
+PyYAML
+deepdiff
+Jinja2
+xmldiff
