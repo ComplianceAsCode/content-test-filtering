@@ -56,7 +56,7 @@ prepare_repository
 
 @test "Change rule (= adding new rule and removing old one)" {
     file="products/rhel8/profiles/ospp.profile"
-    sed -i 's/disable_host_auth/enable_host_auth/' "$file"
+    sed -i 's/sshd_use_strong_rng/sshd_disable_empty_passwords/' "$file"
     regex_check='{.*"profiles": \[.*"ospp".*\], "product": "rhel8".*}'
 
     git add "$file" && git commit -m "test commit" &>/dev/null

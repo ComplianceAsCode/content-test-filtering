@@ -8,7 +8,7 @@ prepare_repository
     file="./shared/macros/10-bash.jinja"
     sed -i "/macro bash_sshd_config_set/a echo 1" "$file"
     regex_check_1='{.*"rules": \[.*"sshd_use_.*".*\].*"bash": "True".*"ansible": "False".*}'
-    regex_check_2='{.*"rules": \[.*"sshd_set_.*".*\].*"bash": "True".*"ansible": "False".*}'
+    regex_check_2='{.*"rules": \[.*"sshd_rekey_limit".*\].*"bash": "True".*"ansible": "False".*}'
 
     git add "$file" && git commit -m "test commit" &>/dev/null
 
@@ -33,4 +33,3 @@ prepare_repository
         return 1
     fi
 }
-

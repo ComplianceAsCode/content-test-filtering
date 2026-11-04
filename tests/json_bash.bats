@@ -56,7 +56,7 @@ prepare_repository
 
 @test "Change templated remediation" {
     file="./linux_os/guide/services/ssh/ssh_server/sshd_use_strong_ciphers/bash/shared.sh"
-    sed -i "s/bash_sshd_config_set/bash_some_template/" "$file"
+    sed -i "s/bash_sshd_remediation/bash_some_template/" "$file"
     regex_check='{.*"rules": \["sshd_use_strong_ciphers"\].*"bash": "True".*"ansible": "False"}'
 
     git add "$file" && git commit -m "test commit" &>/dev/null
