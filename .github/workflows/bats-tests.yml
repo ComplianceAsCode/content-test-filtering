@@ -6,7 +6,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Install Dependencies
-        run: sudo apt-get install -y git python3-git python3-yaml python3-jinja2 python3-deepdiff python3-pip xmldiff bats
+        run: sudo apt-get update && sudo apt-get install -y git python3-git python3-yaml python3-jinja2 python3-deepdiff python3-pip xmldiff bats
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Checkout CaC/content
